@@ -1,0 +1,385 @@
+//! Symbol composition: the ordered pipeline of symbol parts.
+//!
+//! Each part (upstream `ms._symbolParts` entry) inspects the symbol state and
+//! returns instructions drawn behind (`pre`) and in front of (`post`) what
+//! earlier parts produced, plus a bounding box to merge.
+
+use crate::bbox::{BBox, PartialBBox};
+use crate::color::ColorSet;
+use crate::config::RendererConfig;
+use crate::error::RenderError;
+use crate::ir::{Node, Num, Paint, Str, Style};
+use crate::metadata::Metadata;
+use crate::options::{StyleColor, SymbolOptions};
+use crate::registry::Registry;
+use alloc::borrow::Cow;
+use alloc::vec::Vec;
+
+mod affiliation;
+mod base_geometry;
+mod direction;
+mod engagement;
+mod icon;
+mod modifier;
+mod pipeline;
+mod stack;
+mod status;
+mod textfields;
+
+pub(crate) use pipeline::{Composition, compose};
+
+/// Read-only view of a symbol while its parts are drawn (upstream `this`).
+pub struct SymbolState<'a> {
+    /// The normalized SIDC.
+    pub sidc: &'a str,
+    /// Options and style.
+    pub options: &'a SymbolOptions,
+    /// Interpreted metadata.
+    pub metadata: &'a Metadata,
+    /// Resolved colours.
+    pub colors: &'a ColorSet,
+    /// Bounding box accumulated from the parts drawn so far.
+    pub bbox: BBox,
+    /// Renderer configuration.
+    pub config: &'a RendererConfig,
+    pub(crate) registry: &'a Registry,
+}
+
+/// Output of one symbol part.
+#[derive(Debug, Clone, Default)]
+pub struct PartOutput {
+    /// Instructions drawn before everything drawn so far.
+    pub pre: Vec<Node>,
+    /// Instructions drawn after everything drawn so far.
+    pub post: Vec<Node>,
+    /// Bounds to merge into the symbol's bounding box.
+    pub bbox: PartialBBox,
+    /// Set when the part could not find a valid icon.
+    pub invalid_icon: bool,
+}
+
+impl PartOutput {
+    pub(crate) fn new(pre: Vec<Node>, post: Vec<Node>, bbox: impl Into<PartialBBox>) -> Self {
+        PartOutput {
+            pre,
+            post,
+            bbox: bbox.into(),
+            invalid_icon: false,
+        }
+    }
+}
+
+/// A stage of symbol composition (upstream `ms.addSymbolPart`).
+pub trait SymbolPart: Send + Sync {
+    /// Draws this part for the symbol.
+    fn draw(&self, symbol: &SymbolState<'_>) -> Result<PartOutput, RenderError>;
+}
+
+/// The built-in symbol parts, in upstream order.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum BuiltinPart {
+    /// Stacked frames behind the symbol.
+    Stack,
+    /// The frame.
+    BaseGeometry,
+    /// The icon and its sector modifiers.
+    Icon,
+    /// HQ staff, task force, installation, feint/dummy, echelon, mobility.
+    Modifier,
+    /// Operational condition bar or damaged/destroyed slashes.
+    StatusModifier,
+    /// Engagement bar.
+    Engagement,
+    /// Exercise/simulation letters and unknown-dimension question mark.
+    AffiliationDimension,
+    /// Text amplifiers.
+    TextFields,
+    /// Direction of movement arrow or speed leader.
+    DirectionArrow,
+    /// The icon octagon, for debugging (upstream `ms.showOctagon`).
+    Octagon,
+}
+
+impl BuiltinPart {
+    /// The default pipeline.
+    pub const DEFAULT: [BuiltinPart; 9] = [
+        BuiltinPart::Stack,
+        BuiltinPart::BaseGeometry,
+        BuiltinPart::Icon,
+        BuiltinPart::Modifier,
+        BuiltinPart::StatusModifier,
+        BuiltinPart::Engagement,
+        BuiltinPart::AffiliationDimension,
+        BuiltinPart::TextFields,
+        BuiltinPart::DirectionArrow,
+    ];
+}
+
+impl SymbolPart for BuiltinPart {
+    fn draw(&self, s: &SymbolState<'_>) -> Result<PartOutput, RenderError> {
+        match self {
+            BuiltinPart::Stack => stack::draw(s),
+            BuiltinPart::BaseGeometry => base_geometry::draw(s),
+            BuiltinPart::Icon => icon::draw(s),
+            BuiltinPart::Modifier => modifier::draw(s),
+            BuiltinPart::StatusModifier => status::draw(s),
+            BuiltinPart::Engagement => engagement::draw(s),
+            BuiltinPart::AffiliationDimension => affiliation::draw(s),
+            BuiltinPart::TextFields => textfields::draw(s),
+            BuiltinPart::DirectionArrow => direction::draw(s),
+            BuiltinPart::Octagon => Ok(octagon()),
+        }
+    }
+}
+
+fn octagon() -> PartOutput {
+    let mut n = crate::ir::PathNode {
+        d: crate::ir::PathData::new(
+            "m 120,60 0,80 m -40,-80 0,80 m -20,-20 80,0 m 0,-40 -80,0 M 100,50 135.35534,64.64466 150,100 135.35534,135.35534 100,150.00002 64.644661,135.35534 50,100 64.644661,64.64466 z",
+        ),
+        style: Style::default(),
+    };
+    n.style.fill = Some(Paint::None);
+    n.style.stroke = Some(Paint::color("rgb(0,0,255)"));
+    n.style.stroke_width = Some(Num::Number(1.0));
+    PartOutput::new(Vec::new(), alloc::vec![Node::Path(n)], BBox::default())
+}
+
+// ---------------------------------------------------------------------------
+// Helpers shared by the parts.
+
+impl SymbolState<'_> {
+    /// Affiliation key for colour lookups (upstream `this.metadata.affiliation`).
+    pub(crate) fn aff(&self) -> &str {
+        self.metadata.affiliation.as_deref().unwrap_or("undefined")
+    }
+
+    /// `colors.<mode>[metadata.affiliation]`.
+    pub(crate) fn color_of(&self, mode: &crate::color::ColorMode) -> Option<Paint> {
+        mode.get(self.aff())
+    }
+
+    /// Upstream's outline colour argument.
+    pub(crate) fn outline_color(&self) -> Option<Paint> {
+        style_color_value(&self.options.style.outline_color, self.aff())
+    }
+
+    /// `ms.outline(geom, outlineWidth, strokeWidth, outlineColor)`.
+    pub(crate) fn outline(&self, nodes: &[Node]) -> Result<Node, RenderError> {
+        let st = &self.options.style;
+        outline_list(
+            nodes,
+            st.outline_width,
+            st.stroke_width,
+            &self.outline_color(),
+        )
+    }
+
+    /// `ms.outline` applied to a single instruction.
+    pub(crate) fn outline_one(&self, node: &Node) -> Result<Node, RenderError> {
+        let st = &self.options.style;
+        outline_node(
+            node,
+            st.outline_width,
+            st.stroke_width,
+            &self.outline_color(),
+        )
+    }
+}
+
+/// Value of a style colour for an affiliation: the string itself, or the
+/// per-affiliation entry.
+pub(crate) fn style_color_value(c: &StyleColor, aff: &str) -> Option<Paint> {
+    match c {
+        StyleColor::Str(s) => Some(Paint::Color(Cow::Owned(s.clone()))),
+        StyleColor::PerAffiliation(m) => m.get(aff),
+    }
+}
+
+/// `ms.outline` over an instruction array.
+pub(crate) fn outline_list(
+    nodes: &[Node],
+    outline: f64,
+    stroke: f64,
+    color: &Option<Paint>,
+) -> Result<Node, RenderError> {
+    Ok(Node::Group(
+        nodes
+            .iter()
+            .map(|n| outline_node(n, outline, stroke, color))
+            .collect::<Result<_, _>>()?,
+    ))
+}
+
+/// `ms.outline` over one instruction.
+pub(crate) fn outline_node(
+    node: &Node,
+    outline: f64,
+    stroke: f64,
+    color: &Option<Paint>,
+) -> Result<Node, RenderError> {
+    let strip = |s: &Style| Style {
+        fill: None,
+        fill_opacity: None,
+        ..s.clone()
+    };
+    let leaf = |s: &Style| {
+        let mut st = strip(s);
+        let width = if st.stroke != Some(Paint::None) {
+            let w = st
+                .stroke_width
+                .as_ref()
+                .filter(|w| js_truthy_num(w))
+                .map_or(stroke, Num::value);
+            w + 2.0 * outline
+        } else {
+            2.0 * outline
+        };
+        st.stroke_width = Some(Num::Number(width));
+        st.stroke = color.clone();
+        st.fill = Some(Paint::None);
+        st.line_cap = Some(Cow::Borrowed("round"));
+        st
+    };
+    let kids = |d: &[Node]| -> Result<Vec<Node>, RenderError> {
+        d.iter()
+            .map(|n| outline_node(n, outline, stroke, color))
+            .collect()
+    };
+    Ok(match node {
+        Node::Group(v) => Node::Group(kids(v)?),
+        Node::Translate(n) => Node::Translate(crate::ir::TranslateNode {
+            draw: kids(&n.draw)?,
+            style: strip(&n.style),
+            ..n.clone()
+        }),
+        Node::Rotate(n) => Node::Rotate(crate::ir::RotateNode {
+            draw: kids(&n.draw)?,
+            style: strip(&n.style),
+            ..n.clone()
+        }),
+        Node::Scale(n) => Node::Scale(crate::ir::ScaleNode {
+            draw: kids(&n.draw)?,
+            style: strip(&n.style),
+            ..n.clone()
+        }),
+        Node::Path(n) => Node::Path(crate::ir::PathNode {
+            style: leaf(&n.style),
+            ..n.clone()
+        }),
+        Node::Circle(n) => Node::Circle(crate::ir::CircleNode {
+            style: leaf(&n.style),
+            ..n.clone()
+        }),
+        Node::Text(n) => Node::Text(crate::ir::TextNode {
+            style: leaf(&n.style),
+            ..n.clone()
+        }),
+        Node::Clip(n) => Node::Clip(crate::ir::ClipNode {
+            style: leaf(&n.style),
+            ..n.clone()
+        }),
+        Node::TrustedSvg(_) => node.clone(),
+        Node::Bare(st) => Node::Bare(leaf(st)),
+        Node::Scalar(_) => Node::Bare(leaf(&Style::default())),
+        Node::Missing => {
+            return Err(RenderError::upstream(
+                "Cannot read properties of undefined (reading 'type')",
+            ));
+        }
+    })
+}
+
+/// JavaScript truthiness of a numeric attribute.
+pub(crate) fn js_truthy_num(n: &Num) -> bool {
+    match n {
+        Num::Number(v) => *v != 0.0 && !v.is_nan(),
+        Num::Text(s) => !s.is_empty(),
+        Num::Bool(b) => *b,
+    }
+}
+
+/// `ms._translate(x, y, instruction)`.
+pub(crate) fn translate(x: f64, y: f64, instruction: Node) -> Node {
+    Node::translate(x, y, alloc::vec![instruction])
+}
+
+/// `ms._scale(factor, instruction, nonScalingStroke)`.
+pub(crate) fn scale(
+    factor: f64,
+    mut instruction: Node,
+    non_scaling: bool,
+) -> Result<Node, RenderError> {
+    if non_scaling {
+        recurse_scale_value(&mut instruction, 1.0 / factor)?;
+    }
+    let inner = Node::Scale(crate::ir::ScaleNode {
+        factor: Num::Number(factor),
+        draw: alloc::vec![instruction],
+        style: Style::default(),
+    });
+    Ok(Node::translate(
+        100.0 - factor * 100.0,
+        100.0 - factor * 100.0,
+        alloc::vec![inner],
+    ))
+}
+
+/// Upstream `recurse_scale` applied to a JavaScript value (an instruction or
+/// an array of instructions).
+fn recurse_scale_value(v: &mut Node, nss: f64) -> Result<(), RenderError> {
+    match v {
+        Node::Group(list) => recurse_scale_array(list, nss),
+        other => set_nss(other, nss),
+    }
+}
+
+fn recurse_scale_array(list: &mut [Node], nss: f64) -> Result<(), RenderError> {
+    for d in list.iter_mut() {
+        match d {
+            // Setting a property on an array is a no-op; then each element is visited.
+            Node::Group(inner) => {
+                for e in inner.iter_mut() {
+                    recurse_scale_value(e, nss)?;
+                }
+            }
+            other => {
+                set_nss(other, nss)?;
+                let draw = match other {
+                    Node::Translate(n) => Some(&mut n.draw),
+                    Node::Rotate(n) => Some(&mut n.draw),
+                    Node::Scale(n) => Some(&mut n.draw),
+                    Node::Clip(n) => Some(&mut n.draw),
+                    _ => None,
+                };
+                if let Some(draw) = draw {
+                    recurse_scale_array(draw, nss)?;
+                }
+            }
+        }
+    }
+    Ok(())
+}
+
+fn set_nss(n: &mut Node, nss: f64) -> Result<(), RenderError> {
+    match n {
+        Node::Missing => Err(RenderError::upstream(
+            "Cannot set properties of undefined (setting 'non_scaling_stroke')",
+        )),
+        Node::Scalar(_) => Err(RenderError::upstream(
+            "Cannot create property 'non_scaling_stroke' on primitive",
+        )),
+        Node::TrustedSvg(_) => Ok(()),
+        other => {
+            if let Some(st) = other.style_mut() {
+                st.non_scaling_stroke = Some(nss);
+            }
+            Ok(())
+        }
+    }
+}
+
+/// String attribute helper.
+pub(crate) fn s(v: &'static str) -> Option<Str> {
+    Some(Cow::Borrowed(v))
+}

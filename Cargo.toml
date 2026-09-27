@@ -1,0 +1,47 @@
+[package]
+name = "milsymbol"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.85"
+description = "Native Rust port of milsymbol.js: MIL-STD-2525 / APP-6 military symbol generation"
+license = "AGPL-3.0-or-later"
+repository = "https://github.com/luofang34/milsymbol"
+readme = "README.md"
+keywords = ["milsymbol", "mil-std-2525", "app-6", "symbology", "svg"]
+categories = ["graphics", "rendering", "no-std"]
+exclude = ["tools/oracle/upstream/", "tools/**/node_modules/", "tools/codegen/out/"]
+
+[features]
+default = ["std"]
+# `std` only adds `std::error::Error` impls; the core is `no_std + alloc`.
+std = []
+
+[dependencies]
+libm = "0.2.16"
+
+[dev-dependencies]
+serde_json = "1.0.151"
+flate2 = "1.1.10"
+proptest = "1.11.0"
+criterion = { version = "0.8.2", default-features = false }
+
+[[bench]]
+name = "render"
+harness = false
+
+[lints.rust]
+unsafe_code = "forbid"
+missing_docs = "warn"
+let_underscore_drop = "warn"
+
+[lints.clippy]
+unwrap_used = "deny"
+expect_used = "deny"
+panic = "deny"
+let_underscore_must_use = "deny"
+let_underscore_future = "deny"
+await_holding_lock = "deny"
+indexing_slicing = "warn"
+
+[profile.release]
+debug = false
