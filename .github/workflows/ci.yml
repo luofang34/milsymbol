@@ -1,0 +1,81 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+env:
+  CARGO_TERM_COLOR: always
+  RUSTFLAGS: -D warnings
+
+jobs:
+  native:
+    name: fmt → clippy → test → doc → release build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+      - uses: Swatinem/rust-cache@v2
+      - run: cargo fmt --all --check
+      - run: cargo clippy --all-targets -- -D warnings
+      - run: cargo test --all-targets
+      # The oracle corpus runs in release too, matching how it is usually run locally.
+      - run: cargo test --release --test corpus
+      - run: cargo test --doc
+      - run: cargo doc --no-deps
+        env:
+          RUSTDOCFLAGS: -D missing_docs -D rustdoc::broken_intra_doc_links
+      - run: cargo build --release
+      - run: tools/ci/file-size.sh
+
+  targets:
+    name: wasm32 and no_std builds
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown, thumbv7em-none-eabihf, thumbv6m-none-eabi
+      - uses: Swatinem/rust-cache@v2
+      - run: cargo build --lib --target wasm32-unknown-unknown
+      - run: cargo build --lib --no-default-features --target wasm32-unknown-unknown
+      - run: cargo build --lib --no-default-features --target thumbv7em-none-eabihf
+      - run: cargo build --lib --no-default-features --target thumbv6m-none-eabi
+
+  js-guard:
+    name: no JavaScript runtime in dependency tree
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - run: tools/ci/js-guard.sh
+
+  oracle:
+    name: regenerate from pinned milsymbol.js and diff
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - name: Regenerate tables
+        run: tools/codegen/regenerate.sh
+        env:
+          BASELINES: "200"
+          CHECKS: "800"
+      - name: Generated tables are up to date
+        run: git diff --exit-code -- src/generated
+      - name: Live differential check against the oracle
+        run: |
+          for suite in invalid config options fuzz modifiers base; do
+            tools/oracle/diff.sh "$suite" 10
+          done
+      - name: Fixtures are up to date
+        run: |
+          node tools/oracle/fixtures.mjs invalid config options fuzz modifiers base
+          git diff --exit-code -- tests/corpus

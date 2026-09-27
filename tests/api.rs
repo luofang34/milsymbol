@@ -224,3 +224,20 @@ fn instructions_expose_typed_path_segments() {
     let segs = frame.d.segments().unwrap();
     assert_eq!(segs.len(), 5);
 }
+
+#[test]
+fn cached_renderer_reuses_identical_requests_only() {
+    use milsymbol::cache::CachedRenderer;
+    let c = CachedRenderer::new(Renderer::default(), 2);
+    let o = SymbolOptions::default();
+    let a = c.render(INFANTRY, &o).unwrap();
+    let b = c.render(INFANTRY, &o).unwrap();
+    assert!(std::sync::Arc::ptr_eq(&a, &b));
+    let mut other = o.clone();
+    other.style.size = 50.0;
+    let d = c.render(INFANTRY, &other).unwrap();
+    assert!(!std::sync::Arc::ptr_eq(&a, &d));
+    assert_eq!(c.len(), 2);
+    c.render("SFGPUCI-----", &o).unwrap();
+    assert_eq!(c.len(), 1, "cleared when full");
+}

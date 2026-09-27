@@ -319,6 +319,11 @@ fn style_color(c: &StyleColor) -> Json {
 /// JSON of options and style (upstream `symbol.getOptions()`).
 pub fn options(sidc: &str, o: &SymbolOptions) -> Json {
     let mut j = Obj::default();
+    for k in crate::options::field::DEFAULTS {
+        if !o.text.contains_key(k) {
+            j.put(k, s(""));
+        }
+    }
     for (k, v) in &o.text {
         j.put(k, s(v));
     }

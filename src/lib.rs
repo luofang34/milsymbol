@@ -60,3 +60,7 @@ pub use symbol::{Size, Symbol, Validity};
 
 /// Version of milsymbol.js this crate reproduces.
 pub const UPSTREAM_VERSION: &str = "3.0.4";
+
+#[doc = include_str!("../README.md")]
+#[cfg(doctest)]
+pub struct ReadmeDoctests;

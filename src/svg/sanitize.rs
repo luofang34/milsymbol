@@ -9,29 +9,39 @@ fn is_js_space(c: char) -> bool {
 
 /// Attribute escaping: `& " ' < >` become entities, CR/LF/TAB become spaces.
 pub(super) fn escape_attr(out: &mut String, s: &str) {
-    for c in s.chars() {
-        match c {
-            '&' => out.push_str("&amp;"),
-            '"' => out.push_str("&quot;"),
-            '\'' => out.push_str("&apos;"),
-            '<' => out.push_str("&lt;"),
-            '>' => out.push_str("&gt;"),
-            '\r' | '\n' | '\t' => out.push(' '),
-            c => out.push(c),
+    escape(out, s, |b| match b {
+        b'&' => Some("&amp;"),
+        b'"' => Some("&quot;"),
+        b'\'' => Some("&apos;"),
+        b'<' => Some("&lt;"),
+        b'>' => Some("&gt;"),
+        b'\r' | b'\n' | b'\t' => Some(" "),
+        _ => None,
+    });
+}
+
+/// Copies `s` to `out`, replacing the ASCII bytes `map` selects. Only ASCII
+/// bytes are replaced, so slicing at them keeps UTF-8 boundaries intact.
+fn escape(out: &mut String, s: &str, map: impl Fn(u8) -> Option<&'static str>) {
+    let mut start = 0;
+    for (i, b) in s.bytes().enumerate() {
+        if let Some(rep) = map(b) {
+            out.push_str(s.get(start..i).unwrap_or(""));
+            out.push_str(rep);
+            start = i + 1;
         }
     }
+    out.push_str(s.get(start..).unwrap_or(""));
 }
 
 /// Text-content escaping: `& < >` become entities.
 pub(super) fn escape_text(out: &mut String, s: &str) {
-    for c in s.chars() {
-        match c {
-            '&' => out.push_str("&amp;"),
-            '<' => out.push_str("&lt;"),
-            '>' => out.push_str("&gt;"),
-            c => out.push(c),
-        }
-    }
+    escape(out, s, |b| match b {
+        b'&' => Some("&amp;"),
+        b'<' => Some("&lt;"),
+        b'>' => Some("&gt;"),
+        _ => None,
+    });
 }
 
 fn trim_js(s: &str) -> &str {

@@ -30,6 +30,11 @@ pub fn write_number(out: &mut String, v: f64) {
         out.push_str(if v > 0.0 { "Infinity" } else { "-Infinity" });
         return;
     }
+    // Integers below 2^53 print as plain digits in JavaScript.
+    if v.fract() == 0.0 && v.abs() < 9_007_199_254_740_992.0 {
+        write!(out, "{}", v as i64).ok();
+        return;
+    }
     if v < 0.0 {
         out.push('-');
     }
@@ -220,46 +225,66 @@ pub fn min(a: f64, b: f64) -> f64 {
 }
 
 /// A string viewed as UTF-16 code units, as JavaScript string methods see it.
-#[derive(Debug, Clone, PartialEq, Eq, Default)]
-pub struct JsStr(Vec<u16>);
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum JsStr {
+    /// ASCII text: bytes and code units coincide.
+    Ascii(String),
+    /// Other text, as UTF-16 code units.
+    Utf16(Vec<u16>),
+}
+
+impl Default for JsStr {
+    fn default() -> Self {
+        JsStr::Ascii(String::new())
+    }
+}
 
 impl JsStr {
-    /// Encodes `s` as UTF-16.
+    /// Wraps `s`.
     pub fn new(s: &str) -> Self {
-        Self(s.encode_utf16().collect())
+        if s.is_ascii() {
+            JsStr::Ascii(String::from(s))
+        } else {
+            JsStr::Utf16(s.encode_utf16().collect())
+        }
     }
 
     /// Length in UTF-16 code units (`String.prototype.length`).
     pub fn len(&self) -> usize {
-        self.0.len()
+        match self {
+            JsStr::Ascii(s) => s.len(),
+            JsStr::Utf16(u) => u.len(),
+        }
     }
 
     /// Whether the string is empty.
     pub fn is_empty(&self) -> bool {
-        self.0.is_empty()
+        self.len() == 0
     }
 
     /// `String.prototype.substr(start, len)` for non-negative arguments.
     pub fn substr(&self, start: usize, len: usize) -> String {
-        let end = start.saturating_add(len).min(self.0.len());
-        let slice = self.0.get(start.min(end)..end).unwrap_or(&[]);
-        String::from_utf16_lossy(slice)
+        let end = start.saturating_add(len).min(self.len());
+        let start = start.min(end);
+        match self {
+            JsStr::Ascii(s) => String::from(s.get(start..end).unwrap_or("")),
+            JsStr::Utf16(u) => String::from_utf16_lossy(u.get(start..end).unwrap_or(&[])),
+        }
     }
 
     /// `String.prototype.charAt(i)`.
     pub fn char_at(&self, i: usize) -> String {
         self.substr(i, 1)
     }
-
-    /// The UTF-16 code units.
-    pub fn units(&self) -> &[u16] {
-        &self.0
-    }
 }
 
 /// Length of `s` in UTF-16 code units.
 pub fn utf16_len(s: &str) -> usize {
-    s.encode_utf16().count()
+    if s.is_ascii() {
+        s.len()
+    } else {
+        s.encode_utf16().count()
+    }
 }
 
 /// JavaScript `substr(start, len)` on a Rust string (UTF-16 semantics).

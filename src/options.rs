@@ -245,9 +245,9 @@ impl Default for Style {
 /// Non-style symbol options (upstream `symbol.options`).
 #[derive(Debug, Clone, PartialEq)]
 pub struct SymbolOptions {
-    /// Text amplifiers keyed by upstream option name. Holds every
-    /// [`field::DEFAULTS`] key plus any extra keys (e.g. `dtg1`) used by
-    /// label overrides.
+    /// Text amplifiers that were set, keyed by upstream option name (see
+    /// [`field`]; extra keys such as `dtg1` are used by label overrides).
+    /// Unset fields read as empty, like upstream's `""` defaults.
     pub text: BTreeMap<String, String>,
     /// Field Q: direction of movement in degrees.
     pub direction: Option<f64>,
@@ -267,12 +267,8 @@ pub struct SymbolOptions {
 
 impl Default for SymbolOptions {
     fn default() -> Self {
-        let mut text = BTreeMap::new();
-        for k in field::DEFAULTS {
-            text.insert(String::from(k), String::new());
-        }
         SymbolOptions {
-            text,
+            text: BTreeMap::new(),
             direction: None,
             speed_leader: 0.0,
             stack: None,
