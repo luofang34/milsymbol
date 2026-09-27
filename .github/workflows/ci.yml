@@ -14,7 +14,7 @@ jobs:
     name: fmt → clippy → test → doc → release build
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: dtolnay/rust-toolchain@stable
         with:
           components: rustfmt, clippy
@@ -35,7 +35,7 @@ jobs:
     name: wasm32 and no_std builds
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: dtolnay/rust-toolchain@stable
         with:
           targets: wasm32-unknown-unknown, thumbv7em-none-eabihf, thumbv6m-none-eabi
@@ -49,7 +49,7 @@ jobs:
     name: library builds on rust-version (1.85)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: dtolnay/rust-toolchain@1.85
       - run: cargo build --lib
       - run: cargo build --lib --no-default-features
@@ -58,21 +58,23 @@ jobs:
     name: crates.io package builds
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
       - run: cargo publish --dry-run
       - name: Package size stays under the crates.io limit
         run: |
-          size=$(stat -c %s target/package/milsymbol-*.crate)
-          echo "crate size: $size bytes"
+          crate=$(find target -name 'milsymbol-*.crate' -print -quit)
+          test -n "$crate"
+          size=$(stat -c %s "$crate")
+          echo "$crate: $size bytes"
           test "$size" -lt 10000000
 
   js-guard:
     name: no JavaScript runtime in dependency tree
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: dtolnay/rust-toolchain@stable
       - run: tools/ci/js-guard.sh
 
@@ -80,7 +82,7 @@ jobs:
     name: regenerate from pinned milsymbol.js and diff
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: actions/setup-node@v4
         with:
           node-version: 22
@@ -99,6 +101,11 @@ jobs:
             tools/oracle/diff.sh "$suite" 10
           done
       - name: Fixtures are up to date
+        # Compare decompressed content: gzip bytes differ between zlib builds.
         run: |
+          mkdir -p /tmp/committed
+          cp tests/corpus/*.jsonl.gz /tmp/committed/
           node tools/oracle/fixtures.mjs invalid config options fuzz modifiers base
-          git diff --exit-code -- tests/corpus
+          for f in tests/corpus/*.jsonl.gz; do
+            cmp <(gunzip -c "/tmp/committed/$(basename "$f")") <(gunzip -c "$f")
+          done
