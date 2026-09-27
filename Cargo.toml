@@ -1,6 +1,7 @@
 [package]
 name = "milsymbol"
 version = "0.1.0"
+authors = ["Fang Luo"]
 edition = "2024"
 rust-version = "1.85"
 description = "Native Rust port of milsymbol.js: MIL-STD-2525 / APP-6 military symbol generation"
@@ -9,12 +10,36 @@ repository = "https://github.com/luofang34/milsymbol"
 readme = "README.md"
 keywords = ["milsymbol", "mil-std-2525", "app-6", "symbology", "svg"]
 categories = ["graphics", "rendering", "no-std"]
-exclude = ["tools/oracle/upstream/", "tools/**/node_modules/", "tools/codegen/out/"]
+documentation = "https://docs.rs/milsymbol"
+homepage = "https://github.com/luofang34/milsymbol"
+# The package ships the library, its tests (including the oracle corpus
+# fixtures), examples and benches. Dev tooling (tools/), CI and the README
+# images (referenced by absolute URL) stay in the repository only.
+include = [
+    "/src/**/*.rs",
+    "/tests/**/*.rs",
+    "/tests/corpus/*.jsonl.gz",
+    "/examples/*.rs",
+    "/benches/*.rs",
+    "/Cargo.toml",
+    "/Cargo.lock",
+    "/README.md",
+    "/UPSTREAM.md",
+    "/BENCHMARKS.md",
+    "/CHANGELOG.md",
+    "/LICENSE",
+    "/LICENSE-MIT-milsymbol",
+    "/NOTICE",
+    "/clippy.toml",
+]
 
 [features]
 default = ["std"]
 # `std` only adds `std::error::Error` impls; the core is `no_std + alloc`.
 std = []
+
+[package.metadata.docs.rs]
+all-features = true
 
 [dependencies]
 libm = "0.2.16"
