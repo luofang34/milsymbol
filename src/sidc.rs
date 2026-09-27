@@ -1,8 +1,9 @@
 //! SIDC interpretation: numeric (2525D/E, APP-6D/E) and legacy letter
 //! (2525B/C, APP-6B) symbol identification codes.
 //!
-//! Parsing never fails: like upstream, malformed codes produce metadata that
-//! marks the symbol invalid rather than an error.
+//! Rendering never fails on a malformed code: like upstream, it produces
+//! metadata that marks the symbol invalid. [`Sidc::parse`] validates a code
+//! strictly and exposes its fields as typed values.
 
 use crate::js;
 use crate::metadata::Metadata;
@@ -10,6 +11,9 @@ use alloc::string::String;
 
 mod letter;
 mod number;
+mod parse;
+
+pub use parse::{LetterSidc, NumericSidc, Sidc, SidcError};
 
 /// Upstream `mapping.echelonMobility`.
 pub(crate) fn echelon_mobility(code: &str) -> Option<&'static str> {

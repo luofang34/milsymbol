@@ -318,6 +318,26 @@ impl Node {
     }
 }
 
+/// Parses every path in `nodes` (recursively) and caches its segments, so
+/// renderers that walk the tree repeatedly do not re-parse path data.
+pub fn parse_paths(nodes: &mut [Node]) -> Result<(), PathParseError> {
+    for n in nodes {
+        match n {
+            Node::Path(p) => p.d.cache_segments()?,
+            Node::Clip(c) => {
+                c.d.cache_segments()?;
+                parse_paths(&mut c.draw)?;
+            }
+            Node::Translate(t) => parse_paths(&mut t.draw)?,
+            Node::Rotate(r) => parse_paths(&mut r.draw)?,
+            Node::Scale(s) => parse_paths(&mut s.draw)?,
+            Node::Group(g) => parse_paths(g)?,
+            _ => {}
+        }
+    }
+    Ok(())
+}
+
 /// Whether any instruction in `nodes` is [`Node::Missing`], directly or nested.
 pub fn contains_missing(nodes: &[Node]) -> bool {
     nodes

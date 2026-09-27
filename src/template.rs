@@ -9,6 +9,7 @@ use crate::color::{ColorSet, SlotMode};
 use crate::generated::{pool, tables, vars};
 use crate::ir::{self, Node, Num, Paint, Style};
 use alloc::borrow::Cow;
+use alloc::collections::BTreeMap;
 use alloc::string::String;
 use alloc::vec::Vec;
 
@@ -17,9 +18,6 @@ pub(crate) const VAR_COUNT: usize = 15;
 
 /// Row value meaning "upstream defines nothing in this context".
 pub(crate) const ABSENT: u32 = u32::MAX;
-
-/// Reference to a part name that upstream never defines.
-pub(crate) const UNKNOWN_PART: u16 = u16::MAX;
 
 /// Context variables, in generated-table order.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -250,6 +248,9 @@ pub(crate) struct Resolver<'a> {
     /// Mapping whose in-place part mutations apply (symbol set, or -1 for letter).
     pub mapping: i16,
     pub ctx: IconContext,
+    /// Parts added or replaced by extensions; they take precedence over the
+    /// generated tables everywhere a part is referenced.
+    pub user_parts: &'a BTreeMap<String, Node>,
 }
 
 fn num(t: TNum) -> Num {
@@ -399,9 +400,17 @@ impl Resolver<'_> {
 
     /// Instantiates a part (honouring in-place mutations of the current mapping).
     fn part_by_index(&self, part: u16) -> Option<Node> {
-        if part == UNKNOWN_PART {
-            return None;
+        let index = usize::from(part);
+        let builtin = tables::PARTS.get(index);
+        let name = builtin.map(|&(n, _)| n).or_else(|| {
+            tables::EXTRA_PART_NAMES
+                .get(index.checked_sub(tables::PARTS.len())?)
+                .copied()
+        })?;
+        if let Some(user) = self.user_parts.get(name) {
+            return Some(user.clone());
         }
+        builtin?;
         let entry = tables::OVERRIDES
             .iter()
             .find(|&&(m, p, _)| m == self.mapping && p == part)
@@ -418,8 +427,11 @@ impl Resolver<'_> {
         }
     }
 
-    /// Instantiates a named icon part.
+    /// Instantiates a named icon part (extension parts first).
     pub(crate) fn part(&self, name: &str) -> Option<Node> {
+        if let Some(user) = self.user_parts.get(name) {
+            return Some(user.clone());
+        }
         let idx = tables::PARTS
             .binary_search_by(|(n, _)| n.as_bytes().cmp(name.as_bytes()))
             .ok()?;

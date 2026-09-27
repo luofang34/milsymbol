@@ -36,26 +36,49 @@ impl From<bool> for OptionValue {
     }
 }
 
-/// An unsupported option name and value combination.
+/// Why [`SymbolOptions::set`] rejected an option.
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct OptionError {
+#[non_exhaustive]
+pub enum OptionError {
+    /// No option has this name. Custom text fields (e.g. for label
+    /// overrides) are set with [`SymbolOptions::set_text`].
+    Unknown {
+        /// The option name.
+        key: String,
+    },
+    /// The value has the wrong type or is not one of the accepted values.
+    Invalid {
+        /// The option name.
+        key: String,
+        /// What the option accepts.
+        expected: &'static str,
+    },
+}
+
+impl OptionError {
     /// The option name.
-    pub key: String,
-    /// What the option accepts.
-    pub expected: &'static str,
+    pub fn key(&self) -> &str {
+        match self {
+            OptionError::Unknown { key } | OptionError::Invalid { key, .. } => key,
+        }
+    }
 }
 
 impl fmt::Display for OptionError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "option {:?} expects {}", self.key, self.expected)
+        match self {
+            OptionError::Unknown { key } => write!(f, "unknown option {key:?}"),
+            OptionError::Invalid { key, expected } => {
+                write!(f, "option {key:?} expects {expected}")
+            }
+        }
     }
 }
 
-#[cfg(feature = "std")]
-impl std::error::Error for OptionError {}
+impl core::error::Error for OptionError {}
 
 fn err<T>(key: &str, expected: &'static str) -> Result<T, OptionError> {
-    Err(OptionError {
+    Err(OptionError::Invalid {
         key: String::from(key),
         expected,
     })
@@ -94,9 +117,10 @@ impl SymbolOptions {
     /// Sets an option or style value by name (e.g. `size`, `colorMode`,
     /// `uniqueDesignation`).
     ///
-    /// Unknown string-valued keys are kept as extra text fields (label
-    /// overrides use keys such as `dtg1`). `sidc` is not an option here; pass
-    /// it to [`Renderer::symbol`](crate::Renderer::symbol).
+    /// Unknown names are rejected; custom text fields (label overrides use
+    /// keys such as `dtg1`) are set with [`SymbolOptions::set_text`]. `sidc`
+    /// is not an option here; pass it to
+    /// [`Renderer::symbol`](crate::Renderer::symbol).
     pub fn set(
         &mut self,
         key: &str,
@@ -120,8 +144,13 @@ impl SymbolOptions {
             "country_flag" => self.country_flag = Some(string(key, v)?),
             "full_frame_flag" => self.full_frame_flag = Some(boolean(key, v)?),
             "signature" => self.signature = Some(string(key, v)?),
-            _ => {
+            _ if super::field::DEFAULTS.contains(&key) => {
                 self.text.insert(String::from(key), string(key, v)?);
+            }
+            _ => {
+                return Err(OptionError::Unknown {
+                    key: String::from(key),
+                });
             }
         }
         Ok(self)
@@ -162,7 +191,14 @@ impl SymbolOptions {
             "simpleStatusModifier" => st.simple_status_modifier = boolean(key, v)?,
             "size" => st.size = num(key, v)?,
             "square" => st.square = boolean(key, v)?,
-            "standard" => st.standard = string(key, v)?,
+            "standard" => {
+                st.standard = match string(key, v)?.as_str() {
+                    "" => None,
+                    "2525" => Some(crate::Standard::Mil2525),
+                    "APP6" => Some(crate::Standard::App6),
+                    _ => return err(key, "\"2525\", \"APP6\" or \"\""),
+                }
+            }
             "strokeWidth" => st.stroke_width = num(key, v)?,
             "styleFill" => st.style_fill = boolean(key, v)?,
             _ => return Ok(false),

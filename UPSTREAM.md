@@ -84,16 +84,44 @@ options) for each case; `cargo test --test corpus` replays them without Node.
 
 | Suite | Cases | Content |
 |---|---:|---|
-| `base` | 130,978 | every valid numeric entity × 7 standard identities, every letter pattern × 6 affiliations (+ echelons); a strict superset of milsymbol-py's 109,216 |
-| `modifiers` | 89,046 | versions, contexts, identities, status, HQ/TF/dummy, echelon/mobility codes, every modifier 1/2 code, frame shapes, letter-SIDC fields |
-| `options` | 6,727 | every text field, every style option alone and in 4,000 random combinations, XSS strings, non-ASCII text |
+| `base` | 131,881 | every valid numeric entity × 7 standard identities for every symbol set upstream has icons for (discovered, not listed; the generator fails if a set has no cases), frame-only SIDCs for all 100 symbol sets, every letter pattern × 6 affiliations (+ echelons). Checked to be a strict superset of milsymbol-py's 109,216 SIDCs |
+| `modifiers` | 93,660 | versions, contexts, identities, status, HQ/TF/dummy, echelon/mobility codes, every modifier 1/2 code, frame shapes, letter-SIDC fields |
+| `direction` | 36,000 | direction of movement and speed leader over 0–359.9° in 0.1° steps, for five SIDCs (exercises `Math.sin`/`Math.cos`) |
+| `options` | 6,781 | every text field, every style option alone and in 4,000 random combinations, XSS strings, non-ASCII text and JavaScript-vs-Unicode whitespace |
 | `fuzz` | 20,000 | random numeric and letter SIDCs, some with options |
 | `config` | 123 | renderer-level standard, dash arrays, HQ staff length |
 | `invalid` | 44 | empty/short/long/malformed SIDCs, unknown colour mode |
 
-All 247,918 cases match byte-for-byte (SVG) and exactly (semantic record).
-Regenerate fixtures with `node tools/oracle/fixtures.mjs <suite>…`; run a live
-comparison with `tools/oracle/diff.sh <suite>`.
+All 288,489 cases match byte-for-byte (SVG) and exactly (semantic record).
+Regenerate fixtures with `node tools/oracle/fixtures.mjs <suite>…` (x64 Node,
+see below); run a live comparison with `tools/oracle/diff.sh <suite>`.
+
+## Platform-dependent upstream output
+
+milsymbol.js computes direction-arrow and speed-leader coordinates with
+`Math.sin`/`Math.cos`, and V8's results for these differ by platform. On
+Node 26 (V8 14.6), `Math.sin`/`Math.cos` are V8's own fdlibm port. The x64
+builds evaluate it in plain IEEE arithmetic, while the arm64 builds are
+compiled with floating-point contraction (fused multiply-adds). Over 7,136
+arguments, Node on Linux x64 and Windows x64 agree with each other, and
+Node on macOS arm64 and Linux arm64 agree with each other, but the two
+groups differ in the last bit of 66 of those 14,272 values. Over the `direction`
+suite this changes 215 of 36,000 SVGs.
+
+`src/js/math.rs` ports V8's fdlibm exactly, including argument reduction.
+Plain evaluation reproduces the x64 group bit for bit, and fused evaluation
+reproduces the arm64 group bit for bit. `tests/data/v8_trig_*.txt` holds both
+reference sets, and `RendererConfig::reference_platform` selects the one to
+match (default x64, which is also what WebAssembly engines compute). The
+committed fixtures are generated with x64 Node; on arm64 hosts run
+`fixtures.mjs` with an x64 Node (e.g. under Rosetta). `diff.sh` passes the
+oracle Node's architecture to the Rust side, so live comparisons are exact
+on either architecture.
+
+Number formatting follows ECMAScript `Number::toString`, including its
+tie-breaking rule. When a double lies exactly halfway between two shortest
+decimal representations, it picks the even digit, which Rust's shortest
+formatter does not (`tests/data/v8_numbers.txt`).
 
 ## Known differences
 
@@ -104,8 +132,16 @@ These are deliberate and do not occur in the corpus:
   throws (an unknown `colorMode`, `undefined` instructions reaching
   `ms.outline` or `_scale`) return `RenderError` instead of rendering.
 - **Loosely typed options.** Upstream accepts any JavaScript value for any
-  option; this port accepts the types upstream documents (`SymbolOptions::set`
-  rejects others with `OptionError`).
+  option; this port accepts the types upstream documents. `SymbolOptions::set`
+  rejects unknown names and wrongly typed or unsupported values (e.g.
+  `standard: "APP-6"`, which upstream silently treats as 2525) with
+  `OptionError`; custom text fields go through `set_text`.
+- **Bounded `stack`.** Upstream's `for (i = stack; i >= 1; i--)` never ends
+  for non-finite or huge values (`i - 1 == i`). Rendering rejects a `stack`
+  that is not finite or exceeds 1000 with `RenderError::InvalidOption`.
+- **Extension parts override built-in parts everywhere**, as in upstream,
+  except for the in-place `_scale(…, true)` mutations some upstream mappings
+  apply to built-in parts: those are not re-applied to a replacement part.
 - **Colour-slot truthiness is taken per slot, not per affiliation.** A custom
   colour object with an empty or `false` entry for only some affiliations can
   select a different icon variant than upstream would for those

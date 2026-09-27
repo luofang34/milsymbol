@@ -9,6 +9,24 @@ use alloc::string::String;
 use alloc::vec::Vec;
 use core::fmt::Write as _;
 
+mod math;
+
+/// `Math.sin` of the given V8 build.
+pub(crate) fn sin(x: f64, platform: crate::config::ReferencePlatform) -> f64 {
+    match platform {
+        crate::config::ReferencePlatform::X64 => math::sin::<false>(x),
+        crate::config::ReferencePlatform::Arm64 => math::sin::<true>(x),
+    }
+}
+
+/// `Math.cos` of the given V8 build.
+pub(crate) fn cos(x: f64, platform: crate::config::ReferencePlatform) -> f64 {
+    match platform {
+        crate::config::ReferencePlatform::X64 => math::cos::<false>(x),
+        crate::config::ReferencePlatform::Arm64 => math::cos::<true>(x),
+    }
+}
+
 /// Formats `v` exactly like JavaScript's `String(v)` for numbers.
 pub fn number_to_string(v: f64) -> String {
     let mut out = String::new();
@@ -74,18 +92,37 @@ pub fn write_number(out: &mut String, v: f64) {
 /// Shortest round-trip decimal digits of a positive finite `v`, and the
 /// exponent `n` such that `v = 0.d1d2… × 10^n`.
 fn shortest_digits(v: f64) -> (String, i32) {
-    // Rust's `{:e}` emits the shortest representation that round-trips,
-    // which is the digit string ECMAScript's Number::toString requires.
-    let s = alloc::format!("{v:e}");
-    let (mantissa, exp) = s.split_once('e').unwrap_or((s.as_str(), "0"));
-    let exp: i32 = exp.parse().unwrap_or(0);
-    let digits: String = mantissa.chars().filter(char::is_ascii_digit).collect();
-    let digits = digits.trim_end_matches('0');
-    let digits = if digits.is_empty() { "0" } else { digits };
-    (String::from(digits), exp + 1)
+    // Rust's `{:e}` gives the shortest round-tripping digit count k, but
+    // breaks ties (a double exactly halfway between two k-digit decimals)
+    // upwards. ECMAScript Number::toString picks the k-digit value closest
+    // to v and, on a tie, the even one: that is the correctly rounded
+    // k-digit value, which Rust's fixed precision produces (half-to-even).
+    let shortest = alloc::format!("{v:e}");
+    let k = split_exp(&shortest).0.len().max(1);
+    let even = alloc::format!("{v:.prec$e}", prec = k - 1);
+    let (digits, exp) = split_exp(if even.parse::<f64>().ok() == Some(v) {
+        &even
+    } else {
+        &shortest
+    });
+    let trimmed = digits.trim_end_matches('0');
+    (
+        String::from(if trimmed.is_empty() { "0" } else { trimmed }),
+        exp + 1,
+    )
 }
 
-fn is_js_whitespace(c: char) -> bool {
+/// Splits Rust `{:e}` output into its digit string and exponent.
+fn split_exp(s: &str) -> (String, i32) {
+    let (mantissa, exp) = s.split_once('e').unwrap_or((s, "0"));
+    let digits = mantissa.chars().filter(char::is_ascii_digit).collect();
+    (digits, exp.parse().unwrap_or(0))
+}
+
+/// JavaScript `WhiteSpace` and `LineTerminator` (what `String.prototype.trim`
+/// strips and what regular-expression `\s` matches). Unlike Rust's
+/// `char::is_whitespace`, this excludes U+0085.
+pub(crate) fn is_js_whitespace(c: char) -> bool {
     matches!(
         c,
         '\u{9}' | '\u{A}' | '\u{B}' | '\u{C}' | '\u{D}' | ' ' | '\u{A0}' | '\u{1680}' | '\u{2000}'

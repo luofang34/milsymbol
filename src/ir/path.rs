@@ -1,6 +1,7 @@
 //! Path geometry: typed segments parsed from SVG path data.
 
 use super::Str;
+use alloc::borrow::Cow;
 use alloc::vec::Vec;
 use core::fmt;
 
@@ -57,11 +58,24 @@ pub enum Segment {
 
 /// Path geometry.
 ///
-/// Holds the upstream path-data text so the SVG serializer can reproduce
-/// upstream output byte for byte; [`PathData::segments`] gives the typed,
-/// absolute geometry that non-SVG renderers consume.
-#[derive(Debug, Clone, PartialEq)]
-pub struct PathData(Str);
+/// Holds the path-data text, so the SVG serializer can reproduce upstream
+/// output byte for byte, and optionally its parsed segments.
+/// [`PathData::segments`] gives the typed, absolute geometry that non-SVG
+/// renderers consume; it borrows the cached segments when present (see
+/// [`PathData::parse`], [`PathData::from_segments`] and
+/// [`parse_paths`](crate::ir::parse_paths)) and parses otherwise.
+#[derive(Debug, Clone)]
+pub struct PathData {
+    source: Str,
+    parsed: Option<Vec<Segment>>,
+}
+
+/// Two paths are equal when their path data is equal.
+impl PartialEq for PathData {
+    fn eq(&self, other: &Self) -> bool {
+        self.source == other.source
+    }
+}
 
 /// Error from [`PathData::segments`], carrying the segments parsed before the
 /// error (SVG renderers draw that prefix).
@@ -79,28 +93,127 @@ impl fmt::Display for PathParseError {
     }
 }
 
-#[cfg(feature = "std")]
-impl std::error::Error for PathParseError {}
+impl core::error::Error for PathParseError {}
 
 impl PathData {
-    /// Wraps SVG path-data text.
+    /// Wraps SVG path-data text (parsed on demand).
     pub fn new(d: impl Into<Str>) -> Self {
-        PathData(d.into())
+        PathData {
+            source: d.into(),
+            parsed: None,
+        }
+    }
+
+    /// Wraps and parses SVG path-data text, caching the segments.
+    pub fn parse(d: impl Into<Str>) -> Result<Self, PathParseError> {
+        PathData::new(d).into_parsed()
+    }
+
+    /// Builds a path from absolute segments; the path-data text is derived
+    /// from them (`M`, `L`, `Q`, `C`, `A`, `Z` with absolute coordinates).
+    pub fn from_segments(segments: Vec<Segment>) -> Self {
+        let mut d = alloc::string::String::new();
+        for (i, seg) in segments.iter().enumerate() {
+            if i > 0 {
+                d.push(' ');
+            }
+            write_segment(&mut d, seg);
+        }
+        PathData {
+            source: Str::Owned(d),
+            parsed: Some(segments),
+        }
+    }
+
+    /// Parses and caches the segments, so later [`PathData::segments`] calls
+    /// borrow them.
+    pub fn into_parsed(mut self) -> Result<Self, PathParseError> {
+        self.cache_segments()?;
+        Ok(self)
+    }
+
+    /// Parses and caches the segments in place; on error the path is left
+    /// unchanged.
+    pub fn cache_segments(&mut self) -> Result<(), PathParseError> {
+        if self.parsed.is_none() {
+            self.parsed = Some(
+                Parser {
+                    s: self.source.as_bytes(),
+                    i: 0,
+                }
+                .run()?,
+            );
+        }
+        Ok(())
     }
 
     /// The path-data text as upstream would serialize it.
     pub fn source(&self) -> &str {
-        &self.0
+        &self.source
     }
 
-    /// Parses the path into absolute segments (`H`/`V` become lines, smooth
-    /// curves get explicit control points).
-    pub fn segments(&self) -> Result<Vec<Segment>, PathParseError> {
-        Parser {
-            s: self.0.as_bytes(),
-            i: 0,
+    /// The path as absolute segments (`H`/`V` become lines, smooth curves get
+    /// explicit control points). Borrowed when cached, parsed otherwise.
+    pub fn segments(&self) -> Result<Cow<'_, [Segment]>, PathParseError> {
+        match &self.parsed {
+            Some(p) => Ok(Cow::Borrowed(p)),
+            None => Parser {
+                s: self.source.as_bytes(),
+                i: 0,
+            }
+            .run()
+            .map(Cow::Owned),
         }
-        .run()
+    }
+}
+
+fn write_point(d: &mut alloc::string::String, p: Point) {
+    crate::js::write_number(d, p.x);
+    d.push(',');
+    crate::js::write_number(d, p.y);
+}
+
+fn write_segment(d: &mut alloc::string::String, seg: &Segment) {
+    match *seg {
+        Segment::MoveTo(p) => {
+            d.push('M');
+            write_point(d, p);
+        }
+        Segment::LineTo(p) => {
+            d.push('L');
+            write_point(d, p);
+        }
+        Segment::QuadTo { ctrl, to } => {
+            d.push('Q');
+            write_point(d, ctrl);
+            d.push(' ');
+            write_point(d, to);
+        }
+        Segment::CubicTo { ctrl1, ctrl2, to } => {
+            d.push('C');
+            write_point(d, ctrl1);
+            d.push(' ');
+            write_point(d, ctrl2);
+            d.push(' ');
+            write_point(d, to);
+        }
+        Segment::ArcTo {
+            rx,
+            ry,
+            rotation,
+            large_arc,
+            sweep,
+            to,
+        } => {
+            d.push('A');
+            write_point(d, Point { x: rx, y: ry });
+            d.push(' ');
+            crate::js::write_number(d, rotation);
+            d.push_str(if large_arc { " 1" } else { " 0" });
+            d.push_str(if sweep { " 1 " } else { " 0 " });
+            write_point(d, to);
+        }
+        Segment::Close => d.push('Z'),
     }
 }
 

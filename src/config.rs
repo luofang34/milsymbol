@@ -15,6 +15,24 @@ pub enum Standard {
     App6,
 }
 
+/// Which JavaScript engine build the output should match exactly.
+///
+/// milsymbol.js computes direction-arrow and speed-leader coordinates with
+/// `Math.sin`/`Math.cos`. V8's x64 builds evaluate them in plain IEEE
+/// arithmetic, while its arm64 builds (Apple Silicon, ARM Linux) use fused
+/// multiply-adds, so the last digit of those coordinates differs between
+/// platforms. This crate reproduces either one exactly, independently of
+/// the platform it runs on.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+pub enum ReferencePlatform {
+    /// V8 on x86-64 (Node/Chrome on Intel and AMD); also what WebAssembly
+    /// engines compute.
+    #[default]
+    X64,
+    /// V8 on arm64 (Node/Chrome on Apple Silicon and ARM Linux).
+    Arm64,
+}
+
 /// Dash arrays of not-present frames and feint/dummy indicators
 /// (upstream `ms.setDashArrays`).
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -48,6 +66,8 @@ pub struct RendererConfig {
     pub hq_staff_length: f64,
     /// Registered colour modes by name (upstream `ms.setColorMode`).
     pub color_modes: BTreeMap<String, ColorMode>,
+    /// Engine build whose floating-point results are reproduced.
+    pub reference_platform: ReferencePlatform,
 }
 
 impl Default for RendererConfig {
@@ -61,6 +81,7 @@ impl Default for RendererConfig {
             dash_arrays: DashArrays::default(),
             hq_staff_length: 100.0,
             color_modes,
+            reference_platform: ReferencePlatform::X64,
         }
     }
 }

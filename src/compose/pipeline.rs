@@ -39,11 +39,7 @@ pub(crate) fn metadata(
     config: &RendererConfig,
 ) -> (String, Metadata) {
     let st = &options.style;
-    let std2525 = if st.standard.is_empty() {
-        config.standard == Standard::Mil2525
-    } else {
-        st.standard != "APP6"
-    };
+    let std2525 = st.standard.unwrap_or(config.standard) == Standard::Mil2525;
     let mut md = Metadata::new(st.fill, st.frame, std2525);
     if !st.mono_color.is_empty() {
         md.fill = false;
@@ -217,7 +213,7 @@ pub(crate) fn compose(
     let mut instructions = Vec::new();
     let mut bbox = BBox::default();
     let mut valid_icon = true;
-    for slot in &registry.parts {
+    for (index, slot) in registry.parts.iter().enumerate() {
         let state = SymbolState {
             sidc: &sidc,
             options,
@@ -228,8 +224,10 @@ pub(crate) fn compose(
             registry,
         };
         let out = match slot {
-            PartSlot::Builtin(p) => crate::compose::SymbolPart::draw(p, &state)?,
-            PartSlot::Custom(p) => p.draw(&state)?,
+            PartSlot::Builtin(p) => p.render(&state)?,
+            PartSlot::Custom(p) => p
+                .draw(&state)
+                .map_err(|source| RenderError::Part { index, source })?,
         };
         valid_icon &= !out.invalid_icon;
         merge(out, &mut instructions, &mut bbox)?;

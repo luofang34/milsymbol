@@ -91,3 +91,28 @@ fn substr_uses_utf16_units() {
     assert_eq!(parse_int("7"), Some(7));
     assert_eq!(parse_int("-"), None);
 }
+
+/// `bits String(x)` pairs from Node 26: every case where the shortest
+/// representation is a tie between two digit strings (ECMAScript picks the
+/// even one), plus a sample of ordinary values.
+const NUMBER_VECTORS: &str = include_str!("../../tests/data/v8_numbers.txt");
+
+#[test]
+fn number_to_string_matches_v8_including_ties() {
+    let mut checked = 0;
+    for line in NUMBER_VECTORS.lines() {
+        let Some((bits, want)) = line.split_once(' ') else {
+            continue;
+        };
+        let Ok(bits) = u64::from_str_radix(bits, 16) else {
+            continue;
+        };
+        assert_eq!(
+            number_to_string(f64::from_bits(bits)),
+            want,
+            "bits {bits:016x}"
+        );
+        checked += 1;
+    }
+    assert!(checked > 4000, "only {checked} vectors");
+}

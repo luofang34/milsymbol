@@ -20,7 +20,23 @@ const rand = mulberry32(20260927);
 const pick = (a) => a[Math.floor(rand() * a.length)];
 const out = (c) => process.stdout.write(JSON.stringify(c) + "\n");
 
-const NUMBER_SETS = ["01", "02", "05", "06", "10", "11", "15", "20", "25", "27", "30", "35", "36", "40", "45", "50", "51", "52", "60"];
+// Numeric symbol sets with at least one main icon under any standard or
+// edition, discovered from upstream rather than listed by hand.
+const NUMBER_SETS = (() => {
+  const s = new ms.Symbol("10031000001211000000");
+  const found = [];
+  for (let i = 0; i < 100; i++) {
+    const ss = String(i).padStart(2, "0");
+    let any = false;
+    for (const std of [true, false])
+      for (const ed of ["D", "E"]) {
+        const parts = ms._getIconParts(s.metadata, s.colors, std, "", false);
+        if (Object.keys(ms._getIcons.number(ms, ss, parts, std, ed).icons).length) any = true;
+      }
+    if (any) found.push(ss);
+  }
+  return found;
+})();
 
 function numberTables(ss, std = true, edition = "D") {
   const s = new ms.Symbol("10031000001211000000");
@@ -52,6 +68,7 @@ const valid = (sidc, options) => new ms.Symbol(sidc, Object.assign({}, options |
 // identities, and letter patterns × 6 affiliations (+ echelons).
 function base() {
   const seen = new Set();
+  const perSet = new Map(NUMBER_SETS.map((ss) => [ss, 0]));
   for (const ss of NUMBER_SETS) {
     for (const entity of numberEntities(ss)) {
       if (!valid("1003" + ss + "0000" + entity + "0000")) continue;
@@ -59,11 +76,27 @@ function base() {
         const sidc = "100" + aff + ss + "0000" + entity + "0000";
         if (!seen.has(sidc) && valid(sidc)) {
           seen.add(sidc);
+          perSet.set(ss, perSet.get(ss) + 1);
           out({ sidc });
         }
       }
     }
   }
+  // Frame-only SIDCs (entity 000000) are valid for every symbol set, with
+  // or without icons (e.g. 45, atmospheric METOC).
+  for (let i = 0; i < 100; i++) {
+    const ss = String(i).padStart(2, "0");
+    for (const aff of ["0", "1", "2", "3", "4", "5", "6"]) {
+      const sidc = "100" + aff + ss + "0000" + "000000" + "0000";
+      if (!seen.has(sidc) && valid(sidc)) {
+        seen.add(sidc);
+        out({ sidc });
+      }
+    }
+  }
+  const uncovered = [...perSet].filter(([, n]) => n === 0).map(([ss]) => ss);
+  if (uncovered.length) throw new Error(`symbol sets without base cases: ${uncovered.join(",")}`);
+  console.error(`base: numeric symbol sets ${NUMBER_SETS.join(",")}`);
   const echelons = ["A", "B", "C", "D", "E", "F", "G", "H"];
   for (const pattern of letterPatterns()) {
     for (const aff of ["F", "H", "N", "U", "A", "S"]) {
@@ -171,6 +204,7 @@ function options() {
     { uniqueDesignation: "null value" }, { specialHeadquarters: "HQ" }, { specialHeadquarters: "ABCD" },
     { quantity: "12" }, { headquartersElement: "TOC" }, { dtg1: "D1", uniqueDesignation1: "U1", additionalInformation1: "A1" },
     { targetNumber: "T1", uniqueDesignation: "U" }, { type: "ÅÄÖ Ж 😀" },
+    { fillColor: "\u0085red\u0085" }, { fillColor: "\u3000pink\ufeff" },
   ];
   for (const sidc of OPTION_SIDCS) {
     out({ sidc, options: TEXT_FIELDS });
@@ -233,7 +267,18 @@ function fuzz() {
   }
 }
 
-const suites = { base, modifiers, options, config, invalid, fuzz };
+// Direction of movement and speed leaders over the full circle in 0.1°
+// steps: these coordinates go through Math.sin/Math.cos.
+function direction() {
+  const sidcs = ["10031000001211000000", "10030100001101000000", "10031002001211000000", "10033000001201000000", "SFGPUCI-----"];
+  for (const sidc of sidcs)
+    for (let i = 0; i < 3600; i++) {
+      out({ sidc, options: { direction: i / 10 } });
+      out({ sidc, options: { direction: i / 10, speedLeader: 50 } });
+    }
+}
+
+const suites = { base, modifiers, options, config, invalid, fuzz, direction };
 const suite = process.argv[2];
 if (!suites[suite]) {
   console.error(`unknown suite ${suite}; one of ${Object.keys(suites).join(", ")}`);

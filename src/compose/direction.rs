@@ -48,7 +48,8 @@ fn movement(
     });
     let mut arrow = alloc::vec![rotate];
     let turn = (direction / 360.0) * PI * 2.0;
-    let (c, sn) = (libm::cos(turn), libm::sin(turn));
+    let platform = s.config.reference_platform;
+    let (c, sn) = (js::cos(turn, platform), js::sin(turn, platform));
     gbbox.y1 = js::min(100.0 - c * len, 100.0);
     gbbox.y2 = js::max(100.0 - c * len, 100.0);
     gbbox.x1 = js::min(100.0 + sn * len, 100.0);
@@ -90,8 +91,9 @@ fn speed_leader(
     let st = &s.options.style;
     let length = s.options.speed_leader * (100.0 / st.size);
     let rad = (direction * PI) / 180.0;
-    let y = -length * libm::cos(rad);
-    let x = length * libm::sin(rad);
+    let platform = s.config.reference_platform;
+    let y = -length * js::cos(rad, platform);
+    let x = length * js::sin(rad, platform);
     gbbox.x1 = js::min(100.0, 100.0 + x);
     gbbox.x2 = js::max(100.0, 100.0 + x);
     gbbox.y1 = js::min(100.0, 100.0 + y);

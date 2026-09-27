@@ -2,7 +2,7 @@
 
 use milsymbol::ir::{Node, Paint};
 use milsymbol::labels::{Label, LabelField};
-use milsymbol::options::{OptionValue, SymbolOptions, field};
+use milsymbol::options::{OptionError, OptionValue, SymbolOptions, field};
 use milsymbol::{
     IconExtension, IconPartContext, IconTable, PartLookup, PartOutput, PartialBBox, RenderError,
     Renderer, Standard, SymbolPart, SymbolState, catalog,
@@ -52,11 +52,9 @@ fn unknown_color_mode_is_a_typed_error() -> TestResult {
     let mut o = SymbolOptions::default();
     o.set("colorMode", "NoSuchMode")?;
     let err = Renderer::default().render(INFANTRY, o).err();
-    assert_eq!(
-        err,
-        Some(RenderError::UnknownColorMode {
-            name: "NoSuchMode".into()
-        })
+    assert!(
+        matches!(&err, Some(RenderError::UnknownColorMode { name }) if name == "NoSuchMode"),
+        "{err:?}"
     );
     Ok(())
 }
@@ -64,8 +62,25 @@ fn unknown_color_mode_is_a_typed_error() -> TestResult {
 #[test]
 fn wrongly_typed_option_is_a_typed_error() -> TestResult {
     let mut o = SymbolOptions::default();
-    let err = o.set("size", "big").err().map(|e| e.key);
-    assert_eq!(err.as_deref(), Some("size"));
+    let err = o.set("size", "big").err();
+    assert!(
+        matches!(&err, Some(OptionError::Invalid { key, .. }) if key == "size"),
+        "{err:?}"
+    );
+    let err = o.set("uniqueDesignaton", "A").err();
+    assert!(
+        matches!(&err, Some(OptionError::Unknown { key }) if key == "uniqueDesignaton"),
+        "{err:?}"
+    );
+    let err = o.set("standard", "APP-6").err();
+    assert!(
+        matches!(&err, Some(OptionError::Invalid { key, .. }) if key == "standard"),
+        "{err:?}"
+    );
+    o.set("standard", "APP6")?;
+    assert_eq!(o.style.standard, Some(Standard::App6));
+    o.set_text("dtg1", "D1");
+    assert_eq!(o.text("dtg1"), "D1");
     assert!(o.set("size", OptionValue::Num(50.0)).is_ok());
     assert!(o.set("sidc", "SFG").is_err());
     Ok(())
@@ -100,7 +115,7 @@ fn standard_is_renderer_configuration() -> TestResult {
 struct Marker;
 
 impl SymbolPart for Marker {
-    fn draw(&self, s: &SymbolState<'_>) -> Result<PartOutput, RenderError> {
+    fn draw(&self, s: &SymbolState<'_>) -> Result<PartOutput, milsymbol::PartError> {
         let mut n = Node::circle(100.0, 100.0, 5.0);
         if let Some(st) = n.style_mut() {
             st.fill = Some(Paint::color("magenta"));
@@ -229,6 +244,7 @@ fn instructions_expose_typed_path_segments() -> TestResult {
     Ok(())
 }
 
+#[cfg(feature = "std")]
 #[test]
 fn cached_renderer_reuses_identical_requests_only() -> TestResult {
     use milsymbol::cache::CachedRenderer;
@@ -244,5 +260,171 @@ fn cached_renderer_reuses_identical_requests_only() -> TestResult {
     assert_eq!(c.len(), 2);
     c.render("SFGPUCI-----", &o)?;
     assert_eq!(c.len(), 1, "cleared when full");
+    Ok(())
+}
+
+/// Replaces the built-in infantry part, as `tests/data/override_oracle.txt`
+/// does in milsymbol.js via `ms.addIconParts`.
+struct InfantryCircle;
+
+impl IconExtension for InfantryCircle {
+    fn icon_parts(&self, ctx: &IconPartContext<'_>, parts: &mut BTreeMap<String, Node>) {
+        let mut n = Node::circle(100.0, 100.0, 20.0);
+        if let Some(st) = n.style_mut() {
+            st.fill = Some(Paint::None);
+            st.stroke = ctx
+                .colors
+                .icon_color
+                .get(ctx.metadata.affiliation.as_deref().unwrap_or("undefined"));
+            st.stroke_width = Some(milsymbol::ir::Num::Number(3.0));
+        }
+        parts.insert("GR.IC.FF.INFANTRY".into(), n);
+    }
+}
+
+#[test]
+fn extension_parts_replace_builtin_parts_like_upstream() -> TestResult {
+    let expected = include_str!("data/override_oracle.txt");
+    let r = Renderer::default().with_icons(InfantryCircle);
+    let sidcs = [
+        "10031000001211000000",
+        "SFGPUCI-----",
+        "10061000001211000000",
+    ];
+    for (sidc, want) in sidcs.iter().zip(expected.lines()) {
+        assert_eq!(r.symbol(sidc).render()?.to_svg(), want, "{sidc}");
+    }
+    assert_eq!(expected.lines().count(), sidcs.len());
+    Ok(())
+}
+
+#[derive(Debug)]
+struct Broken;
+
+impl std::fmt::Display for Broken {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str("broken part")
+    }
+}
+
+impl std::error::Error for Broken {}
+
+struct Failing;
+
+impl SymbolPart for Failing {
+    fn draw(&self, _: &SymbolState<'_>) -> Result<PartOutput, milsymbol::PartError> {
+        Err(Box::new(Broken))
+    }
+}
+
+#[test]
+fn failing_part_keeps_its_position_and_source() -> TestResult {
+    use std::error::Error as _;
+    let err = Renderer::default()
+        .with_symbol_part(Failing)
+        .render(INFANTRY, SymbolOptions::default())
+        .err();
+    let Some(RenderError::Part { index, source }) = &err else {
+        return Err(format!("expected a part error, got {err:?}").into());
+    };
+    assert_eq!(*index, 9, "after the nine built-in parts");
+    assert!(source.is::<Broken>());
+    assert!(err.as_ref().and_then(|e| e.source()).is_some());
+    Ok(())
+}
+
+#[test]
+fn unbounded_stack_is_rejected_instead_of_looping() -> TestResult {
+    for bad in [f64::INFINITY, f64::NAN, 1e20, 1001.0] {
+        let o = SymbolOptions {
+            stack: Some(bad),
+            ..SymbolOptions::default()
+        };
+        let err = Renderer::default().render(INFANTRY, o).err();
+        assert!(
+            matches!(err, Some(RenderError::InvalidOption { name: "stack", .. })),
+            "stack {bad}: {err:?}"
+        );
+    }
+    for ok in [-3.0, 0.0, 2.5, 1000.0] {
+        let o = SymbolOptions {
+            stack: Some(ok),
+            ..SymbolOptions::default()
+        };
+        Renderer::default().render(INFANTRY, o)?;
+    }
+    Ok(())
+}
+
+#[test]
+fn sidc_parse_validates_fields_and_exposes_typed_values() -> TestResult {
+    use milsymbol::domain::{Context, StandardIdentity, Status};
+    use milsymbol::sidc::{Sidc, SidcError};
+    let Sidc::Numeric(n) = Sidc::parse("10031000161211000000")? else {
+        return Err("expected a numeric SIDC".into());
+    };
+    assert_eq!(n.standard_identity(), StandardIdentity::Friend);
+    assert_eq!(n.context(), Context::Reality);
+    assert_eq!(n.symbol_set(), "10");
+    assert_eq!(n.amplifier(), "16");
+    assert_eq!(n.entity(), "121100");
+    assert!(n.has_builtin_icon());
+    let Sidc::Numeric(joker) = Sidc::parse("10151000001211000000")? else {
+        return Err("expected a numeric SIDC".into());
+    };
+    assert_eq!(joker.standard_identity(), StandardIdentity::Joker);
+    for (bad, field) in [
+        ("99031000001211000000", "version"),
+        ("10091000001211000000", "standard identity"),
+        ("10034500001211000000", "symbol set"),
+        ("10031000901211000000", "echelon/mobility"),
+        ("10031090001211000000", "status"),
+    ] {
+        let err = Sidc::parse(bad).err();
+        assert!(
+            matches!(&err, Some(SidcError::InvalidField { field: f, .. }) if *f == field),
+            "{bad}: {err:?}"
+        );
+    }
+    assert!(matches!(
+        Sidc::parse("1003"),
+        Err(SidcError::Length { len: 4 })
+    ));
+    let Sidc::Letter(l) = Sidc::parse("sfgpuci----d")? else {
+        return Err("expected a letter SIDC".into());
+    };
+    assert_eq!(
+        (l.coding_scheme(), l.status(), l.function_id()),
+        ('S', Status::Present, "UCI---")
+    );
+    assert!(l.has_builtin_icon());
+    assert!(Sidc::parse("SZGPUCI-----").is_err());
+    Ok(())
+}
+
+#[test]
+fn typed_info_and_validity_issues() -> TestResult {
+    use milsymbol::ValidityIssue;
+    use milsymbol::domain::{Affiliation, Dimension, Echelon};
+    let s = Renderer::default()
+        .symbol("10061000161211000000")
+        .render()?;
+    let info = s.info();
+    assert_eq!(info.affiliation, Some(Affiliation::Hostile));
+    assert_eq!(info.dimension, Some(Dimension::Ground));
+    assert_eq!(info.echelon, Some(Echelon::BattalionSquadron));
+    // Upstream counts text containing "null" as invalid; the SIDC is fine.
+    let s = Renderer::default()
+        .symbol(INFANTRY)
+        .text(field::UNIQUE_DESIGNATION, "null value")
+        .render()?;
+    assert!(!s.is_valid());
+    assert!(s.is_sidc_valid());
+    assert_eq!(s.validity().issues, vec![ValidityIssue::NullInDrawing]);
+    let s = Renderer::default()
+        .symbol("10031000009999000000")
+        .render()?;
+    assert_eq!(s.validity().issues, vec![ValidityIssue::UnknownIcon]);
+    assert!(!s.is_sidc_valid());
     Ok(())
 }

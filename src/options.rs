@@ -198,8 +198,8 @@ pub struct Style {
     pub size: f64,
     /// Make the symbol square around its anchor.
     pub square: bool,
-    /// Standard override: `""`, `"2525"` or `"APP6"`.
-    pub standard: String,
+    /// Standard for this symbol; `None` uses the renderer default.
+    pub standard: Option<crate::Standard>,
     /// Frame stroke width.
     pub stroke_width: f64,
     /// Replace style-fillable fills with translucent white.
@@ -235,7 +235,7 @@ impl Default for Style {
             simple_status_modifier: false,
             size: 100.0,
             square: false,
-            standard: String::new(),
+            standard: None,
             stroke_width: 4.0,
             style_fill: false,
         }

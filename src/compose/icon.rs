@@ -28,15 +28,11 @@ const SEA_MINE_EXERCISE: [&str; 5] = ["WMGX--", "WMMX--", "WMFX--", "WMX---", "W
 /// first, then the generated tables.
 struct Parts<'a> {
     resolver: Resolver<'a>,
-    user: BTreeMap<String, Node>,
 }
 
 impl PartLookup for Parts<'_> {
     fn part(&self, name: &str) -> Option<Node> {
-        self.user
-            .get(name)
-            .cloned()
-            .or_else(|| self.resolver.part(name))
+        self.resolver.part(name)
     }
 }
 
@@ -166,19 +162,7 @@ pub(super) fn draw(s: &SymbolState<'_>) -> Result<PartOutput, RenderError> {
             -1
         };
         let dashes = &s.config.dash_arrays;
-        let resolver = Resolver {
-            colors: s.colors,
-            part_affiliation: &part_aff,
-            mono_color: &s.options.style.mono_color,
-            dash_pending: &dashes.pending,
-            dash_anticipated: &dashes.anticipated,
-            mapping,
-            ctx: context(s, &part_aff),
-        };
-        let mut parts = Parts {
-            resolver,
-            user: BTreeMap::new(),
-        };
+        let mut user_parts = BTreeMap::new();
         if !s.registry.icons.is_empty() {
             let ctx = IconPartContext {
                 metadata: s.metadata,
@@ -188,9 +172,21 @@ pub(super) fn draw(s: &SymbolState<'_>) -> Result<PartOutput, RenderError> {
                 alternate_medal: s.options.style.alternate_medal,
             };
             for ext in &s.registry.icons {
-                ext.icon_parts(&ctx, &mut parts.user);
+                ext.icon_parts(&ctx, &mut user_parts);
             }
         }
+        let parts = Parts {
+            resolver: Resolver {
+                colors: s.colors,
+                part_affiliation: &part_aff,
+                mono_color: &s.options.style.mono_color,
+                dash_pending: &dashes.pending,
+                dash_anticipated: &dashes.anticipated,
+                mapping,
+                ctx: context(s, &part_aff),
+                user_parts: &user_parts,
+            },
+        };
         if s.metadata.number_sidc {
             let user = if s.registry.icons.is_empty() {
                 IconTable::default()

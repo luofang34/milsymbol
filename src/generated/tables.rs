@@ -6845,6 +6845,10 @@ pub(crate) static PARTS: [(&str, u32); 2108] = [
     ("TP.WRECK, NON DANGEROUS", 1860),
 ];
 
+/// Part names referenced by the tables but never defined upstream (so only
+/// an extension can provide them); `TNode::Ref` indices past `PARTS` point here.
+pub(crate) static EXTRA_PART_NAMES: [&str; 2] = ["TP.ROTARY WING", "TODO"];
+
 /// Parts mutated in place while a mapping is built (upstream
 /// `ms._scale(…, true)`): (symbol set or -1 for letter SIDCs, part, entry).
 pub(crate) static OVERRIDES: [(i16, u16, u32); 20] = [(-1, 612, 1861), (-1, 632, 1861), (-1, 686, 1862), (-1, 804, 1863), (15, 478, 1864), (15, 607, 1864), (15, 612, 1865), (15, 631, 1866), (15, 632, 1865), (15, 686, 1867), (15, 721, 1868), (15, 722, 1869), (15, 723, 1870), (15, 724, 1871), (15, 778, 1872), (15, 779, 1873), (15, 792, 1874), (20, 804, 1863), (40, 515, 1875), (40, 532, 1876)];

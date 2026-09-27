@@ -105,7 +105,7 @@ fn pool_rs(e: &Emitted) -> String {
     let kids: Vec<String> = p.kids.iter().map(ToString::to_string).collect();
     format!(
         "
-use crate::template::{{Kids, TDash, TNode, TNum, TPaint, TStyle, TText, TAff, Slot, UNKNOWN_PART}};
+use crate::template::{{Kids, TDash, TNode, TNum, TPaint, TStyle, TText, TAff, Slot}};
 
 /// Template nodes.
 pub(crate) static NODES: [TNode; {}] = [
@@ -179,6 +179,10 @@ pub(crate) static PARTS: [(&str, u32); {}] = [
 {}
 ];
 
+/// Part names referenced by the tables but never defined upstream (so only
+/// an extension can provide them); `TNode::Ref` indices past `PARTS` point here.
+pub(crate) static EXTRA_PART_NAMES: [&str; {}] = [{}];
+
 /// Parts mutated in place while a mapping is built (upstream
 /// `ms._scale(…, true)`): (symbol set or -1 for letter SIDCs, part, entry).
 pub(crate) static OVERRIDES: [(i16, u16, u32); {}] = [{}];
@@ -204,6 +208,12 @@ pub(crate) static LETTER_BBOX: &[(&str, u32)] = {};
         lines(&p.bboxes),
         e.part_list.len(),
         lines(&e.part_list),
+        p.extra_names.len(),
+        p.extra_names
+            .iter()
+            .map(|n| rstr(n))
+            .collect::<Vec<_>>()
+            .join(", "),
         e.overrides.len(),
         e.overrides.join(", "),
         number.join("\n"),

@@ -369,7 +369,14 @@ pub fn options(sidc: &str, o: &SymbolOptions) -> Json {
         .put("simpleStatusModifier", b(st.simple_status_modifier))
         .put("size", n(st.size))
         .put("square", b(st.square))
-        .put("standard", s(&st.standard))
+        .put(
+            "standard",
+            s(match st.standard {
+                None => "",
+                Some(crate::Standard::Mil2525) => "2525",
+                Some(crate::Standard::App6) => "APP6",
+            }),
+        )
         .put("strokeWidth", n(st.stroke_width))
         .put("styleFill", b(st.style_fill));
     j.done()

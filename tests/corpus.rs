@@ -93,3 +93,8 @@ fn corpus_modifiers() -> Result<(), Box<dyn std::error::Error>> {
 fn corpus_base() -> Result<(), Box<dyn std::error::Error>> {
     replay("base")
 }
+
+#[test]
+fn corpus_direction() -> Result<(), Box<dyn std::error::Error>> {
+    replay("direction")
+}

@@ -72,7 +72,10 @@ impl PartOutput {
 /// A stage of symbol composition (upstream `ms.addSymbolPart`).
 pub trait SymbolPart: Send + Sync {
     /// Draws this part for the symbol.
-    fn draw(&self, symbol: &SymbolState<'_>) -> Result<PartOutput, RenderError>;
+    ///
+    /// A failure aborts rendering with [`RenderError::Part`], which keeps
+    /// this error as its source.
+    fn draw(&self, symbol: &SymbolState<'_>) -> Result<PartOutput, crate::PartError>;
 }
 
 /// The built-in symbol parts, in upstream order.
@@ -116,7 +119,13 @@ impl BuiltinPart {
 }
 
 impl SymbolPart for BuiltinPart {
-    fn draw(&self, s: &SymbolState<'_>) -> Result<PartOutput, RenderError> {
+    fn draw(&self, s: &SymbolState<'_>) -> Result<PartOutput, crate::PartError> {
+        self.render(s).map_err(Into::into)
+    }
+}
+
+impl BuiltinPart {
+    pub(crate) fn render(&self, s: &SymbolState<'_>) -> Result<PartOutput, RenderError> {
         match self {
             BuiltinPart::Stack => stack::draw(s),
             BuiltinPart::BaseGeometry => base_geometry::draw(s),

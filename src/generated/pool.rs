@@ -2,7 +2,7 @@
 // (https://github.com/spatialillusions/milsymbol.git @ b05f2d7cbadb0845ca637d346a2d7d8163ab59cb, MIT, see LICENSE-MIT-milsymbol).
 // Regenerate with `tools/codegen/regenerate.sh`; do not edit by hand.
 
-use crate::template::{Kids, TDash, TNode, TNum, TPaint, TStyle, TText, TAff, Slot, UNKNOWN_PART};
+use crate::template::{Kids, TDash, TNode, TNum, TPaint, TStyle, TText, TAff, Slot};
 
 /// Template nodes.
 pub(crate) static NODES: [TNode; 15130] = [
@@ -10974,7 +10974,7 @@ pub(crate) static NODES: [TNode; 15130] = [
     TNode::Ref(1843),
     TNode::Ref(1851),
     TNode::Ref(1823),
-    TNode::Ref(UNKNOWN_PART),
+    TNode::Ref(2108),
     TNode::Ref(2076),
     TNode::Ref(1943),
     TNode::Ref(2083),
@@ -14065,7 +14065,7 @@ pub(crate) static NODES: [TNode; 15130] = [
     TNode::Ref(1908),
     TNode::Ref(2032),
     TNode::Ref(1799),
-    TNode::Ref(UNKNOWN_PART),
+    TNode::Ref(2109),
     TNode::Ref(1983),
     TNode::Ref(1862),
     TNode::Ref(1806),

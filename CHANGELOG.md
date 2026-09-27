@@ -11,3 +11,8 @@ First release: native Rust port of milsymbol.js 3.0.4.
 - Renderer-scoped configuration and extensions (symbol parts, icons, labels,
   colour modes).
 - `no_std + alloc`; `wasm32` and bare-metal builds.
+- Strict typed SIDC parsing (`sidc::Sidc`), typed symbol info
+  (`Symbol::info`, `domain`) and typed validity issues.
+- `ReferencePlatform`: reproduces V8's x64 or arm64 `Math.sin`/`Math.cos`
+  bit for bit (upstream output differs between them).
+- Typed path construction (`PathData::from_segments`) and cached segments.

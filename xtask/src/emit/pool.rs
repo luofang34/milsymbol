@@ -24,6 +24,9 @@ pub struct Pools {
     pub rows: Vec<String>,
     /// Part name → index in the byte-sorted part list.
     pub part_ids: HashMap<String, usize>,
+    /// Referenced names upstream never defines, in first-use order; their
+    /// reference index follows the defined parts.
+    pub extra_names: Vec<String>,
     /// Domain size of each context variable.
     pub domain_sizes: Vec<usize>,
 }
@@ -160,10 +163,20 @@ impl Pools {
         } else if let Some(s) = t.get("scalar") {
             format!("TNode::Scalar({})", rnum(s)?)
         } else if let Some(r) = t.get("ref").and_then(Value::as_str) {
-            match self.part_ids.get(r) {
-                Some(id) => format!("TNode::Ref({id})"),
-                None => String::from("TNode::Ref(UNKNOWN_PART)"),
-            }
+            let id = match self.part_ids.get(r) {
+                Some(&id) => id,
+                None => {
+                    let pos = match self.extra_names.iter().position(|n| n == r) {
+                        Some(p) => p,
+                        None => {
+                            self.extra_names.push(r.to_string());
+                            self.extra_names.len() - 1
+                        }
+                    };
+                    self.part_ids.len() + pos
+                }
+            };
+            format!("TNode::Ref({id})")
         } else if let Some(g) = t.get("group").and_then(Value::as_array) {
             format!("TNode::Group({})", self.kids_of(g)?)
         } else {

@@ -3,8 +3,8 @@
 
 use milsymbol::color::ColorMode;
 use milsymbol::ir::Paint;
-use milsymbol::options::{OptionValue, SymbolOptions};
-use milsymbol::{DashArrays, Renderer, RendererConfig, Standard};
+use milsymbol::options::{OptionError, OptionValue, SymbolOptions};
+use milsymbol::{DashArrays, ReferencePlatform, Renderer, RendererConfig, Standard};
 use serde_json::Value;
 
 /// FNV-1a 64-bit over UTF-8 bytes (mirrors `tools/oracle/oracle.mjs`).
@@ -43,15 +43,29 @@ pub fn options(case: &Value) -> Result<SymbolOptions, String> {
                 Value::Object(obj) => OptionValue::Colors(color_mode(obj)),
                 other => return Err(format!("unsupported option value {other}")),
             };
-            o.set(k, value).map_err(|e| e.to_string())?;
+            match o.set(k, value.clone()) {
+                // Custom text fields such as `dtg1` (used by label overrides).
+                Err(OptionError::Unknown { .. }) => match value {
+                    OptionValue::Str(s) => {
+                        o.set_text(k, s);
+                    }
+                    _ => return Err(format!("unknown option {k}")),
+                },
+                other => {
+                    other.map_err(|e| e.to_string())?;
+                }
+            }
         }
     }
     Ok(o)
 }
 
-/// Renderer configured for a case.
-pub fn renderer(case: &Value) -> Renderer {
-    let mut config = RendererConfig::default();
+/// Renderer configured for a case, reproducing V8 on `platform`.
+pub fn renderer(case: &Value, platform: ReferencePlatform) -> Renderer {
+    let mut config = RendererConfig {
+        reference_platform: platform,
+        ..RendererConfig::default()
+    };
     if let Some(cfg) = case.get("cfg") {
         if let Some(s) = cfg.get("standard").and_then(Value::as_str) {
             if s == "APP6" {
@@ -78,11 +92,16 @@ pub fn renderer(case: &Value) -> Renderer {
     Renderer::new(config)
 }
 
-/// Rendered record of a case: (svg, canonical json) or an error string.
+/// Rendered record of a case for V8 on x64 (the fixtures' platform).
 pub fn render(case: &Value) -> Result<(String, String), String> {
+    render_for(case, ReferencePlatform::X64)
+}
+
+/// Rendered record of a case: (svg, canonical json) or an error string.
+pub fn render_for(case: &Value, platform: ReferencePlatform) -> Result<(String, String), String> {
     let sidc = case.get("sidc").and_then(Value::as_str).unwrap_or_default();
     let options = options(case)?;
-    let r = renderer(case);
+    let r = renderer(case, platform);
     let symbol = r.render(sidc, options).map_err(|e| e.to_string())?;
     Ok((
         symbol.to_svg(),

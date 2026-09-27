@@ -16,7 +16,7 @@
 //! ```
 //!
 //! The crate is `no_std + alloc`; the default `std` feature only adds
-//! `std::error::Error` impls. No JavaScript runs at build or run time: the
+//! [`cache::CachedRenderer`]. No JavaScript runs at build or run time: the
 //! upstream icon tables were converted to Rust data by `tools/codegen`, and
 //! every composition rule is ported to Rust. See the repository `README.md`
 //! for the compatibility baseline, extension model and known differences.
@@ -34,6 +34,7 @@ pub mod catalog;
 pub mod color;
 mod compose;
 pub mod config;
+pub mod domain;
 mod error;
 mod generated;
 pub mod geometry;
@@ -45,18 +46,18 @@ pub mod metadata;
 pub mod options;
 mod registry;
 mod renderer;
-mod sidc;
+pub mod sidc;
 mod svg;
 mod symbol;
 mod template;
 
 pub use bbox::{BBox, PartialBBox};
 pub use compose::{BuiltinPart, PartOutput, SymbolPart, SymbolState};
-pub use config::{DashArrays, RendererConfig, Standard};
-pub use error::RenderError;
+pub use config::{DashArrays, ReferencePlatform, RendererConfig, Standard};
+pub use error::{PartError, RenderError};
 pub use registry::{IconExtension, IconPartContext, IconTable, PartLookup};
 pub use renderer::{Renderer, SymbolBuilder};
-pub use symbol::{Size, Symbol, Validity};
+pub use symbol::{Size, Symbol, Validity, ValidityIssue};
 
 /// Version of milsymbol.js this crate reproduces.
 pub const UPSTREAM_VERSION: &str = "3.0.4";

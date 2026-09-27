@@ -22,7 +22,19 @@ pub fn to_string(v: f64) -> String {
     if v < 0.0 {
         out.push('-');
     }
-    let sci = format!("{:e}", v.abs());
+    // Shortest digit count from `{:e}`, then the correctly rounded value at
+    // that count, which breaks ties to even as ECMAScript requires.
+    let shortest = format!("{:e}", v.abs());
+    let k = shortest
+        .split_once('e')
+        .map_or(0, |(m, _)| m.chars().filter(char::is_ascii_digit).count())
+        .max(1);
+    let even = format!("{:.prec$e}", v.abs(), prec = k - 1);
+    let sci = if even.parse::<f64>().ok() == Some(v.abs()) {
+        even
+    } else {
+        shortest
+    };
     let (mantissa, exp) = sci.split_once('e').unwrap_or((sci.as_str(), "0"));
     let n = exp.parse::<i32>().unwrap_or(0) + 1;
     let digits: String = mantissa.chars().filter(char::is_ascii_digit).collect();
@@ -80,6 +92,7 @@ mod tests {
             (1.5e-7, "1.5e-7"),
             (0.000_001, "0.000001"),
             (123_456_789_012_345_680_000.0, "123456789012345680000"),
+            (f64::from_bits(0xc2d1_29ac_71f6_c9e8), "-75482737924903.62"),
         ] {
             assert_eq!(to_string(v), want, "{v:e}");
         }

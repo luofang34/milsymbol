@@ -63,6 +63,13 @@ impl Renderer {
         self
     }
 
+    /// Selects the JavaScript engine build whose output is reproduced
+    /// bit for bit (see [`ReferencePlatform`](crate::ReferencePlatform)).
+    pub fn with_reference_platform(mut self, platform: crate::ReferencePlatform) -> Self {
+        self.config.reference_platform = platform;
+        self
+    }
+
     /// Sets the dash arrays (upstream `ms.setDashArrays`).
     pub fn with_dash_arrays(mut self, dash: DashArrays) -> Self {
         self.config.dash_arrays = dash;

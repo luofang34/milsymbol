@@ -8,7 +8,7 @@ Military unit symbols per **MIL-STD-2525** and **STANAG APP-6**, in native Rust.
 
 This is a port of [milsymbol.js](https://github.com/spatialillusions/milsymbol)
 3.0.4 by Måns Beckman. It produces the same SVG as milsymbol.js, byte for byte,
-verified on 247,918 symbol/option combinations, and also exposes each symbol as
+verified on 288,489 symbol/option combinations, and also exposes each symbol as
 typed drawing instructions for non-SVG renderers.
 
 ![Figure 13](https://github.com/luofang34/milsymbol/raw/main/docs/images/figure13.svg)
@@ -52,7 +52,7 @@ readme_images`, and `cargo test` checks they match the renderer.
   `wasm32` and bare-metal targets. The only dependency is `libm`.
 - No global state: a `Renderer` holds configuration and extensions, is
   `Send + Sync`, and renders deterministically.
-- About 290,000 symbols per second to SVG on one core
+- About 310,000 symbols per second to SVG on one core
   ([BENCHMARKS.md](BENCHMARKS.md)).
 
 ## Getting started
@@ -81,9 +81,26 @@ let svg: String = symbol.to_svg();
 # let symbol = milsymbol::Renderer::default().symbol("130310001412110000000000000000").render()?;
 let anchor = symbol.anchor();   // pixel offset of the map position (frame centre or HQ staff foot)
 let size = symbol.size();       // width and height in pixels
-let ok = symbol.is_valid();     // false for unknown codes, which still render with a "?" icon
-let md = symbol.metadata();     // affiliation, dimension, echelon, mobility, …
+let info = symbol.info();       // typed: affiliation, dimension, status, echelon, mobility, …
+let ok = symbol.is_sidc_valid(); // false for unknown codes, which still render with a "?" icon
 # Ok::<(), milsymbol::RenderError>(())
+```
+
+`symbol.validity().issues` lists why a symbol is not valid (unknown
+affiliation, dimension, icon or amplifier code, …). `is_valid()` is
+milsymbol.js's `isValid()`, which also rejects any text containing `null`.
+
+To check a SIDC without rendering it, parse it strictly:
+
+```rust
+use milsymbol::sidc::Sidc;
+use milsymbol::domain::StandardIdentity;
+
+let Sidc::Numeric(sidc) = Sidc::parse("10031000161211000000")? else { return Ok(()) };
+assert_eq!(sidc.standard_identity(), StandardIdentity::Friend);
+assert_eq!(sidc.amplifier(), "16"); // battalion
+assert!(Sidc::parse("10091000001211000000").is_err()); // identity 9 does not exist
+# Ok::<(), milsymbol::sidc::SidcError>(())
 ```
 
 ## Options
@@ -167,8 +184,8 @@ use milsymbol::{Renderer, ir::{Node, Segment}};
 let symbol = Renderer::default().symbol("10031000001211000000").render()?;
 for node in symbol.instructions() {
     if let Node::Path(p) = node {
-        for seg in p.d.segments().unwrap_or_default() {
-            match seg {
+        for seg in p.d.segments().unwrap_or_default().iter() {
+            match *seg {
                 Segment::MoveTo(pt) | Segment::LineTo(pt) => { let _ = (pt.x, pt.y); }
                 _ => {}
             }
@@ -209,7 +226,13 @@ rendered as by a freshly initialised milsymbol. [UPSTREAM.md](UPSTREAM.md)
 describes how the icon tables were extracted from upstream, the differential
 corpus, and the few deliberate differences (upstream's cross-render cache
 pollution is not reproduced; inputs on which upstream throws return
-`RenderError`; options are typed).
+`RenderError`; options are typed; `stack` is bounded).
+
+Upstream's own output depends on the platform in one place. Direction
+arrows and speed leaders use `Math.sin`/`Math.cos`, whose last bit differs
+between V8's x64 and arm64 builds. `RendererConfig::reference_platform`
+selects which one to reproduce exactly (default x64, which also matches
+WebAssembly).
 
 Coming from milsymbol.js: option names are the same (`size`,
 `uniqueDesignation`, `colorMode`, …, via `SymbolOptions::set`), and the

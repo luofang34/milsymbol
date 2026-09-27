@@ -50,6 +50,11 @@ proptest! {
     }
 
     #[test]
+    fn strict_parse_never_panics(sidc in "\\PC{0,40}") {
+        milsymbol::sidc::Sidc::parse(&sidc).ok();
+    }
+
+    #[test]
     fn arbitrary_strings_never_panic(sidc in "\\PC{0,40}") {
         Renderer::default().symbol(&sidc).render().map(|s| s.to_svg()).ok();
     }
@@ -62,7 +67,7 @@ proptest! {
         outline in 0.0f64..5.0,
         direction in prop::option::of(prop::num::f64::ANY),
         speed in prop::num::f64::ANY,
-        stack in prop::option::of(-2.0f64..5.0),
+        stack in prop::option::of(prop_oneof![-2.0f64..5.0, prop::num::f64::ANY]),
         text in "\\PC{0,12}",
         flags in prop::array::uniform6(any::<bool>()),
     ) {

@@ -2,9 +2,9 @@
 
 use alloc::string::String;
 
-/// JavaScript regular-expression `\s`.
+/// JavaScript regular-expression `\s` (and `String.prototype.trim`).
 fn is_js_space(c: char) -> bool {
-    c.is_whitespace() || c == '\u{FEFF}'
+    crate::js::is_js_whitespace(c)
 }
 
 /// Attribute escaping: `& " ' < >` become entities, CR/LF/TAB become spaces.

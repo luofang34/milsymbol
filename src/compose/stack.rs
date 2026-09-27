@@ -4,11 +4,21 @@ use super::{PartOutput, SymbolState};
 use crate::ir::Node;
 use alloc::vec::Vec;
 
+/// Largest `stack` rendered. Upstream loops `for (i = stack; i >= 1; i--)`,
+/// which never terminates for non-finite or very large values (`i - 1 == i`).
+pub(crate) const MAX_STACK: f64 = 1000.0;
+
 pub(super) fn draw(s: &SymbolState<'_>) -> Result<PartOutput, crate::RenderError> {
     let base = s.metadata.geometry_bbox();
     let Some(count) = s.options.stack else {
         return Ok(PartOutput::new(Vec::new(), Vec::new(), base));
     };
+    if !count.is_finite() || count > MAX_STACK {
+        return Err(crate::RenderError::InvalidOption {
+            name: "stack",
+            reason: "must be finite and at most 1000",
+        });
+    }
     let Some((pre, post)) = super::base_geometry::frame(s)? else {
         return Ok(PartOutput::new(Vec::new(), Vec::new(), base));
     };

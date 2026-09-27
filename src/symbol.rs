@@ -3,13 +3,16 @@
 use crate::bbox::BBox;
 use crate::color::ColorSet;
 use crate::compose::Composition;
-use crate::ir::{Node, Num, Paint, Point, Style};
+use crate::ir::{Node, Point};
 use crate::json::{self, Json, Obj};
 use crate::metadata::Metadata;
 use crate::options::SymbolOptions;
 use crate::svg::{self, SvgFrame};
 use alloc::string::String;
 use alloc::vec::Vec;
+
+mod validity;
+pub use validity::{Validity, ValidityIssue};
 
 /// Pixel size of a rendered symbol.
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -18,23 +21,6 @@ pub struct Size {
     pub width: f64,
     /// Height in pixels.
     pub height: f64,
-}
-
-/// Detailed validity (upstream `isValid(true)`).
-#[derive(Debug, Clone, PartialEq)]
-pub struct Validity {
-    /// Affiliation the symbol was drawn with.
-    pub affiliation: Option<String>,
-    /// Dimension the symbol was drawn with.
-    pub dimension: String,
-    /// The battle dimension is unknown.
-    pub dimension_unknown: bool,
-    /// No draw instruction is missing.
-    pub draw_instructions: bool,
-    /// The icon was found.
-    pub icon: bool,
-    /// The mobility code was recognised.
-    pub mobility: bool,
 }
 
 /// A composed symbol: draw instructions plus layout and metadata.
@@ -86,7 +72,19 @@ impl Symbol {
         &self.instructions
     }
 
-    /// Metadata derived from the SIDC and options.
+    /// Typed description: affiliation, dimension, status, amplifiers.
+    pub fn info(&self) -> crate::domain::SymbolInfo {
+        crate::domain::SymbolInfo::from_metadata(&self.metadata)
+    }
+
+    /// Parses every path once and caches the segments, for renderers that
+    /// read [`PathData::segments`](crate::ir::PathData::segments) repeatedly.
+    pub fn cache_path_segments(&mut self) -> Result<(), crate::ir::PathParseError> {
+        crate::ir::parse_paths(&mut self.instructions)
+    }
+
+    /// Metadata in milsymbol.js's representation (string values, including
+    /// its `"undefined"` sentinels); see [`Symbol::info`] for typed values.
     pub fn metadata(&self) -> &Metadata {
         &self.metadata
     }
@@ -122,26 +120,28 @@ impl Symbol {
         self.octagon_anchor
     }
 
-    /// Detailed validity.
+    /// Detailed validity, with typed [`Validity::issues`].
     pub fn validity(&self) -> Validity {
-        let md = &self.metadata;
-        Validity {
-            affiliation: md.affiliation.clone(),
-            dimension: md.dimension.clone(),
-            dimension_unknown: md.dimension_unknown,
-            draw_instructions: !contains_null(&self.instructions),
-            icon: self.valid_icon,
-            mobility: md.mobility.is_some(),
-        }
+        validity::of(self)
     }
 
-    /// Whether upstream considers the symbol valid.
+    /// Whether milsymbol.js considers the symbol valid (`isValid()`).
+    ///
+    /// This mirrors upstream exactly, including its heuristic that treats
+    /// any text containing `null` (e.g. a unique designation `"null value"`)
+    /// or a non-finite number as invalid. To check the SIDC itself, use
+    /// [`Symbol::is_sidc_valid`] or [`crate::sidc::Sidc::parse`].
     pub fn is_valid(&self) -> bool {
-        let v = self.validity();
-        let md = &self.metadata;
-        let bad_frame = md.affiliation.as_deref() == Some("undefined")
-            || (md.dimension == "undefined" && !md.control_measure());
-        !bad_frame && v.draw_instructions && v.icon && v.mobility
+        self.validity().issues.is_empty()
+    }
+
+    /// Whether the SIDC was fully recognised: [`Symbol::is_valid`] without
+    /// upstream's `null`-text heuristic.
+    pub fn is_sidc_valid(&self) -> bool {
+        self.validity()
+            .issues
+            .iter()
+            .all(|i| *i == ValidityIssue::NullInDrawing)
     }
 
     /// Renders the symbol as an SVG document identical to milsymbol.js `asSVG()`.
@@ -199,59 +199,4 @@ impl Symbol {
             .put("options", json::options(&self.sidc, &self.options))
             .done()
     }
-}
-
-/// Whether `JSON.stringify(nodes)` would contain `"null"`: a missing
-/// instruction, a non-finite number, or a string containing `null`.
-fn contains_null(nodes: &[Node]) -> bool {
-    nodes.iter().any(node_null)
-}
-
-fn num_null(n: &Num) -> bool {
-    match n {
-        Num::Number(v) => !v.is_finite(),
-        Num::Text(t) => t.contains("null"),
-        Num::Bool(_) => false,
-    }
-}
-
-fn style_null(st: &Style) -> bool {
-    let paint = |p: &Option<Paint>| matches!(p, Some(Paint::Color(c)) if c.contains("null"));
-    let text = |t: &Option<crate::ir::Str>| t.as_deref().is_some_and(|t| t.contains("null"));
-    paint(&st.fill)
-        || paint(&st.stroke)
-        || st.fill_opacity.as_ref().is_some_and(num_null)
-        || st.stroke_width.as_ref().is_some_and(num_null)
-        || text(&st.stroke_dasharray)
-        || text(&st.line_cap)
-        || text(&st.clip_path)
-        || st.non_scaling_stroke.is_some_and(|v| !v.is_finite())
-}
-
-fn node_null(n: &Node) -> bool {
-    let text = |t: &Option<crate::ir::Str>| t.as_deref().is_some_and(|t| t.contains("null"));
-    let own = match n {
-        Node::Missing => true,
-        Node::Scalar(v) => num_null(v),
-        Node::TrustedSvg(s) => s.contains("null"),
-        Node::Group(v) => return contains_null(v),
-        Node::Path(p) => p.d.source().contains("null"),
-        Node::Circle(c) => num_null(&c.cx) || num_null(&c.cy) || num_null(&c.r),
-        Node::Text(t) => {
-            num_null(&t.x)
-                || num_null(&t.y)
-                || t.text.contains("null")
-                || t.font_size.as_ref().is_some_and(num_null)
-                || text(&t.font_family)
-                || text(&t.font_weight)
-                || text(&t.text_anchor)
-                || text(&t.alignment_baseline)
-        }
-        Node::Translate(t) => num_null(&t.x) || num_null(&t.y),
-        Node::Rotate(r) => num_null(&r.degree) || num_null(&r.x) || num_null(&r.y),
-        Node::Scale(s) => num_null(&s.factor),
-        Node::Clip(c) => c.d.source().contains("null") || text(&c.clip_id),
-        Node::Bare(_) => false,
-    };
-    own || n.style().is_some_and(style_null) || n.children().is_some_and(contains_null)
 }

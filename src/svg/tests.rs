@@ -1,4 +1,5 @@
 use super::sanitize::*;
+use alloc::string::String;
 
 fn esc(f: fn(&mut String, &str), s: &str) -> String {
     let mut out = String::new();
@@ -59,4 +60,12 @@ fn ids_are_sanitized() {
     assert_eq!(sanitize_id("my id").as_deref(), Some("my_id"));
     assert_eq!(sanitize_id("1x").as_deref(), Some("id_1x"));
     assert_eq!(sanitize_id(" "), None);
+}
+
+#[test]
+fn whitespace_follows_javascript_not_unicode() {
+    // U+0085 is Unicode whitespace but not JavaScript `\s`: upstream keeps it.
+    assert_eq!(sanitize_color("\u{85}red\u{85}"), Some("\u{85}red\u{85}"));
+    assert_eq!(sanitize_color("\u{FEFF} red\u{3000}"), Some("red"));
+    assert_eq!(sanitize_dash_array("\u{85}4,4"), None);
 }
