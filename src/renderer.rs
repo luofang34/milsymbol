@@ -117,8 +117,8 @@ impl Renderer {
     }
 
     /// Renders a symbol with the given options.
-    pub fn render(&self, sidc: &str, options: SymbolOptions) -> Result<Symbol, RenderError> {
-        let c = compose::compose(sidc, &options, &self.config, &self.registry)?;
+    pub fn render(&self, sidc: &str, mut options: SymbolOptions) -> Result<Symbol, RenderError> {
+        let c = compose::compose(sidc, &mut options, &self.config, &self.registry)?;
         Ok(Symbol::from_composition(c, options))
     }
 }

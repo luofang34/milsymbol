@@ -78,10 +78,11 @@ fn named_mode(config: &RendererConfig, name: &str) -> Result<ColorMode, RenderEr
         })
 }
 
-/// Upstream `getColors`.
+/// Upstream `getColors`. Writes back the in-place mutations upstream makes to
+/// object-valued `colorMode`, `frameColor` and `iconColor`.
 pub(crate) fn colors(
     md: &Metadata,
-    options: &SymbolOptions,
+    options: &mut SymbolOptions,
     config: &RendererConfig,
 ) -> Result<ColorSet, RenderError> {
     let st = &options.style;
@@ -110,7 +111,17 @@ pub(crate) fn colors(
         frame: md.frame,
         fill: md.fill,
     };
-    Ok(color::resolve_colors(inputs, &flags))
+    let (colors, mutated) = color::resolve_colors(inputs, &flags);
+    if let StyleColor::PerAffiliation(m) = &mut options.style.color_mode {
+        *m = mutated.color_mode;
+    }
+    if let StyleColor::PerAffiliation(m) = &mut options.style.frame_color {
+        *m = mutated.frame_color;
+    }
+    if let StyleColor::PerAffiliation(m) = &mut options.style.icon_color {
+        *m = mutated.icon_color;
+    }
+    Ok(colors)
 }
 
 /// A JavaScript value produced by unwrapping single-element arrays.
@@ -193,12 +204,13 @@ fn merge(
 /// Composes a symbol.
 pub(crate) fn compose(
     sidc_in: &str,
-    options: &SymbolOptions,
+    options: &mut SymbolOptions,
     config: &RendererConfig,
     registry: &Registry,
 ) -> Result<Composition, RenderError> {
     let (sidc, md) = metadata(sidc_in, options, config);
     let colors = colors(&md, options, config)?;
+    let options = &*options;
     let mut instructions = Vec::new();
     let mut bbox = BBox::default();
     let mut valid_icon = true;

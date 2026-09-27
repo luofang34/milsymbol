@@ -182,8 +182,19 @@ fn copy_to(mode: &mut ColorMode, from: &str, to: &[&str]) {
     }
 }
 
+/// Upstream mutates the style's colour objects in place; later symbol parts
+/// and `getOptions()` observe these values.
+pub(crate) struct MutatedStyle {
+    /// `style.colorMode` when it is an object.
+    pub color_mode: ColorMode,
+    /// `style.frameColor` when it is an object.
+    pub frame_color: ColorMode,
+    /// `style.iconColor` when it is an object.
+    pub icon_color: ColorMode,
+}
+
 /// Port of upstream `getColors`.
-pub(crate) fn resolve_colors(mut i: ColorInputs<'_>, f: &ColorFlags) -> ColorSet {
+pub(crate) fn resolve_colors(mut i: ColorInputs<'_>, f: &ColorFlags) -> (ColorSet, MutatedStyle) {
     // Upstream aliases: `baseIconFillColor` is the fill object itself, and
     // user-supplied frame/icon objects are mutated in place below.
     let mut fill = i.fill_mode;
@@ -207,6 +218,7 @@ pub(crate) fn resolve_colors(mut i: ColorInputs<'_>, f: &ColorFlags) -> ColorSet
         }
     }
     let icon_fill = fill.clone();
+    let fill_object = fill.clone();
     if !i.mono_color.is_empty() {
         let mono = Some(Paint::Color(Cow::Owned(String::from(i.mono_color))));
         for k in ["Friend", "Neutral", "Hostile", "Unknown", "Civilian"] {
@@ -243,7 +255,7 @@ pub(crate) fn resolve_colors(mut i: ColorInputs<'_>, f: &ColorFlags) -> ColorSet
             fill.clone()
         };
         colors.icon_color = if icon_is_override {
-            icon
+            icon.clone()
         } else {
             i.black.clone()
         };
@@ -256,12 +268,17 @@ pub(crate) fn resolve_colors(mut i: ColorInputs<'_>, f: &ColorFlags) -> ColorSet
         } else {
             i.none.clone()
         };
-        colors.icon_color = frame;
+        colors.icon_color = frame.clone();
         colors.icon_fill_color = i.none.clone();
         if !f.frame && !i.icon_visible {
             colors.frame_color = i.black.clone();
             colors.fill_color = i.black;
         }
     }
-    colors
+    let mutated = MutatedStyle {
+        color_mode: fill_object,
+        frame_color: frame,
+        icon_color: icon,
+    };
+    (colors, mutated)
 }
