@@ -1,0 +1,41 @@
+milsymbol (Rust)
+Copyright (C) 2026 sokoly <sokoly@sokolysystems.com> and contributors
+
+This program is free software: you can redistribute it and/or modify it under
+the terms of the GNU Affero General Public License as published by the Free
+Software Foundation, either version 3 of the License, or (at your option) any
+later version. See LICENSE.
+
+This program is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+PARTICULAR PURPOSE. See the GNU Affero General Public License for more details.
+
+-------------------------------------------------------------------------------
+Upstream work: milsymbol.js (MIT)
+-------------------------------------------------------------------------------
+
+This crate is a native Rust port of milsymbol.js by Måns Beckman
+(https://github.com/spatialillusions/milsymbol), version 3.0.4, commit
+b05f2d7cbadb0845ca637d346a2d7d8163ab59cb.
+
+The composition logic in src/ is a translation of the upstream JavaScript, and
+the tables in src/generated/ are mechanically extracted from the upstream
+source by tools/codegen. Both are derivative works of milsymbol.js, which is
+distributed under the MIT License:
+
+    Copyright (c) 2017 Måns Beckman - www.spatialillusions.com
+
+The full upstream license text is reproduced in LICENSE-MIT-milsymbol and must
+be retained in all copies or substantial portions of this software. The MIT
+License permits relicensing of the derivative work; the port as a whole is
+distributed under AGPL-3.0-or-later, while the upstream MIT notice continues to
+apply to the upstream-originated portions.
+
+-------------------------------------------------------------------------------
+Other references
+-------------------------------------------------------------------------------
+
+milsymbol-py (https://github.com/klundeen/milsymbol-py, MIT) was consulted only
+for the composition of its 109,216-symbol reference corpus. No code or data from
+milsymbol-py is included; this repository's corpus is generated independently
+from the pinned upstream JavaScript by tools/oracle.

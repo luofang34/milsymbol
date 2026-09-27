@@ -1,0 +1,7 @@
+{
+  "upstream": "https://github.com/spatialillusions/milsymbol.git",
+  "version": "3.0.4",
+  "tag": "v3.0.4",
+  "commit": "b05f2d7cbadb0845ca637d346a2d7d8163ab59cb",
+  "license": "MIT"
+}

@@ -1,0 +1,33 @@
+# Rust build output
+/target/
+**/*.rs.bk
+*.pdb
+
+# Cargo.lock is committed: this repo ships binaries/examples and needs reproducible CI.
+
+# Oracle / codegen tooling (Node is dev-only)
+node_modules/
+/tools/**/node_modules/
+/tools/oracle/upstream/
+/tools/oracle/out/
+/tools/codegen/out/
+*.log
+
+# Profiling / benchmarks
+/target-bench/
+perf.data*
+flamegraph*.svg
+*.profraw
+*.profdata
+
+# Editors / OS
+.DS_Store
+.idea/
+.vscode/
+*.swp
+*~
+
+# Stray files from interactive cp/rm
+* 2.*
+*.bak
+*.orig
