@@ -2,12 +2,6 @@
 //! (`tests/corpus/*.jsonl.gz`, produced by `tools/oracle/fixtures.mjs` from
 //! milsymbol.js 3.0.4) and requires byte-identical SVG and an identical
 //! canonical semantic record for every case. No JavaScript is involved.
-#![allow(
-    clippy::expect_used,
-    clippy::panic,
-    clippy::unwrap_used,
-    clippy::indexing_slicing
-)]
 
 mod support;
 
@@ -15,21 +9,21 @@ use flate2::read::GzDecoder;
 use serde_json::Value;
 use std::io::{BufRead, BufReader};
 
-fn replay(suite: &str) {
+fn replay(suite: &str) -> Result<(), Box<dyn std::error::Error>> {
     let path = format!(
         "{}/tests/corpus/{suite}.jsonl.gz",
         env!("CARGO_MANIFEST_DIR")
     );
-    let file = std::fs::File::open(&path).unwrap_or_else(|e| panic!("{path}: {e}"));
+    let file = std::fs::File::open(&path).map_err(|e| format!("{path}: {e}"))?;
     let reader = BufReader::new(GzDecoder::new(file));
     let (mut total, mut failures) = (0usize, Vec::new());
     for line in reader.lines() {
-        let line = line.expect("read fixture line");
+        let line = line?;
         if line.trim().is_empty() {
             continue;
         }
         total += 1;
-        let case: Value = serde_json::from_str(&line).expect("fixture JSON");
+        let case: Value = serde_json::from_str(&line)?;
         let problem = match (support::render(&case), case.get("error")) {
             (Err(_), Some(_)) => None,
             (Err(e), None) => Some(format!("rust error {e}")),
@@ -67,34 +61,35 @@ fn replay(suite: &str) {
             .collect::<Vec<_>>()
             .join("\n")
     );
+    Ok(())
 }
 
 #[test]
-fn corpus_invalid() {
-    replay("invalid");
+fn corpus_invalid() -> Result<(), Box<dyn std::error::Error>> {
+    replay("invalid")
 }
 
 #[test]
-fn corpus_config() {
-    replay("config");
+fn corpus_config() -> Result<(), Box<dyn std::error::Error>> {
+    replay("config")
 }
 
 #[test]
-fn corpus_options() {
-    replay("options");
+fn corpus_options() -> Result<(), Box<dyn std::error::Error>> {
+    replay("options")
 }
 
 #[test]
-fn corpus_fuzz() {
-    replay("fuzz");
+fn corpus_fuzz() -> Result<(), Box<dyn std::error::Error>> {
+    replay("fuzz")
 }
 
 #[test]
-fn corpus_modifiers() {
-    replay("modifiers");
+fn corpus_modifiers() -> Result<(), Box<dyn std::error::Error>> {
+    replay("modifiers")
 }
 
 #[test]
-fn corpus_base() {
-    replay("base");
+fn corpus_base() -> Result<(), Box<dyn std::error::Error>> {
+    replay("base")
 }

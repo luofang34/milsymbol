@@ -1,14 +1,13 @@
 //! Property tests: arbitrary input never panics and rendering is deterministic.
-#![allow(
-    clippy::expect_used,
-    clippy::panic,
-    clippy::unwrap_used,
-    clippy::indexing_slicing
-)]
 
 use milsymbol::Renderer;
 use milsymbol::options::{SymbolOptions, field};
 use proptest::prelude::*;
+use proptest::test_runner::TestCaseError;
+
+fn fail(e: milsymbol::RenderError) -> TestCaseError {
+    TestCaseError::fail(e.to_string())
+}
 
 fn numeric_sidc() -> impl Strategy<Value = String> {
     (
@@ -37,15 +36,15 @@ proptest! {
     #[test]
     fn numeric_sidcs_never_panic(sidc in numeric_sidc()) {
         let r = Renderer::default();
-        let a = r.symbol(&sidc).render().unwrap();
-        let b = r.symbol(&sidc).render().unwrap();
+        let a = r.symbol(&sidc).render().map_err(fail)?;
+        let b = r.symbol(&sidc).render().map_err(fail)?;
         prop_assert_eq!(a.to_svg(), b.to_svg());
         prop_assert!(a.size().width.is_finite());
     }
 
     #[test]
     fn letter_sidcs_never_panic(sidc in letter_sidc()) {
-        let s = Renderer::default().symbol(&sidc).render().unwrap();
+        let s = Renderer::default().symbol(&sidc).render().map_err(fail)?;
         s.is_valid();
         prop_assert!(s.to_svg().ends_with("</svg>"));
     }
@@ -71,12 +70,13 @@ proptest! {
         o.style.size = size;
         o.style.stroke_width = stroke;
         o.style.outline_width = outline;
-        o.style.fill = flags[0];
-        o.style.frame = flags[1];
-        o.style.icon = flags[2];
-        o.style.square = flags[3];
-        o.style.info_fields = flags[4];
-        if flags[5] { o.style.mono_color = "black".into(); }
+        let [fill, frame, icon, square, info_fields, mono] = flags;
+        o.style.fill = fill;
+        o.style.frame = frame;
+        o.style.icon = icon;
+        o.style.square = square;
+        o.style.info_fields = info_fields;
+        if mono { o.style.mono_color = "black".into(); }
         o.direction = direction;
         o.speed_leader = speed;
         o.stack = stack;

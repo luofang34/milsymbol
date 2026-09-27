@@ -234,29 +234,41 @@ pub(crate) fn compose(
         valid_icon &= !out.invalid_icon;
         merge(out, &mut instructions, &mut bbox)?;
     }
-    Ok(finish(
+    let l = layout(bbox, &md, options, config);
+    Ok(Composition {
         sidc,
-        md,
+        metadata: md,
         colors,
         instructions,
-        bbox,
+        bbox: l.bbox,
+        base_width: l.base_width,
+        base_height: l.base_height,
+        width: l.width,
+        height: l.height,
+        anchor: l.anchor,
+        octagon_anchor: l.octagon_anchor,
         valid_icon,
-        options,
-        config,
-    ))
+    })
 }
 
-#[allow(clippy::too_many_arguments)]
-fn finish(
-    sidc: String,
-    md: Metadata,
-    colors: ColorSet,
-    instructions: Vec<Node>,
+/// Final bounds, size and anchors of a composed symbol.
+struct Layout {
+    bbox: BBox,
+    base_width: f64,
+    base_height: f64,
+    width: f64,
+    height: f64,
+    anchor: Point,
+    octagon_anchor: Point,
+}
+
+/// Padding, square mode, size and anchors (end of upstream `setOptions`).
+fn layout(
     mut bbox: BBox,
-    valid_icon: bool,
+    md: &Metadata,
     options: &SymbolOptions,
     config: &RendererConfig,
-) -> Composition {
+) -> Layout {
     let st = &options.style;
     let (sw, ow, size) = (st.stroke_width, st.outline_width, st.size);
     if st.padding != 0.0 && !st.padding.is_nan() {
@@ -295,11 +307,7 @@ fn finish(
     }
     let base_width = bbox.width() + sw * 2.0 + ow * 2.0;
     let base_height = bbox.height() + sw * 2.0 + ow * 2.0;
-    Composition {
-        sidc,
-        metadata: md,
-        colors,
-        instructions,
+    Layout {
         bbox,
         base_width,
         base_height,
@@ -310,6 +318,5 @@ fn finish(
             y: ((anchor.y - bbox.y1 + sw + ow) * size) / 100.0,
         },
         octagon_anchor,
-        valid_icon,
     }
 }

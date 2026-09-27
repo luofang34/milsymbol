@@ -1,6 +1,6 @@
 //! Renders oracle cases (JSON lines on stdin) and prints one JSON record per
 //! line: `{"svg": …, "sem": …}` or `{"error": …}`. Used with
-//! `tools/oracle/compare.mjs` to diff against milsymbol.js.
+//! `cargo xtask compare` to diff against milsymbol.js.
 
 #[path = "../tests/support.rs"]
 mod support;

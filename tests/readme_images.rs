@@ -1,11 +1,10 @@
 //! The SVGs shown in README.md are this crate's actual output plus a white
 //! background rectangle.
-#![allow(clippy::expect_used, clippy::panic, clippy::unwrap_used)]
 
 mod gallery_list;
 
 #[test]
-fn readme_images_match_renderer() {
+fn readme_images_match_renderer() -> Result<(), Box<dyn std::error::Error>> {
     for item in gallery_list::ITEMS {
         let path = format!(
             "{}/docs/images/{}.svg",
@@ -14,9 +13,9 @@ fn readme_images_match_renderer() {
         );
         let Ok(committed) = std::fs::read_to_string(&path) else {
             // docs/ is not shipped in the crates.io package.
-            return;
+            return Ok(());
         };
-        let symbol = gallery_list::render(item);
+        let symbol = gallery_list::render(item)?;
         assert!(
             symbol.is_valid(),
             "{} ({}) is invalid",
@@ -25,14 +24,16 @@ fn readme_images_match_renderer() {
         );
         let svg = symbol.to_svg();
         assert_eq!(
-            committed,
+            Some(committed.clone()),
             gallery_list::with_background(&svg),
             "{path} is stale; run `cargo run --example readme_images`"
         );
-        let without = committed.replacen(&gallery_list::background(&svg), "", 1);
+        let background = gallery_list::background(&svg).ok_or("svg without viewBox")?;
+        let without = committed.replacen(&background, "", 1);
         assert_eq!(
             without, svg,
             "{path} differs from Symbol::to_svg() beyond the background"
         );
     }
+    Ok(())
 }

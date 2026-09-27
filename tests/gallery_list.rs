@@ -1,12 +1,7 @@
 //! Symbols shown in README.md. Shared by `examples/readme_images.rs`, which
 //! writes `docs/images/*.svg`, and `tests/readme_images.rs`, which checks the
 //! committed images still match the renderer.
-#![allow(
-    dead_code,
-    clippy::expect_used,
-    clippy::unwrap_used,
-    clippy::indexing_slicing
-)]
+#![allow(dead_code)]
 
 use milsymbol::options::SymbolOptions;
 use milsymbol::{Renderer, Standard, Symbol};
@@ -292,7 +287,7 @@ pub const ITEMS: &[Item] = &[
 ];
 
 /// Renders a gallery item.
-pub fn render(item: &Item) -> Symbol {
+pub fn render(item: &Item) -> Result<Symbol, Box<dyn std::error::Error>> {
     let renderer = if item.app6 {
         Renderer::default().with_standard(Standard::App6)
     } else {
@@ -300,30 +295,27 @@ pub fn render(item: &Item) -> Symbol {
     };
     let mut o = SymbolOptions::default();
     for (k, v) in item.options {
-        let r = match *v {
-            S(s) => o.set(k, s).map(|_| ()),
-            N(n) => o.set(k, n).map(|_| ()),
-            B(b) => o.set(k, b).map(|_| ()),
+        match *v {
+            S(s) => o.set(k, s)?,
+            N(n) => o.set(k, n)?,
+            B(b) => o.set(k, b)?,
         };
-        r.expect("gallery option");
     }
-    renderer.render(item.sidc, o).expect("gallery symbol")
+    Ok(renderer.render(item.sidc, o)?)
 }
 
 /// The README background: a white rounded rectangle covering the viewBox.
-pub fn background(svg: &str) -> String {
-    let vb = svg
-        .split("viewBox=\"")
-        .nth(1)
-        .and_then(|r| r.split('"').next())
-        .expect("svg has a viewBox");
-    let v: Vec<&str> = vb.split(' ').collect();
-    let (x, y, w, h) = (v[0], v[1], v[2], v[3]);
-    format!("<rect x=\"{x}\" y=\"{y}\" width=\"{w}\" height=\"{h}\" rx=\"8\" fill=\"#ffffff\" />")
+pub fn background(svg: &str) -> Option<String> {
+    let vb = svg.split("viewBox=\"").nth(1)?.split('"').next()?;
+    let mut v = vb.split(' ');
+    let (x, y, w, h) = (v.next()?, v.next()?, v.next()?, v.next()?);
+    Some(format!(
+        "<rect x=\"{x}\" y=\"{y}\" width=\"{w}\" height=\"{h}\" rx=\"8\" fill=\"#ffffff\" />"
+    ))
 }
 
 /// `svg` with [`background`] inserted as the first child of `<svg>`.
-pub fn with_background(svg: &str) -> String {
-    let at = svg.find('>').expect("svg start tag") + 1;
-    format!("{}{}{}", &svg[..at], background(svg), &svg[at..])
+pub fn with_background(svg: &str) -> Option<String> {
+    let (start_tag, rest) = svg.split_once('>')?;
+    Some(format!("{start_tag}>{}{rest}", background(svg)?))
 }

@@ -26,7 +26,8 @@ it) are reproduced.
 
 ## What is generated, and how
 
-Everything under `src/generated/` is emitted by `tools/codegen` and must not
+Everything under `src/generated/` is produced by `tools/codegen` (extraction,
+which runs upstream JavaScript) and `cargo xtask emit` (Rust), and must not
 be edited by hand. Regenerate with:
 
 ```sh
@@ -35,11 +36,11 @@ tools/codegen/regenerate.sh      # needs git and Node; fetches the pinned upstre
 
 | File | Source (upstream) | Tool |
 |---|---|---|
-| `pool.rs`, `tables.rs`, `vars.rs` | `src/iconparts/*.js`, `src/numbersidc/sidc/*.js`, `src/lettersidc/sidc/*.js` | `extract.mjs` → `emit.mjs` |
-| `misc.rs` (labels) | `src/lettersidc/labels/*.js`, `src/numbersidc/labels/*.js` | `extract-misc.mjs` → `emit.mjs` |
-| `misc.rs` (geometries) | `src/ms/symbolgeometries.js` | `extract-misc.mjs` → `emit.mjs` |
-| `misc.rs` (colour modes) | `src/colormodes.js` | `extract-misc.mjs` → `emit.mjs` |
-| `misc.rs` (character widths) | `src/symbolfunctions/string-width.js` | `extract-misc.mjs` → `emit.mjs` |
+| `pool.rs`, `tables.rs`, `vars.rs` | `src/iconparts/*.js`, `src/numbersidc/sidc/*.js`, `src/lettersidc/sidc/*.js` | `extract.mjs` → `cargo xtask emit` |
+| `misc.rs` (labels) | `src/lettersidc/labels/*.js`, `src/numbersidc/labels/*.js` | `extract-misc.mjs` → `cargo xtask emit` |
+| `misc.rs` (geometries) | `src/ms/symbolgeometries.js` | `extract-misc.mjs` → `cargo xtask emit` |
+| `misc.rs` (colour modes) | `src/colormodes.js` | `extract-misc.mjs` → `cargo xtask emit` |
+| `misc.rs` (character widths) | `src/symbolfunctions/string-width.js` | `extract-misc.mjs` → `cargo xtask emit` |
 
 ### Icon tables: evaluate-and-extract
 

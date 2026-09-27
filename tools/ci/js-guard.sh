@@ -2,7 +2,7 @@
 # Fails if the crate's runtime dependency tree (any target) contains a
 # JavaScript engine or JS-interop crate. The library must stay native Rust.
 set -euo pipefail
-tree=$(cargo tree -e normal,build --target all --prefix none --no-dedupe)
+tree=$(cargo tree -p milsymbol -e normal,build --target all --prefix none --no-dedupe)
 banned='^(boa_[a-z_]+|boa|v8|rusty_v8|deno_[a-z_]+|quickjs[a-z_-]*|rquickjs[a-z_-]*|js-sys|wasm-bindgen[a-z-]*|web-sys|mozjs|javascriptcore[a-z-]*|duktape[a-z-]*|ducc|node-bindgen|neon|napi[a-z-]*) '
 if echo "$tree" | grep -Eq "$banned"; then
   echo "JavaScript runtime/interop dependency found:" >&2

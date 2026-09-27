@@ -1,7 +1,7 @@
 //! Symbol options: text amplifiers, modifiers and style.
 //!
-//! Field names follow upstream `SymbolOptions` so options translate directly
-//! from milsymbol.js code; [`field`] lists the text amplifier keys.
+//! Options can be set through typed fields or by name with
+//! [`SymbolOptions::set`]; [`field`] lists the text amplifier names.
 
 use crate::color::ColorMode;
 use alloc::collections::BTreeMap;
@@ -71,7 +71,7 @@ pub mod field {
     /// Field AR.
     pub const SPECIAL_DESIGNATOR: &str = "specialDesignator";
 
-    /// All default text fields, in upstream declaration order.
+    /// All default text fields.
     pub const DEFAULTS: [&str; 29] = [
         QUANTITY,
         REINFORCED_REDUCED,
@@ -128,7 +128,7 @@ impl StyleColor {
         }
     }
 
-    /// The per-affiliation object, if any (upstream `typeof x === "object"`).
+    /// The per-affiliation colours, if any.
     pub fn as_mode(&self) -> Option<&ColorMode> {
         match self {
             StyleColor::PerAffiliation(m) => Some(m),
@@ -143,7 +143,7 @@ impl From<&str> for StyleColor {
     }
 }
 
-/// Style options (upstream `symbol.style`).
+/// Style options.
 #[derive(Debug, Clone, PartialEq)]
 pub struct Style {
     /// Use the alternate MEDAL icons for sea mines.
@@ -242,12 +242,12 @@ impl Default for Style {
     }
 }
 
-/// Non-style symbol options (upstream `symbol.options`).
+/// Non-style symbol options.
 #[derive(Debug, Clone, PartialEq)]
 pub struct SymbolOptions {
-    /// Text amplifiers that were set, keyed by upstream option name (see
+    /// Text amplifiers that were set, keyed by option name (see
     /// [`field`]; extra keys such as `dtg1` are used by label overrides).
-    /// Unset fields read as empty, like upstream's `""` defaults.
+    /// Unset fields read as empty.
     pub text: BTreeMap<String, String>,
     /// Field Q: direction of movement in degrees.
     pub direction: Option<f64>,

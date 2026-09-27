@@ -1,9 +1,3 @@
-#![allow(
-    clippy::unwrap_used,
-    clippy::expect_used,
-    clippy::panic,
-    clippy::indexing_slicing
-)]
 use super::sanitize::*;
 
 fn esc(f: fn(&mut String, &str), s: &str) -> String {

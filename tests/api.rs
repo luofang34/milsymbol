@@ -1,10 +1,4 @@
 //! Public API behaviour: extensions, configuration, determinism, errors.
-#![allow(
-    clippy::expect_used,
-    clippy::panic,
-    clippy::unwrap_used,
-    clippy::indexing_slicing
-)]
 
 use milsymbol::ir::{Node, Paint};
 use milsymbol::labels::{Label, LabelField};
@@ -16,11 +10,13 @@ use milsymbol::{
 use std::borrow::Cow;
 use std::collections::BTreeMap;
 
+type TestResult = Result<(), Box<dyn std::error::Error>>;
+
 const INFANTRY: &str = "10031000001211000000";
 
 #[test]
-fn renders_valid_infantry_with_expected_frame() {
-    let s = Renderer::default().symbol(INFANTRY).render().unwrap();
+fn renders_valid_infantry_with_expected_frame() -> TestResult {
+    let s = Renderer::default().symbol(INFANTRY).render()?;
     assert!(s.is_valid());
     let svg = s.to_svg();
     assert!(svg.starts_with(
@@ -31,69 +27,74 @@ fn renders_valid_infantry_with_expected_frame() {
     assert_eq!(s.metadata().dimension, "Ground");
     let a = s.anchor();
     assert_eq!((a.x, a.y), (79.0, 54.0));
+    Ok(())
 }
 
 #[test]
-fn rendering_is_deterministic_and_thread_safe() {
+fn rendering_is_deterministic_and_thread_safe() -> TestResult {
     let r = std::sync::Arc::new(Renderer::default());
-    let expected = r.symbol("SHGPUCIZ---K").render().unwrap().to_svg();
+    let expected = r.symbol("SHGPUCIZ---K").render()?.to_svg();
     let handles: Vec<_> = (0..4)
         .map(|_| {
             let r = std::sync::Arc::clone(&r);
-            std::thread::spawn(move || r.symbol("SHGPUCIZ---K").render().unwrap().to_svg())
+            std::thread::spawn(move || r.symbol("SHGPUCIZ---K").render().map(|s| s.to_svg()))
         })
         .collect();
     for h in handles {
-        assert_eq!(h.join().unwrap(), expected);
+        let svg = h.join().map_err(|_| "render thread panicked")??;
+        assert_eq!(svg, expected);
     }
+    Ok(())
 }
 
 #[test]
-fn unknown_color_mode_is_a_typed_error() {
+fn unknown_color_mode_is_a_typed_error() -> TestResult {
     let mut o = SymbolOptions::default();
-    o.set("colorMode", "NoSuchMode").unwrap();
-    let err = Renderer::default().render(INFANTRY, o).unwrap_err();
+    o.set("colorMode", "NoSuchMode")?;
+    let err = Renderer::default().render(INFANTRY, o).err();
     assert_eq!(
         err,
-        RenderError::UnknownColorMode {
+        Some(RenderError::UnknownColorMode {
             name: "NoSuchMode".into()
-        }
+        })
     );
+    Ok(())
 }
 
 #[test]
-fn wrongly_typed_option_is_a_typed_error() {
+fn wrongly_typed_option_is_a_typed_error() -> TestResult {
     let mut o = SymbolOptions::default();
-    let err = o.set("size", "big").unwrap_err();
-    assert_eq!(err.key, "size");
+    let err = o.set("size", "big").err().map(|e| e.key);
+    assert_eq!(err.as_deref(), Some("size"));
     assert!(o.set("size", OptionValue::Num(50.0)).is_ok());
     assert!(o.set("sidc", "SFG").is_err());
+    Ok(())
 }
 
 #[test]
-fn text_is_escaped_in_svg() {
+fn text_is_escaped_in_svg() -> TestResult {
     let s = Renderer::default()
         .symbol(INFANTRY)
         .text(field::UNIQUE_DESIGNATION, "<script>&")
-        .render()
-        .unwrap();
+        .render()?;
     let svg = s.to_svg();
     assert!(svg.contains("&lt;script&gt;&amp;</text>"), "{svg}");
     assert!(!svg.contains("<script>"));
+    Ok(())
 }
 
 #[test]
-fn standard_is_renderer_configuration() {
+fn standard_is_renderer_configuration() -> TestResult {
     let app6 = Renderer::default().with_standard(Standard::App6);
-    assert!(!app6.symbol(INFANTRY).render().unwrap().metadata().std2525);
+    assert!(!app6.symbol(INFANTRY).render()?.metadata().std2525);
     assert!(
         Renderer::default()
             .symbol(INFANTRY)
-            .render()
-            .unwrap()
+            .render()?
             .metadata()
             .std2525
     );
+    Ok(())
 }
 
 struct Marker;
@@ -118,12 +119,13 @@ impl SymbolPart for Marker {
 }
 
 #[test]
-fn custom_symbol_part_extends_pipeline_and_bbox() {
-    let plain = Renderer::default().symbol(INFANTRY).render().unwrap();
+fn custom_symbol_part_extends_pipeline_and_bbox() -> TestResult {
+    let plain = Renderer::default().symbol(INFANTRY).render()?;
     let r = Renderer::default().with_symbol_part(Marker);
-    let s = r.symbol(INFANTRY).render().unwrap();
+    let s = r.symbol(INFANTRY).render()?;
     assert!(s.to_svg().contains("fill=\"magenta\""));
     assert_eq!(s.bounding_box().y1, plain.bounding_box().y1 - 30.0);
+    Ok(())
 }
 
 struct Custom;
@@ -149,10 +151,12 @@ impl IconExtension for Custom {
         out: &mut IconTable,
     ) {
         if ss == "10" {
-            let mine = parts.part("MY.PART").unwrap();
-            let infantry = parts.part("GR.IC.FF.INFANTRY").unwrap();
-            out.icons
-                .insert("999900".into(), Node::Group(vec![mine, infantry]));
+            if let (Some(mine), Some(infantry)) =
+                (parts.part("MY.PART"), parts.part("GR.IC.FF.INFANTRY"))
+            {
+                out.icons
+                    .insert("999900".into(), Node::Group(vec![mine, infantry]));
+            }
         }
     }
 
@@ -179,9 +183,9 @@ impl IconExtension for Custom {
 }
 
 #[test]
-fn icon_extension_adds_sidc_with_builtin_parts() {
+fn icon_extension_adds_sidc_with_builtin_parts() -> TestResult {
     let r = Renderer::default().with_icons(Custom);
-    let s = r.symbol("10031000009999000000").render().unwrap();
+    let s = r.symbol("10031000009999000000").render()?;
     assert!(s.is_valid());
     let svg = s.to_svg();
     assert!(svg.contains("d=\"M80,80 L120,120\""), "{svg}");
@@ -192,52 +196,53 @@ fn icon_extension_adds_sidc_with_builtin_parts() {
     assert!(
         !Renderer::default()
             .symbol("10031000009999000000")
-            .render()
-            .unwrap()
+            .render()?
             .is_valid()
     );
+    Ok(())
 }
 
 #[test]
-fn catalog_lists_renderable_icons() {
+fn catalog_lists_renderable_icons() -> TestResult {
     let r = Renderer::default();
     let sets: Vec<_> = catalog::number_symbol_sets().collect();
     assert!(sets.contains(&"10") && sets.contains(&"25"));
     let entities: Vec<_> = catalog::number_entities("10").collect();
     assert!(entities.len() > 150, "{}", entities.len());
     for e in entities.iter().take(50) {
-        let s = r
-            .render(&format!("1003100000{e}0000"), SymbolOptions::default())
-            .unwrap();
+        let s = r.render(&format!("1003100000{e}0000"), SymbolOptions::default())?;
         assert!(s.validity().icon, "{e}");
     }
     assert!(catalog::letter_icons().any(|c| c == "S-G-UCI---"));
     assert!(catalog::icon_parts().any(|p| p == "GR.IC.FF.INFANTRY"));
+    Ok(())
 }
 
 #[test]
-fn instructions_expose_typed_path_segments() {
-    let s = Renderer::default().symbol(INFANTRY).render().unwrap();
-    let Node::Path(frame) = &s.instructions()[0] else {
-        panic!("frame first")
+fn instructions_expose_typed_path_segments() -> TestResult {
+    let s = Renderer::default().symbol(INFANTRY).render()?;
+    let Some(Node::Path(frame)) = s.instructions().first() else {
+        return Err("the frame is not the first instruction".into());
     };
-    let segs = frame.d.segments().unwrap();
+    let segs = frame.d.segments()?;
     assert_eq!(segs.len(), 5);
+    Ok(())
 }
 
 #[test]
-fn cached_renderer_reuses_identical_requests_only() {
+fn cached_renderer_reuses_identical_requests_only() -> TestResult {
     use milsymbol::cache::CachedRenderer;
     let c = CachedRenderer::new(Renderer::default(), 2);
     let o = SymbolOptions::default();
-    let a = c.render(INFANTRY, &o).unwrap();
-    let b = c.render(INFANTRY, &o).unwrap();
+    let a = c.render(INFANTRY, &o)?;
+    let b = c.render(INFANTRY, &o)?;
     assert!(std::sync::Arc::ptr_eq(&a, &b));
     let mut other = o.clone();
     other.style.size = 50.0;
-    let d = c.render(INFANTRY, &other).unwrap();
+    let d = c.render(INFANTRY, &other)?;
     assert!(!std::sync::Arc::ptr_eq(&a, &d));
     assert_eq!(c.len(), 2);
-    c.render("SFGPUCI-----", &o).unwrap();
+    c.render("SFGPUCI-----", &o)?;
     assert_eq!(c.len(), 1, "cleared when full");
+    Ok(())
 }

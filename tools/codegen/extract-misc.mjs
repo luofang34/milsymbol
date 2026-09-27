@@ -1,7 +1,7 @@
 // Extracts the small upstream data tables: label overrides, base frame
 // geometries, default colour modes and character widths.
 //
-// Output: tools/codegen/out/misc.json (consumed by emit.mjs).
+// Output: tools/codegen/out/misc.json (consumed by `cargo xtask emit`).
 
 import fs from "node:fs";
 import path from "node:path";

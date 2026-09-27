@@ -1,9 +1,3 @@
-#![allow(
-    clippy::unwrap_used,
-    clippy::expect_used,
-    clippy::panic,
-    clippy::indexing_slicing
-)]
 use super::*;
 
 fn p(x: f64, y: f64) -> Point {
@@ -64,8 +58,11 @@ fn smooth_curves_and_arcs_become_absolute() {
 
 #[test]
 fn invalid_data_reports_prefix() {
-    let err = PathData::new("M0,0 L10,10 Lx").segments().unwrap_err();
-    assert_eq!(err.valid_prefix.len(), 2);
+    let result = PathData::new("M0,0 L10,10 Lx").segments();
+    assert!(
+        matches!(result, Err(ref e) if e.valid_prefix.len() == 2),
+        "{result:?}"
+    );
     assert!(PathData::new("L0,0").segments().is_err());
 }
 

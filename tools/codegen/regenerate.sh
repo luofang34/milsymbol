@@ -6,4 +6,4 @@ here="$(cd "$(dirname "$0")" && pwd)"
 "$here/../fetch-upstream.sh"
 node "$here/extract.mjs"
 node "$here/extract-misc.mjs"
-node "$here/emit.mjs"
+(cd "$here/../.." && cargo xtask emit)

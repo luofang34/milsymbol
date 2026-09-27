@@ -8,7 +8,7 @@
 // variants per entry. A round-trip check then compares table lookups against
 // fresh upstream evaluations for random contexts.
 //
-// Output: tools/codegen/out/tables.json (consumed by emit.mjs).
+// Output: tools/codegen/out/tables.json (consumed by `cargo xtask emit`).
 
 import fs from "node:fs";
 import path from "node:path";

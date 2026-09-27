@@ -226,11 +226,14 @@ impl IconContext {
             .enumerate()
         {
             if e.deps & (1 << vi) != 0 {
-                index = index * u32::from(size) + u32::from(value);
+                index = index
+                    .saturating_mul(u32::from(size))
+                    .saturating_add(u32::from(value));
             }
         }
-        tables::ROWS
-            .get((e.start + index) as usize)
+        e.start
+            .checked_add(index)
+            .and_then(|row| tables::ROWS.get(row as usize))
             .copied()
             .unwrap_or(ABSENT)
     }
@@ -315,7 +318,7 @@ impl Resolver<'_> {
 
     fn kids(&self, k: Kids) -> Vec<Node> {
         let start = k.start as usize;
-        let end = start + k.len as usize;
+        let end = start.saturating_add(k.len as usize);
         pool::KIDS
             .get(start..end)
             .unwrap_or(&[])

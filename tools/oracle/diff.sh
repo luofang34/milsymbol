@@ -12,7 +12,7 @@ node "$here/cases.mjs" "$suite" > "$out/$suite.cases.jsonl"
 node "$here/render.mjs" < "$out/$suite.cases.jsonl" > "$out/$suite.oracle.jsonl"
 (cd "$root" && cargo run -q --release --example dump) < "$out/$suite.cases.jsonl" > "$out/$suite.rust.jsonl"
 status=0
-node "$here/compare.mjs" "$out/$suite.cases.jsonl" "$out/$suite.oracle.jsonl" "$out/$suite.rust.jsonl" "${2:-10}" || status=$?
+(cd "$root" && cargo xtask compare "$out/$suite.cases.jsonl" "$out/$suite.oracle.jsonl" "$out/$suite.rust.jsonl" "${2:-10}") || status=$?
 # Record files reach gigabytes for the base suite; keep them only on request.
 if [ -z "${KEEP_RECORDS:-}" ]; then
   rm -f "$out/$suite.oracle.jsonl" "$out/$suite.rust.jsonl"

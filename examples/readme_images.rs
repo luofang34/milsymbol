@@ -18,8 +18,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let dir = arg.map_or_else(|| PathBuf::from("docs/images"), PathBuf::from);
     std::fs::create_dir_all(&dir)?;
     for item in gallery_list::ITEMS {
-        let symbol = gallery_list::render(item);
-        let svg = gallery_list::with_background(&symbol.to_svg());
+        let symbol = gallery_list::render(item)?;
+        let svg = gallery_list::with_background(&symbol.to_svg()).ok_or("svg without viewBox")?;
         std::fs::write(dir.join(format!("{}.svg", item.name)), svg)?;
         println!(
             "{:24} {:32} valid={}",

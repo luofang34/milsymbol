@@ -1,5 +1,4 @@
-//! Assigning options by upstream name (the shape of milsymbol.js
-//! `new ms.Symbol(sidc, { size: 30, uniqueDesignation: "A" })`).
+//! Assigning options by name, e.g. `size` or `uniqueDesignation`.
 
 use super::{StyleColor, SymbolOptions};
 use crate::color::ColorMode;
@@ -37,7 +36,7 @@ impl From<bool> for OptionValue {
     }
 }
 
-/// An option name and value combination milsymbol.js does not support.
+/// An unsupported option name and value combination.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct OptionError {
     /// The option name.
@@ -92,7 +91,8 @@ fn color(key: &str, v: OptionValue) -> Result<StyleColor, OptionError> {
 }
 
 impl SymbolOptions {
-    /// Sets an option or style value by its milsymbol.js name.
+    /// Sets an option or style value by name (e.g. `size`, `colorMode`,
+    /// `uniqueDesignation`).
     ///
     /// Unknown string-valued keys are kept as extra text fields (label
     /// overrides use keys such as `dtg1`). `sidc` is not an option here; pass

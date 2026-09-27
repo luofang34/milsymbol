@@ -3,7 +3,6 @@
 //! See `UPSTREAM.md` for provenance and regeneration. The submodules contain
 //! data only; `crate::template` defines their types and instantiation.
 
-#![allow(clippy::all, clippy::pedantic, clippy::unreadable_literal)]
 
 #[rustfmt::skip]
 pub(crate) mod misc;

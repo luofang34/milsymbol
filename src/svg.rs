@@ -117,7 +117,7 @@ impl Writer {
         let mut inline_clip = None;
         if let (Some(clip), false) = (&style.clip_path, matches!(node, Node::Clip(_))) {
             let id = alloc::format!("clip-inline-{}", self.clip_counter);
-            self.clip_counter += 1;
+            self.clip_counter = self.clip_counter.wrapping_add(1);
             self.clip_def(&id, clip);
             inline_clip = Some(id);
         }
@@ -187,7 +187,7 @@ impl Writer {
                     .and_then(sanitize_id)
                     .unwrap_or_else(|| {
                         let id = alloc::format!("clip-custom-{}", self.clip_counter);
-                        self.clip_counter += 1;
+                        self.clip_counter = self.clip_counter.wrapping_add(1);
                         id
                     });
                 self.clip_def(&id, c.d.source());

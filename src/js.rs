@@ -46,7 +46,7 @@ pub fn write_number(out: &mut String, v: f64) {
             out.push('0');
         }
     } else if 0 < n && n <= 21 {
-        let (int, frac) = digits.split_at(n as usize);
+        let (int, frac) = digits.split_at_checked(n as usize).unwrap_or((&digits, ""));
         out.push_str(int);
         out.push('.');
         out.push_str(frac);
@@ -57,7 +57,7 @@ pub fn write_number(out: &mut String, v: f64) {
         }
         out.push_str(&digits);
     } else {
-        let (first, rest) = digits.split_at(1);
+        let (first, rest) = digits.split_at_checked(1).unwrap_or((&digits, ""));
         out.push_str(first);
         if !rest.is_empty() {
             out.push('.');

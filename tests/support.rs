@@ -1,5 +1,5 @@
 //! Oracle case decoding shared by the differential tests and the `dump` example.
-#![allow(dead_code, clippy::expect_used, clippy::panic, clippy::unwrap_used)]
+#![allow(dead_code)]
 
 use milsymbol::color::ColorMode;
 use milsymbol::ir::Paint;

@@ -54,18 +54,33 @@ criterion = { version = "0.8.2", default-features = false }
 name = "render"
 harness = false
 
-[lints.rust]
+[lints]
+workspace = true
+
+[workspace]
+members = [".", "xtask"]
+
+[workspace.lints.rust]
 unsafe_code = "forbid"
 missing_docs = "warn"
 let_underscore_drop = "warn"
 
-[lints.clippy]
-unwrap_used = "deny"
-expect_used = "deny"
-panic = "deny"
+# Panicking constructs are forbidden everywhere, tests included: tests return
+# `Result` and use `assert!`.
+[workspace.lints.clippy]
+unwrap_used = "forbid"
+expect_used = "forbid"
+panic = "forbid"
+unwrap_in_result = "forbid"
+get_unwrap = "forbid"
+indexing_slicing = "forbid"
+string_slice = "forbid"
+todo = "forbid"
+unimplemented = "forbid"
+unreachable = "forbid"
+exit = "forbid"
+mem_forget = "forbid"
 let_underscore_must_use = "deny"
 let_underscore_future = "deny"
 await_holding_lock = "deny"
-indexing_slicing = "warn"
 too_many_lines = "deny"
-
