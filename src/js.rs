@@ -31,7 +31,7 @@ pub fn write_number(out: &mut String, v: f64) {
         return;
     }
     // Integers below 2^53 print as plain digits in JavaScript.
-    if v.fract() == 0.0 && v.abs() < 9_007_199_254_740_992.0 {
+    if libm::trunc(v) == v && v.abs() < 9_007_199_254_740_992.0 {
         write!(out, "{}", v as i64).ok();
         return;
     }
