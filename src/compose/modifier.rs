@@ -114,80 +114,16 @@ pub(super) fn draw(s: &SymbolState<'_>) -> Result<PartOutput, RenderError> {
         s.config.hq_staff_length
     };
     if md.headquarters && hq_len > 0.0 {
-        let full = [
-            "AirFriend",
-            "AirNeutral",
-            "GroundFriend",
-            "GroundNeutral",
-            "SeaNeutral",
-            "SubsurfaceNeutral",
-        ];
-        let y = if full.contains(&dim_aff.as_str()) {
-            bbox.y2
-        } else {
-            100.0
-        };
-        acc.push_leaf(
-            s,
-            alloc::format!(
-                "M{},{} L{},{}",
-                n(bbox.x1),
-                n(y),
-                n(bbox.x1),
-                n(bbox.y2 + hq_len)
-            ),
-            Style::default(),
-        )?;
-        acc.gbbox.y2 = bbox.y2 + hq_len;
+        headquarters(s, &mut acc, &bbox, &dim_aff, hq_len)?;
     }
     if md.task_force {
-        let width = match md.echelon.as_deref() {
-            Some("Corps/MEF") => 110.0,
-            Some("Army") => 145.0,
-            Some("Army Group/front") => 180.0,
-            Some("Region/Theater") => 215.0,
-            _ => 90.0,
-        };
-        let (l, r) = (100.0 - width / 2.0, 100.0 + width / 2.0);
-        let d = alloc::format!(
-            "M{},{} L{},{} {},{} {},{}",
-            n(l),
-            n(bbox.y1),
-            n(l),
-            n(bbox.y1 - 40.0),
-            n(r),
-            n(bbox.y1 - 40.0),
-            n(r),
-            n(bbox.y1)
-        );
-        acc.push_leaf(s, d, Style::default())?;
-        acc.gbbox.x1 = js::min(bbox.x1, l);
-        acc.gbbox.x2 = js::max(bbox.x2, r);
-        acc.gbbox.y1 = bbox.y1 - 40.0;
+        task_force(s, &mut acc, &bbox)?;
     }
     if md.installation {
         installation(s, &mut acc, &bbox, &dim_aff)?;
     }
     if md.flags.feint_dummy == Some(true) {
-        let top = bbox.y1 - 0.0 - bbox.width() / 2.0;
-        let d = alloc::format!(
-            "M100,{} L{},{} M100,{} L{},{}",
-            n(top),
-            n(bbox.x1),
-            n(bbox.y1 - 0.0),
-            n(top),
-            n(bbox.x2),
-            n(bbox.y1 - 0.0)
-        );
-        let dash = Style {
-            stroke_dasharray: Some(Cow::Owned(s.config.dash_arrays.feint_dummy.clone())),
-            ..Style::default()
-        };
-        acc.push_leaf(s, d, dash)?;
-        acc.gbbox.merge(PartialBBox {
-            y1: Some(top),
-            ..PartialBBox::default()
-        });
+        feint_dummy(s, &mut acc, &bbox)?;
     }
     if md.echelon.as_deref().is_some_and(|e| !e.is_empty()) {
         amplifiers::echelon(s, &mut acc, &bbox)?;
@@ -257,6 +193,92 @@ fn installation(
     }
     acc.gbbox.merge(PartialBBox {
         y1: Some(bbox.y1 - 10.0),
+        ..PartialBBox::default()
+    });
+    Ok(())
+}
+
+fn headquarters(
+    s: &SymbolState<'_>,
+    acc: &mut Acc,
+    bbox: &BBox,
+    dim_aff: &str,
+    hq_len: f64,
+) -> Result<(), RenderError> {
+    let full = [
+        "AirFriend",
+        "AirNeutral",
+        "GroundFriend",
+        "GroundNeutral",
+        "SeaNeutral",
+        "SubsurfaceNeutral",
+    ];
+    let y = if full.contains(&dim_aff) {
+        bbox.y2
+    } else {
+        100.0
+    };
+    acc.push_leaf(
+        s,
+        alloc::format!(
+            "M{},{} L{},{}",
+            n(bbox.x1),
+            n(y),
+            n(bbox.x1),
+            n(bbox.y2 + hq_len)
+        ),
+        Style::default(),
+    )?;
+    acc.gbbox.y2 = bbox.y2 + hq_len;
+    Ok(())
+}
+
+fn task_force(s: &SymbolState<'_>, acc: &mut Acc, bbox: &BBox) -> Result<(), RenderError> {
+    let md = s.metadata;
+    let width = match md.echelon.as_deref() {
+        Some("Corps/MEF") => 110.0,
+        Some("Army") => 145.0,
+        Some("Army Group/front") => 180.0,
+        Some("Region/Theater") => 215.0,
+        _ => 90.0,
+    };
+    let (l, r) = (100.0 - width / 2.0, 100.0 + width / 2.0);
+    let d = alloc::format!(
+        "M{},{} L{},{} {},{} {},{}",
+        n(l),
+        n(bbox.y1),
+        n(l),
+        n(bbox.y1 - 40.0),
+        n(r),
+        n(bbox.y1 - 40.0),
+        n(r),
+        n(bbox.y1)
+    );
+    acc.push_leaf(s, d, Style::default())?;
+    acc.gbbox.x1 = js::min(bbox.x1, l);
+    acc.gbbox.x2 = js::max(bbox.x2, r);
+    acc.gbbox.y1 = bbox.y1 - 40.0;
+    Ok(())
+}
+
+fn feint_dummy(s: &SymbolState<'_>, acc: &mut Acc, bbox: &BBox) -> Result<(), RenderError> {
+    let top = bbox.y1 - 0.0 - bbox.width() / 2.0;
+    let d = alloc::format!(
+        "M100,{} L{},{} M100,{} L{},{}",
+        n(top),
+        n(bbox.x1),
+        n(bbox.y1 - 0.0),
+        n(top),
+        n(bbox.x2),
+        n(bbox.y1 - 0.0)
+    );
+    let dash = Style {
+        stroke_dasharray: Some(Cow::Owned(s.config.dash_arrays.feint_dummy.clone())),
+        ..Style::default()
+    };
+    acc.push_leaf(s, d, dash)?;
+    acc.gbbox.merge(PartialBBox {
+        y1: Some(top),
         ..PartialBBox::default()
     });
     Ok(())

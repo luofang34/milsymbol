@@ -1,4 +1,10 @@
-#![allow(clippy::float_cmp)]
+#![allow(
+    clippy::unwrap_used,
+    clippy::expect_used,
+    clippy::panic,
+    clippy::indexing_slicing,
+    clippy::float_cmp
+)]
 use super::*;
 
 const NUMBERS: &[(f64, &str)] = &[

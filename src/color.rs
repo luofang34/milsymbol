@@ -193,31 +193,42 @@ pub(crate) struct MutatedStyle {
     pub icon_color: ColorMode,
 }
 
+/// Civilian, joker/faker and suspect colour substitutions, applied in place
+/// to the fill, frame and icon modes.
+fn apply_identity(modes: [&mut ColorMode; 3], civilian: bool, f: &ColorFlags) {
+    for m in modes {
+        if civilian {
+            copy_to(m, "Civilian", &["Friend", "Neutral", "Unknown"]);
+        }
+        if f.joker_or_faker {
+            copy_to(m, "Hostile", &["Friend"]);
+        }
+        if f.suspect {
+            copy_to(m, "Suspect", &["Friend", "Hostile"]);
+        }
+    }
+}
+
 /// Port of upstream `getColors`.
 pub(crate) fn resolve_colors(mut i: ColorInputs<'_>, f: &ColorFlags) -> (ColorSet, MutatedStyle) {
     // Upstream aliases: `baseIconFillColor` is the fill object itself, and
     // user-supplied frame/icon objects are mutated in place below.
-    let mut fill = i.fill_mode;
+    let mut fill = i.fill_mode.clone();
     let frame_is_override = i.frame_override.is_some();
     let icon_is_override = i.icon_override.is_some();
-    let mut frame = i.frame_override.cloned().unwrap_or(i.frame_mode);
-    let mut icon = i.icon_override.cloned().unwrap_or(i.icon_mode);
-    if i.civilian_color && f.civilian {
-        for m in [&mut fill, &mut frame, &mut icon] {
-            copy_to(m, "Civilian", &["Friend", "Neutral", "Unknown"]);
-        }
-    }
-    if f.joker_or_faker {
-        for m in [&mut fill, &mut frame, &mut icon] {
-            copy_to(m, "Hostile", &["Friend"]);
-        }
-    }
-    if f.suspect {
-        for m in [&mut fill, &mut frame, &mut icon] {
-            copy_to(m, "Suspect", &["Friend", "Hostile"]);
-        }
-    }
-    let icon_fill = fill.clone();
+    let mut frame = i
+        .frame_override
+        .cloned()
+        .unwrap_or_else(|| i.frame_mode.clone());
+    let mut icon = i
+        .icon_override
+        .cloned()
+        .unwrap_or_else(|| i.icon_mode.clone());
+    apply_identity(
+        [&mut fill, &mut frame, &mut icon],
+        i.civilian_color && f.civilian,
+        f,
+    );
     let fill_object = fill.clone();
     if !i.mono_color.is_empty() {
         let mono = Some(Paint::Color(Cow::Owned(String::from(i.mono_color))));
@@ -230,51 +241,51 @@ pub(crate) fn resolve_colors(mut i: ColorInputs<'_>, f: &ColorFlags) -> (ColorSe
         i.white = i.none.clone();
         fill = i.none.clone();
     }
-    let mut colors = ColorSet {
-        fill_color: fill.clone(),
-        frame_color: frame.clone(),
-        icon_color: icon.clone(),
-        icon_fill_color: icon_fill,
-        none: i.none.clone(),
-        black: i.black.clone(),
-        white: i.white.clone(),
+    let frame_color = match (f.frame, frame_is_override) {
+        (false, _) => i.none.clone(),
+        (true, true) => frame.clone(),
+        (true, false) => i.black.clone(),
     };
-    colors.frame_color = if f.frame {
-        if frame_is_override {
-            frame.clone()
-        } else {
-            i.black.clone()
+    let colors = if f.fill {
+        ColorSet {
+            fill_color: if !f.frame && i.icon_visible {
+                i.none.clone()
+            } else {
+                fill.clone()
+            },
+            frame_color,
+            icon_color: if icon_is_override {
+                icon.clone()
+            } else {
+                i.black.clone()
+            },
+            icon_fill_color: if f.frame { i.off_white.clone() } else { fill },
+            none: i.none,
+            black: i.black,
+            white: i.off_white,
         }
     } else {
-        i.none.clone()
-    };
-    if f.fill {
-        colors.fill_color = if !f.frame && i.icon_visible {
-            i.none.clone()
-        } else {
-            fill.clone()
-        };
-        colors.icon_color = if icon_is_override {
-            icon.clone()
-        } else {
-            i.black.clone()
-        };
-        colors.icon_fill_color = if f.frame { i.off_white.clone() } else { fill };
-        colors.white = i.off_white;
-    } else {
-        colors.fill_color = i.none.clone();
-        colors.frame_color = if f.frame {
-            frame.clone()
-        } else {
-            i.none.clone()
-        };
-        colors.icon_color = frame.clone();
-        colors.icon_fill_color = i.none.clone();
-        if !f.frame && !i.icon_visible {
-            colors.frame_color = i.black.clone();
-            colors.fill_color = i.black;
+        let blank = !f.frame && !i.icon_visible;
+        ColorSet {
+            fill_color: if blank {
+                i.black.clone()
+            } else {
+                i.none.clone()
+            },
+            frame_color: if blank {
+                i.black.clone()
+            } else if f.frame {
+                frame.clone()
+            } else {
+                i.none.clone()
+            },
+            icon_color: frame.clone(),
+            icon_fill_color: i.none.clone(),
+            none: i.none,
+            black: i.black,
+            white: i.white,
         }
-    }
+    };
     let mutated = MutatedStyle {
         color_mode: fill_object,
         frame_color: frame,

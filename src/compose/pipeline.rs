@@ -12,6 +12,7 @@ use crate::metadata::Metadata;
 use crate::options::{StyleColor, SymbolOptions};
 use crate::registry::{PartSlot, Registry};
 use crate::sidc::{self, Dashes, ParseInput};
+use alloc::boxed::Box;
 use alloc::string::String;
 use alloc::vec::Vec;
 
@@ -127,7 +128,7 @@ pub(crate) fn colors(
 /// A JavaScript value produced by unwrapping single-element arrays.
 enum Unwrapped {
     Array(Vec<Node>),
-    One(Node),
+    One(Box<Node>),
     Undefined,
 }
 
@@ -150,7 +151,7 @@ fn unwrap_value(list: Vec<Node>, is_pre: bool) -> Result<Unwrapped, RenderError>
                         "single-character string instruction never terminates",
                     ));
                 }
-                Some(n) => Unwrapped::One(n),
+                Some(n) => Unwrapped::One(Box::new(n)),
             },
             other => return Ok(other),
         };
@@ -161,7 +162,9 @@ fn unwrap_value(list: Vec<Node>, is_pre: bool) -> Result<Unwrapped, RenderError>
 fn nonzero_length(v: &Unwrapped) -> bool {
     match v {
         Unwrapped::Array(a) => !a.is_empty(),
-        Unwrapped::One(Node::Scalar(crate::ir::Num::Text(t))) => !t.is_empty(),
+        Unwrapped::One(n) if matches!(**n, Node::Scalar(crate::ir::Num::Text(_))) => {
+            !matches!(&**n, Node::Scalar(crate::ir::Num::Text(t)) if t.is_empty())
+        }
         Unwrapped::One(_) | Unwrapped::Undefined => true,
     }
 }
@@ -169,7 +172,7 @@ fn nonzero_length(v: &Unwrapped) -> bool {
 fn into_nodes(v: Unwrapped) -> Vec<Node> {
     match v {
         Unwrapped::Array(a) => a,
-        Unwrapped::One(n) => alloc::vec![n],
+        Unwrapped::One(n) => alloc::vec![*n],
         Unwrapped::Undefined => alloc::vec![Node::Missing],
     }
 }

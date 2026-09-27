@@ -291,3 +291,6 @@ fn open_text(o: &mut String, t: &TextNode) {
         str_attr(o, "dominant-baseline", b);
     }
 }
+
+#[cfg(test)]
+mod tests;

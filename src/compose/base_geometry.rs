@@ -78,10 +78,11 @@ fn shape_node(shape: GeomShape, style: Style) -> Node {
     }
 }
 
-/// Frame instructions (`pre`, `post`), or `None` when upstream draws no frame.
-pub(super) fn frame(
-    s: &SymbolState<'_>,
-) -> Result<Option<(Vec<Node>, Vec<Node>)>, crate::RenderError> {
+/// Frame instructions drawn behind (`pre`) and in front (`post`).
+pub(super) type FrameNodes = (Vec<Node>, Vec<Node>);
+
+/// Frame instructions, or `None` when upstream draws no frame.
+pub(super) fn frame(s: &SymbolState<'_>) -> Result<Option<FrameNodes>, crate::RenderError> {
     let (md, st) = (s.metadata, &s.options.style);
     let Some(g) = md.geometry() else {
         return Ok(None);

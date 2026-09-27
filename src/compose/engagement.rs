@@ -16,6 +16,41 @@ pub(super) fn or_color(a: Option<Paint>, b: Option<Paint>) -> Option<Paint> {
     if truthy(&a) { a } else { b }
 }
 
+fn bar_text(s: &SymbolState<'_>, bar: &str, y: f64) -> Node {
+    let font_color = or_color(
+        s.color_of(&s.colors.icon_color),
+        s.colors.icon_color.get("Friend"),
+    );
+    let mut text = Node::text(100.0, y, Str::Owned(String::from(bar)));
+    text.text_anchor = lit("middle");
+    text.font_size = Some(Num::Number(22.0));
+    text.font_family = Some(Cow::Owned(s.options.style.font_family.clone()));
+    text.font_weight = lit("bold");
+    text.style.fill = font_color;
+    text.style.stroke = Some(Paint::None);
+    Node::Text(text)
+}
+
+/// Bar fill: the engagement type colour, else the frame fill; `false` when
+/// the symbol is unfilled.
+fn bar_fill(s: &SymbolState<'_>, filled: bool) -> Option<Paint> {
+    if !filled {
+        return Some(Paint::None);
+    }
+    let named = match s
+        .options
+        .text(field::ENGAGEMENT_TYPE)
+        .to_uppercase()
+        .as_str()
+    {
+        "TARGET" => Some(Paint::color("rgb(255, 0, 0)")),
+        "NON-TARGET" => Some(Paint::color("rgb(255, 255, 255)")),
+        "EXPIRED" => Some(Paint::color("rgb(255, 120, 0)")),
+        _ => None,
+    };
+    or_color(named, s.color_of(&s.colors.fill_color))
+}
+
 pub(super) fn draw(s: &SymbolState<'_>) -> Result<PartOutput, RenderError> {
     let (md, st) = (s.metadata, &s.options.style);
     let bbox = s.bbox;
@@ -25,35 +60,9 @@ pub(super) fn draw(s: &SymbolState<'_>) -> Result<PartOutput, RenderError> {
     let mut post = Vec::new();
     if !bar.is_empty() {
         y1 -= 6.0;
-        let font_color = or_color(
-            s.color_of(&s.colors.icon_color),
-            s.colors.icon_color.get("Friend"),
-        );
-        let mut text = Node::text(100.0, bbox.y1 - 11.0, Str::Owned(String::from(bar)));
-        text.text_anchor = lit("middle");
-        text.font_size = Some(Num::Number(22.0));
-        text.font_family = Some(Cow::Owned(st.font_family.clone()));
-        text.font_weight = lit("bold");
-        text.style.fill = font_color;
-        text.style.stroke = Some(Paint::None);
-        post.push(Node::Text(text));
+        post.push(bar_text(s, bar, bbox.y1 - 11.0));
         let filled = md.fill && st.mono_color.is_empty();
-        let color = if filled {
-            let named = match s
-                .options
-                .text(field::ENGAGEMENT_TYPE)
-                .to_uppercase()
-                .as_str()
-            {
-                "TARGET" => Some(Paint::color("rgb(255, 0, 0)")),
-                "NON-TARGET" => Some(Paint::color("rgb(255, 255, 255)")),
-                "EXPIRED" => Some(Paint::color("rgb(255, 120, 0)")),
-                _ => None,
-            };
-            or_color(named, s.color_of(&s.colors.fill_color))
-        } else {
-            Some(Paint::None)
-        };
+        let color = bar_fill(s, filled);
         let width = js::max(bbox.width(), js::utf16_len(bar) as f64 * 16.0);
         x1 = js::min(x1, 100.0 - width / 2.0);
         x2 = js::max(x2, 100.0 + width / 2.0);

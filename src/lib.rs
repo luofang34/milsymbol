@@ -28,6 +28,9 @@
 extern crate alloc;
 
 mod bbox;
+#[cfg(feature = "std")]
+pub mod cache;
+pub mod catalog;
 pub mod color;
 mod compose;
 pub mod config;

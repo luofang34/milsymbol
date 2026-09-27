@@ -9,37 +9,7 @@ pub(crate) static DOMAIN_SIZES: [u8; VAR_COUNT] = [2, 2, 2, 2, 2, 3, 3, 6, 22, 2
 
 /// Affiliation domain (values of `metadata.affiliation` after upstream's
 /// `|| "Friend"` fallback).
-pub(crate) static AFFILIATIONS: [&str; 6] = [
-    "Friend",
-    "Hostile",
-    "Neutral",
-    "Unknown",
-    "undefined",
-    "none",
-];
+pub(crate) static AFFILIATIONS: [&str; 6] = ["Friend", "Hostile", "Neutral", "Unknown", "undefined", "none"];
 
 /// Base geometry domain; `"none"` is the empty default geometry.
-pub(crate) static GEOMETRIES: [&str; 22] = [
-    "AirHostile",
-    "AirFriend",
-    "AirNeutral",
-    "AirUnknown",
-    "GroundHostile",
-    "GroundFriend",
-    "GroundNeutral",
-    "GroundUnknown",
-    "LandDismountedIndividualHostile",
-    "LandDismountedIndividualFriend",
-    "LandDismountedIndividualNeutral",
-    "LandDismountedIndividualUnknown",
-    "SeaHostile",
-    "SeaFriend",
-    "SeaNeutral",
-    "SeaUnknown",
-    "SubsurfaceHostile",
-    "SubsurfaceFriend",
-    "SubsurfaceNeutral",
-    "SubsurfaceUnknown",
-    "PositionMarker",
-    "none",
-];
+pub(crate) static GEOMETRIES: [&str; 22] = ["AirHostile", "AirFriend", "AirNeutral", "AirUnknown", "GroundHostile", "GroundFriend", "GroundNeutral", "GroundUnknown", "LandDismountedIndividualHostile", "LandDismountedIndividualFriend", "LandDismountedIndividualNeutral", "LandDismountedIndividualUnknown", "SeaHostile", "SeaFriend", "SeaNeutral", "SeaUnknown", "SubsurfaceHostile", "SubsurfaceFriend", "SubsurfaceNeutral", "SubsurfaceUnknown", "PositionMarker", "none"];

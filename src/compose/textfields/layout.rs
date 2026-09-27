@@ -36,10 +36,9 @@ fn js_max(values: &[f64]) -> f64 {
     values.iter().copied().fold(f64::NEG_INFINITY, js::max)
 }
 
-pub(super) fn draw(s: &SymbolState<'_>, ts: &TextStyle, post: &mut Vec<Node>, gbbox: &mut BBox) {
+/// Extra right-hand offsets: (flag space for R4/R5, stack offset).
+fn offsets(s: &SymbolState<'_>) -> (f64, f64) {
     let (md, opts) = (s.metadata, s.options);
-    let bbox = md.geometry_bbox();
-    let fs = ts.size;
     let mut flag = if opts.country_flag.as_deref().is_some_and(|c| !c.is_empty()) {
         70.0
     } else {
@@ -60,6 +59,18 @@ pub(super) fn draw(s: &SymbolState<'_>, ts: &TextStyle, post: &mut Vec<Node>, gb
         Some(v) if v != 0.0 && !v.is_nan() => v * 15.0,
         _ => 0.0,
     };
+    (flag, stack)
+}
+
+/// Texts centred on the frame: special headquarters, quantity, HQ element.
+fn centred_fields(
+    s: &SymbolState<'_>,
+    ts: &TextStyle,
+    bbox: &BBox,
+    post: &mut Vec<Node>,
+    gbbox: &mut BBox,
+) {
+    let (md, opts) = (s.metadata, s.options);
     let special_hq = opts.text(f::SPECIAL_HEADQUARTERS);
     let quantity = opts.text(f::QUANTITY);
     if !special_hq.is_empty() {
@@ -67,7 +78,7 @@ pub(super) fn draw(s: &SymbolState<'_>, ts: &TextStyle, post: &mut Vec<Node>, gb
     }
     if !quantity.is_empty() && !md.dismounted() {
         post.push(ts.text(quantity, 100.0, bbox.y1 - 10.0, "middle"));
-        gbbox.y1 = bbox.y1 - 10.0 - fs;
+        gbbox.y1 = bbox.y1 - 10.0 - ts.size;
     }
     let hq_element = opts.text(f::HEADQUARTERS_ELEMENT);
     if !hq_element.is_empty() {
@@ -79,11 +90,18 @@ pub(super) fn draw(s: &SymbolState<'_>, ts: &TextStyle, post: &mut Vec<Node>, gb
         post.push(t);
         gbbox.y2 = bbox.y2 + 35.0;
     }
-    let g = fields::compute(s);
-    if md.dismounted() && !quantity.is_empty() {
-        post.push(ts.text(quantity, 100.0, bbox.y2 + fs, "middle"));
-        gbbox.y2 = bbox.y2 + fs;
-    }
+}
+
+/// Grows `gbbox` to fit the left/right fields.
+fn extent(
+    s: &SymbolState<'_>,
+    g: &fields::Strings,
+    bbox: &BBox,
+    fs: f64,
+    (flag, stack): (f64, f64),
+    gbbox: &mut BBox,
+) {
+    let opts = s.options;
     let centred = |v: &str| {
         if v.is_empty() {
             0.0
@@ -91,7 +109,10 @@ pub(super) fn draw(s: &SymbolState<'_>, ts: &TextStyle, post: &mut Vec<Node>, gb
             (str_width(v, fs, SPACE) - bbox.width()) / 2.0
         }
     };
-    let (hq_w, q_w) = (centred(special_hq), centred(quantity));
+    let (hq_w, q_w) = (
+        centred(opts.text(f::SPECIAL_HEADQUARTERS)),
+        centred(opts.text(f::QUANTITY)),
+    );
     let [l1, l2, l3, l4, l5] = &g.l;
     let [r1, r2, r3, r4, r5] = &g.r;
     let w = |v: &str, space: f64| str_width(v, fs, space);
@@ -129,6 +150,21 @@ pub(super) fn draw(s: &SymbolState<'_>, ts: &TextStyle, post: &mut Vec<Node>, gb
     if any(l5, r5) {
         gbbox.y2 = js::max(gbbox.y2, 100.0 + 2.7 * fs);
     }
+}
+
+pub(super) fn draw(s: &SymbolState<'_>, ts: &TextStyle, post: &mut Vec<Node>, gbbox: &mut BBox) {
+    let md = s.metadata;
+    let bbox = md.geometry_bbox();
+    let fs = ts.size;
+    let (flag, stack) = offsets(s);
+    centred_fields(s, ts, &bbox, post, gbbox);
+    let g = fields::compute(s);
+    let quantity = s.options.text(f::QUANTITY);
+    if md.dismounted() && !quantity.is_empty() {
+        post.push(ts.text(quantity, 100.0, bbox.y2 + fs, "middle"));
+        gbbox.y2 = bbox.y2 + fs;
+    }
+    extent(s, &g, &bbox, fs, (flag, stack), gbbox);
     if s.options.style.info_background.is_set() {
         backgrounds(s, &g, &bbox, fs, post, gbbox);
     }

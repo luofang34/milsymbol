@@ -287,48 +287,8 @@ impl Parser<'_> {
                     None,
                 )
             }
-            b'C' => {
-                let ctrl1 = self.point(rel, cur)?;
-                let ctrl2 = self.point(rel, cur)?;
-                let to = self.point(rel, cur)?;
-                (Segment::CubicTo { ctrl1, ctrl2, to }, Some((b'C', ctrl2)))
-            }
-            b'S' => {
-                let ctrl1 = reflect(st.last_ctrl, b'C', cur);
-                let ctrl2 = self.point(rel, cur)?;
-                let to = self.point(rel, cur)?;
-                (Segment::CubicTo { ctrl1, ctrl2, to }, Some((b'C', ctrl2)))
-            }
-            b'Q' => {
-                let ctrl = self.point(rel, cur)?;
-                let to = self.point(rel, cur)?;
-                (Segment::QuadTo { ctrl, to }, Some((b'Q', ctrl)))
-            }
-            b'T' => {
-                let ctrl = reflect(st.last_ctrl, b'Q', cur);
-                let to = self.point(rel, cur)?;
-                (Segment::QuadTo { ctrl, to }, Some((b'Q', ctrl)))
-            }
-            b'A' => {
-                let rx = self.number()?;
-                let ry = self.number()?;
-                let rotation = self.number()?;
-                let large_arc = self.flag()?;
-                let sweep = self.flag()?;
-                let to = self.point(rel, cur)?;
-                (
-                    Segment::ArcTo {
-                        rx,
-                        ry,
-                        rotation,
-                        large_arc,
-                        sweep,
-                        to,
-                    },
-                    None,
-                )
-            }
-            _ => return None,
+            b'A' => (self.arc(rel, cur)?, None),
+            _ => self.curve(upper, rel, cur, st.last_ctrl)?,
         };
         st.cur = match seg {
             Segment::MoveTo(p) | Segment::LineTo(p) => p,
@@ -340,6 +300,58 @@ impl Parser<'_> {
         st.last_ctrl = ctrl;
         st.out.push(seg);
         Some(())
+    }
+
+    /// Bézier commands; returns the segment and its reflectable control point.
+    fn curve(
+        &mut self,
+        upper: u8,
+        rel: bool,
+        cur: Point,
+        last: Option<(u8, Point)>,
+    ) -> Option<(Segment, Option<(u8, Point)>)> {
+        Some(match upper {
+            b'C' => {
+                let ctrl1 = self.point(rel, cur)?;
+                let ctrl2 = self.point(rel, cur)?;
+                let to = self.point(rel, cur)?;
+                (Segment::CubicTo { ctrl1, ctrl2, to }, Some((b'C', ctrl2)))
+            }
+            b'S' => {
+                let ctrl1 = reflect(last, b'C', cur);
+                let ctrl2 = self.point(rel, cur)?;
+                let to = self.point(rel, cur)?;
+                (Segment::CubicTo { ctrl1, ctrl2, to }, Some((b'C', ctrl2)))
+            }
+            b'Q' => {
+                let ctrl = self.point(rel, cur)?;
+                let to = self.point(rel, cur)?;
+                (Segment::QuadTo { ctrl, to }, Some((b'Q', ctrl)))
+            }
+            b'T' => {
+                let ctrl = reflect(last, b'Q', cur);
+                let to = self.point(rel, cur)?;
+                (Segment::QuadTo { ctrl, to }, Some((b'Q', ctrl)))
+            }
+            _ => return None,
+        })
+    }
+
+    fn arc(&mut self, rel: bool, cur: Point) -> Option<Segment> {
+        let rx = self.number()?;
+        let ry = self.number()?;
+        let rotation = self.number()?;
+        let large_arc = self.flag()?;
+        let sweep = self.flag()?;
+        let to = self.point(rel, cur)?;
+        Some(Segment::ArcTo {
+            rx,
+            ry,
+            rotation,
+            large_arc,
+            sweep,
+            to,
+        })
     }
 }
 

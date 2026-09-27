@@ -5,7 +5,11 @@
 
 #![allow(clippy::all, clippy::pedantic, clippy::unreadable_literal)]
 
+#[rustfmt::skip]
 pub(crate) mod misc;
+#[rustfmt::skip]
 pub(crate) mod pool;
+#[rustfmt::skip]
 pub(crate) mod tables;
+#[rustfmt::skip]
 pub(crate) mod vars;

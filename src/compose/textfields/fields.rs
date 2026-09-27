@@ -42,95 +42,127 @@ fn set(slot: &mut String, v: Option<String>) {
     }
 }
 
+const IDENTITY: [&str; 5] = [
+    f::EVALUATION_RATING,
+    f::COMBAT_EFFECTIVENESS,
+    f::SIGNATURE_EQUIPMENT,
+    f::HOSTILE,
+    f::IFF_SIF,
+];
+
+fn air(o: &Opts<'_>, g: &mut Strings) {
+    let [r1, r2, r3, r4, r5] = &mut g.r;
+    *r1 = o.get(f::UNIQUE_DESIGNATION);
+    *r2 = o.get(f::IFF_SIF);
+    *r3 = o.get(f::TYPE);
+    set(r4, o.join(&[f::SPEED, f::ALTITUDE_DEPTH]));
+    set(r5, o.join(&[f::STAFF_COMMENTS, f::ADDITIONAL_INFORMATION]));
+}
+
+fn ground(o: &Opts<'_>, g: &mut Strings, unit_like: bool, activity: bool) {
+    let [l1, l2, l3, l4, l5] = &mut g.l;
+    let [r1, r2, r3, r4, r5] = &mut g.r;
+    *l1 = o.get(f::DTG);
+    set(l2, o.join(&[f::ALTITUDE_DEPTH, f::LOCATION]));
+    *l4 = o.get(f::UNIQUE_DESIGNATION);
+    *l5 = o.get(f::SPEED);
+    *r2 = o.get(f::STAFF_COMMENTS);
+    *r4 = o.get(f::HIGHER_FORMATION);
+    set(r5, o.join(&IDENTITY));
+    if unit_like {
+        set(
+            l3,
+            o.join(&[f::TYPE, f::PLATFORM_TYPE, f::EQUIPMENT_TEARDOWN_TIME]),
+        );
+        *r1 = o.get(if activity {
+            f::COUNTRY
+        } else {
+            f::REINFORCED_REDUCED
+        });
+        set(
+            r3,
+            o.join(&[f::ADDITIONAL_INFORMATION, f::COMMON_IDENTIFIER]),
+        );
+    } else {
+        set(
+            l3,
+            o.join(&[
+                f::TYPE,
+                f::PLATFORM_TYPE,
+                f::COMMON_IDENTIFIER,
+                f::INSTALLATION_COMPOSITION,
+            ]),
+        );
+        *r1 = o.get(f::COUNTRY);
+        set(
+            r3,
+            o.join(&[f::ADDITIONAL_INFORMATION, f::EQUIPMENT_TEARDOWN_TIME]),
+        );
+    }
+}
+
+fn dismounted(o: &Opts<'_>, g: &mut Strings) {
+    let [l1, l2, l3, l4, l5] = &mut g.l;
+    let [r1, r2, r3, r4, r5] = &mut g.r;
+    *l1 = o.get(f::DTG);
+    set(l2, o.join(&[f::ALTITUDE_DEPTH, f::LOCATION]));
+    set(
+        l3,
+        o.join(&[f::TYPE, f::PLATFORM_TYPE, f::COMMON_IDENTIFIER]),
+    );
+    *l4 = o.get(f::UNIQUE_DESIGNATION);
+    *l5 = o.get(f::SPEED);
+    *r1 = o.get(f::COUNTRY);
+    *r2 = o.get(f::STAFF_COMMENTS);
+    set(r3, o.join(&[f::ADDITIONAL_INFORMATION]));
+    *r4 = o.get(f::HIGHER_FORMATION);
+    set(r5, o.join(&IDENTITY));
+}
+
+fn sea(o: &Opts<'_>, g: &mut Strings) {
+    let [r1, r2, r3, r4, r5] = &mut g.r;
+    set(
+        &mut g.l[0],
+        o.join(&[f::GUARDED_UNIT, f::SPECIAL_DESIGNATOR]),
+    );
+    *r1 = o.get(f::UNIQUE_DESIGNATION);
+    *r2 = o.get(f::TYPE);
+    *r3 = o.get(f::IFF_SIF);
+    set(r4, o.join(&[f::STAFF_COMMENTS, f::ADDITIONAL_INFORMATION]));
+    set(r5, o.join(&[f::LOCATION, f::SPEED]));
+}
+
+fn subsurface(o: &Opts<'_>, g: &mut Strings) {
+    g.l[0] = o.get(f::SPECIAL_DESIGNATOR);
+    let [r1, r2, r3, r4, r5] = &mut g.r;
+    *r1 = o.get(f::UNIQUE_DESIGNATION);
+    *r2 = o.get(f::TYPE);
+    *r3 = o.get(f::ALTITUDE_DEPTH);
+    *r4 = o.get(f::STAFF_COMMENTS);
+    *r5 = o.get(f::ADDITIONAL_INFORMATION);
+}
+
+/// Upstream's sections run in this order; later ones overwrite earlier ones.
 pub(super) fn compute(s: &SymbolState<'_>) -> Strings {
     let o = Opts(s);
     let md = s.metadata;
     let letter = js::is_nan_str(s.sidc);
+    let dim = md.base_dimension.as_str();
     let mut g = Strings::default();
-    let [l1, l2, l3, l4, l5] = &mut g.l;
-    let [r1, r2, r3, r4, r5] = &mut g.r;
-    if !letter && md.base_dimension == "Air" {
-        *r1 = o.get(f::UNIQUE_DESIGNATION);
-        *r2 = o.get(f::IFF_SIF);
-        *r3 = o.get(f::TYPE);
-        set(r4, o.join(&[f::SPEED, f::ALTITUDE_DEPTH]));
-        set(r5, o.join(&[f::STAFF_COMMENTS, f::ADDITIONAL_INFORMATION]));
+    if !letter && dim == "Air" {
+        air(&o, &mut g);
     }
-    let identity = [
-        f::EVALUATION_RATING,
-        f::COMBAT_EFFECTIVENESS,
-        f::SIGNATURE_EQUIPMENT,
-        f::HOSTILE,
-        f::IFF_SIF,
-    ];
-    if letter || md.base_dimension == "Ground" {
-        *l1 = o.get(f::DTG);
-        set(l2, o.join(&[f::ALTITUDE_DEPTH, f::LOCATION]));
-        *l4 = o.get(f::UNIQUE_DESIGNATION);
-        *l5 = o.get(f::SPEED);
-        *r2 = o.get(f::STAFF_COMMENTS);
-        *r4 = o.get(f::HIGHER_FORMATION);
-        set(r5, o.join(&identity));
-        if letter || md.unit {
-            set(
-                l3,
-                o.join(&[f::TYPE, f::PLATFORM_TYPE, f::EQUIPMENT_TEARDOWN_TIME]),
-            );
-            *r1 = o.get(f::REINFORCED_REDUCED);
-            if md.activity {
-                *r1 = o.get(f::COUNTRY);
-            }
-            set(
-                r3,
-                o.join(&[f::ADDITIONAL_INFORMATION, f::COMMON_IDENTIFIER]),
-            );
-        } else {
-            set(
-                l3,
-                o.join(&[
-                    f::TYPE,
-                    f::PLATFORM_TYPE,
-                    f::COMMON_IDENTIFIER,
-                    f::INSTALLATION_COMPOSITION,
-                ]),
-            );
-            *r1 = o.get(f::COUNTRY);
-            set(
-                r3,
-                o.join(&[f::ADDITIONAL_INFORMATION, f::EQUIPMENT_TEARDOWN_TIME]),
-            );
-        }
+    if letter || dim == "Ground" {
+        ground(&o, &mut g, letter || md.unit, md.activity);
     }
     if md.dismounted() {
-        *l1 = o.get(f::DTG);
-        set(l2, o.join(&[f::ALTITUDE_DEPTH, f::LOCATION]));
-        set(
-            l3,
-            o.join(&[f::TYPE, f::PLATFORM_TYPE, f::COMMON_IDENTIFIER]),
-        );
-        *l4 = o.get(f::UNIQUE_DESIGNATION);
-        *l5 = o.get(f::SPEED);
-        *r1 = o.get(f::COUNTRY);
-        *r2 = o.get(f::STAFF_COMMENTS);
-        set(r3, o.join(&[f::ADDITIONAL_INFORMATION]));
-        *r4 = o.get(f::HIGHER_FORMATION);
-        set(r5, o.join(&identity));
+        dismounted(&o, &mut g);
     }
-    if !letter && md.base_dimension == "Sea" {
-        set(l1, o.join(&[f::GUARDED_UNIT, f::SPECIAL_DESIGNATOR]));
-        *r1 = o.get(f::UNIQUE_DESIGNATION);
-        *r2 = o.get(f::TYPE);
-        *r3 = o.get(f::IFF_SIF);
-        set(r4, o.join(&[f::STAFF_COMMENTS, f::ADDITIONAL_INFORMATION]));
-        set(r5, o.join(&[f::LOCATION, f::SPEED]));
+    if !letter && dim == "Sea" {
+        sea(&o, &mut g);
     }
-    if !letter && md.base_dimension == "Subsurface" {
-        *l1 = o.get(f::SPECIAL_DESIGNATOR);
-        *r1 = o.get(f::UNIQUE_DESIGNATION);
-        *r2 = o.get(f::TYPE);
-        *r3 = o.get(f::ALTITUDE_DEPTH);
-        *r4 = o.get(f::STAFF_COMMENTS);
-        *r5 = o.get(f::ADDITIONAL_INFORMATION);
+    if !letter && dim == "Subsurface" {
+        subsurface(&o, &mut g);
     }
     g
 }
