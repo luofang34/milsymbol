@@ -374,9 +374,3 @@ pub fn options(sidc: &str, o: &SymbolOptions) -> Json {
         .put("styleFill", b(st.style_fill));
     j.done()
 }
-
-/// Whether `JSON.stringify(instructions)` contains `"null"` (upstream's
-/// draw-instruction validity test).
-pub fn instructions_contain_null(nodes: &[Node]) -> bool {
-    instructions(nodes).to_canonical_string().contains("null")
-}

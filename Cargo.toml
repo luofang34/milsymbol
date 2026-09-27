@@ -69,5 +69,3 @@ await_holding_lock = "deny"
 indexing_slicing = "warn"
 too_many_lines = "deny"
 
-[profile.release]
-debug = false

@@ -1,17 +1,26 @@
-//! Writes the README gallery (`docs/images/*.svg`) with this crate.
-//! Run from the repository root: `cargo run --example readme_images`.
+//! Renders the README gallery with this crate: `cargo run --example
+//! readme_images [output-dir]` (default `docs/images`).
+//!
+//! Each image is exactly `Symbol::to_svg()` plus one white background
+//! rectangle, so the symbols stay legible on dark pages. `--cases` prints the
+//! gallery as oracle cases for `tools/oracle/render.mjs`.
 
 #[path = "../tests/gallery_list.rs"]
 mod gallery_list;
 
+use std::path::PathBuf;
+
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    if std::env::args().nth(1).as_deref() == Some("--cases") {
+    let arg = std::env::args().nth(1);
+    if arg.as_deref() == Some("--cases") {
         return print_cases();
     }
-    std::fs::create_dir_all("docs/images")?;
+    let dir = arg.map_or_else(|| PathBuf::from("docs/images"), PathBuf::from);
+    std::fs::create_dir_all(&dir)?;
     for item in gallery_list::ITEMS {
         let symbol = gallery_list::render(item);
-        std::fs::write(format!("docs/images/{}.svg", item.name), symbol.to_svg())?;
+        let svg = gallery_list::with_background(&symbol.to_svg());
+        std::fs::write(dir.join(format!("{}.svg", item.name)), svg)?;
         println!(
             "{:24} {:32} valid={}",
             item.name,
@@ -41,8 +50,7 @@ fn print_cases() -> Result<(), Box<dyn std::error::Error>> {
         if item.app6 {
             case.insert("cfg".into(), serde_json::json!({ "standard": "APP6" }));
         }
-        let case = serde_json::Value::Object(case);
-        println!("{case}");
+        println!("{}", serde_json::Value::Object(case));
     }
     Ok(())
 }

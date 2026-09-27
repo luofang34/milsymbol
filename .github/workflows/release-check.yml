@@ -1,0 +1,23 @@
+name: Release check
+
+# Manually verifies release readiness without publishing: the package builds
+# and the configured CARGO_REGISTRY_TOKEN is accepted by crates.io for
+# publishing this crate (tools/release/check-token.py).
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    environment: crates-io
+    steps:
+      - uses: actions/checkout@v5
+      - uses: dtolnay/rust-toolchain@stable
+      - run: cargo publish --dry-run
+      - name: Token can publish this crate (nothing is published)
+        run: python3 tools/release/check-token.py
+        env:
+          CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}

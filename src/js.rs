@@ -257,11 +257,6 @@ impl JsStr {
         }
     }
 
-    /// Whether the string is empty.
-    pub fn is_empty(&self) -> bool {
-        self.len() == 0
-    }
-
     /// `String.prototype.substr(start, len)` for non-negative arguments.
     pub fn substr(&self, start: usize, len: usize) -> String {
         let end = start.saturating_add(len).min(self.len());

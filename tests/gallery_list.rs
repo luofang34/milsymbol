@@ -1,7 +1,12 @@
 //! Symbols shown in README.md. Shared by `examples/readme_images.rs`, which
 //! writes `docs/images/*.svg`, and `tests/readme_images.rs`, which checks the
 //! committed images still match the renderer.
-#![allow(dead_code, clippy::expect_used, clippy::unwrap_used)]
+#![allow(
+    dead_code,
+    clippy::expect_used,
+    clippy::unwrap_used,
+    clippy::indexing_slicing
+)]
 
 use milsymbol::options::SymbolOptions;
 use milsymbol::{Renderer, Standard, Symbol};
@@ -303,4 +308,22 @@ pub fn render(item: &Item) -> Symbol {
         r.expect("gallery option");
     }
     renderer.render(item.sidc, o).expect("gallery symbol")
+}
+
+/// The README background: a white rounded rectangle covering the viewBox.
+pub fn background(svg: &str) -> String {
+    let vb = svg
+        .split("viewBox=\"")
+        .nth(1)
+        .and_then(|r| r.split('"').next())
+        .expect("svg has a viewBox");
+    let v: Vec<&str> = vb.split(' ').collect();
+    let (x, y, w, h) = (v[0], v[1], v[2], v[3]);
+    format!("<rect x=\"{x}\" y=\"{y}\" width=\"{w}\" height=\"{h}\" rx=\"8\" fill=\"#ffffff\" />")
+}
+
+/// `svg` with [`background`] inserted as the first child of `<svg>`.
+pub fn with_background(svg: &str) -> String {
+    let at = svg.find('>').expect("svg start tag") + 1;
+    format!("{}{}{}", &svg[..at], background(svg), &svg[at..])
 }

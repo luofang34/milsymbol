@@ -1,15 +1,27 @@
 name: Release
 
-# Publishes to crates.io when a version tag is pushed. Requires the
-# CARGO_REGISTRY_TOKEN repository secret; nothing is published otherwise.
+# Publishes to crates.io when a version tag (v*) is pushed.
+#
+# Authentication, in order of preference:
+#   1. Trusted Publishing (OIDC), once the repository variable
+#      CRATES_IO_TRUSTED_PUBLISHING is "true" and the crate's trusted
+#      publisher is configured on crates.io (see RELEASING.md).
+#   2. The CARGO_REGISTRY_TOKEN secret (needed for the very first release:
+#      crates.io only accepts Trusted Publishing for existing crates).
 on:
   push:
     tags: ["v*"]
+
+permissions:
+  contents: read
 
 jobs:
   publish:
     runs-on: ubuntu-latest
     environment: crates-io
+    permissions:
+      contents: read
+      id-token: write # OIDC token for Trusted Publishing
     steps:
       - uses: actions/checkout@v5
       - uses: dtolnay/rust-toolchain@stable
@@ -18,6 +30,11 @@ jobs:
           version=$(cargo metadata --no-deps --format-version 1 | jq -r '.packages[0].version')
           test "v$version" = "$GITHUB_REF_NAME"
       - run: cargo test --release
-      - run: cargo publish
+      - name: Authenticate with Trusted Publishing
+        if: vars.CRATES_IO_TRUSTED_PUBLISHING == 'true'
+        id: trusted
+        uses: rust-lang/crates-io-auth-action@v1
+      - name: Publish
+        run: cargo publish
         env:
-          CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
+          CARGO_REGISTRY_TOKEN: ${{ steps.trusted.outputs.token || secrets.CARGO_REGISTRY_TOKEN }}

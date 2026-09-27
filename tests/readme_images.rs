@@ -1,4 +1,5 @@
-//! The SVGs shown in README.md are this crate's actual output.
+//! The SVGs shown in README.md are this crate's actual output plus a white
+//! background rectangle.
 #![allow(clippy::expect_used, clippy::panic, clippy::unwrap_used)]
 
 mod gallery_list;
@@ -22,10 +23,16 @@ fn readme_images_match_renderer() {
             item.name,
             item.sidc
         );
+        let svg = symbol.to_svg();
         assert_eq!(
             committed,
-            symbol.to_svg(),
+            gallery_list::with_background(&svg),
             "{path} is stale; run `cargo run --example readme_images`"
+        );
+        let without = committed.replacen(&gallery_list::background(&svg), "", 1);
+        assert_eq!(
+            without, svg,
+            "{path} differs from Symbol::to_svg() beyond the background"
         );
     }
 }

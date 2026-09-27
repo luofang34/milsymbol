@@ -1,0 +1,45 @@
+# Releasing
+
+Releases are published to crates.io by `.github/workflows/release.yml` when a
+`v*` tag is pushed. Nothing is published otherwise.
+
+## Before a release
+
+1. Update `version` in `Cargo.toml` and the `CHANGELOG.md` entry.
+2. Make sure CI on `main` is green (it includes `cargo publish --dry-run`).
+3. Run **Actions → Release check → Run workflow**. It builds the package and
+   runs `tools/release/check-token.py`, which confirms the configured token
+   may publish this crate without publishing anything.
+
+## First release (API token)
+
+crates.io only allows Trusted Publishing for crates that already exist, so
+the first release uses an API token:
+
+1. crates.io → Account Settings → API Tokens: create a token with the
+   `publish-new` and `publish-update` scopes, restricted to the `milsymbol`
+   crate.
+2. GitHub → Settings → Secrets and variables → Actions → **Repository
+   secrets**: add `CARGO_REGISTRY_TOKEN`. (Or add it as an environment secret
+   of the `crates-io` environment, which the release jobs use.)
+3. Run the Release check workflow; it must end with
+   `OK: token is valid for publishing new crate`.
+4. Tag and push: `git tag v0.1.0 && git push origin v0.1.0`.
+
+## Switching to Trusted Publishing
+
+After the first release:
+
+1. crates.io → `milsymbol` → Settings → Trusted Publishing → add a GitHub
+   publisher: owner `luofang34`, repository `milsymbol`, workflow
+   `release.yml`, environment `crates-io`.
+2. GitHub → Settings → Secrets and variables → Actions → **Variables**: add
+   `CRATES_IO_TRUSTED_PUBLISHING` = `true`. The release job then obtains a
+   short-lived token through `rust-lang/crates-io-auth-action` (OIDC).
+3. After a successful Trusted-Publishing release, delete the
+   `CARGO_REGISTRY_TOKEN` secret and revoke the token on crates.io.
+4. Optionally enable "require Trusted Publishing" in the crate settings so
+   API tokens can no longer publish it.
+
+The Release check workflow tests the API-token path only; the Trusted
+Publishing exchange can be exercised only by a real release run.

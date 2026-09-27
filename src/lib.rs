@@ -38,7 +38,7 @@ mod error;
 mod generated;
 pub mod geometry;
 pub mod ir;
-pub mod js;
+mod js;
 pub mod json;
 pub mod labels;
 pub mod metadata;
