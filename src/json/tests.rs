@@ -7,6 +7,84 @@ use alloc::{string::String, vec};
 type TestResult = Result<(), alloc::boxed::Box<dyn core::error::Error>>;
 
 #[test]
+fn canonical_options_keep_native_values_without_duplicate_keys() -> TestResult {
+    let mut options = SymbolOptions::default();
+    for key in ["size", "sidc", "fill", "direction", "uniqueDesignation"] {
+        options.set_text(key, "custom label");
+    }
+    options.direction = Some(45.0);
+    let symbol = Renderer::default().render("10031000001211000000", options)?;
+    let super::Json::Obj(root) = canonical_json(&symbol) else {
+        return Err("missing canonical object".into());
+    };
+    let Some((_, super::Json::Obj(fields))) = root.iter().find(|(key, _)| key == "options") else {
+        return Err("missing canonical options".into());
+    };
+    let mut seen = alloc::collections::BTreeSet::new();
+    for (key, _) in fields {
+        assert!(seen.insert(key), "duplicate option {key}");
+    }
+    let out = canonical_json_string(&symbol);
+    assert_eq!(out, canonical_json(&symbol).to_canonical_string());
+    let record: serde_json::Value = serde_json::from_str(&out)?;
+    let opts = record.get("options").ok_or("missing options")?;
+    assert_eq!(
+        opts.get("size").and_then(serde_json::Value::as_f64),
+        Some(100.0)
+    );
+    assert_eq!(opts.get("sidc"), Some(&serde_json::json!(symbol.sidc())));
+    assert_eq!(opts.get("fill"), Some(&serde_json::json!(true)));
+    assert_eq!(
+        opts.get("direction").and_then(serde_json::Value::as_f64),
+        Some(45.0)
+    );
+    assert_eq!(
+        opts.get("uniqueDesignation"),
+        Some(&serde_json::json!("custom label"))
+    );
+    assert_eq!(symbol.options().text("size"), "custom label");
+    Ok(())
+}
+
+#[test]
+fn canonical_keys_follow_javascript_index_order() -> TestResult {
+    let keys = [
+        "10",
+        "2",
+        "0",
+        "4294967294",
+        "4294967295",
+        "01",
+        "+1",
+        "-0",
+        "1.0",
+        "1e0",
+    ];
+    let mut options = SymbolOptions::default();
+    for key in keys {
+        options.set_text(key, "v");
+    }
+    let s = Renderer::default().render("10031000001211000000", options)?;
+    let out = canonical_json_string(&s);
+    assert_eq!(out, canonical_json(&s).to_canonical_string());
+    let expected = r#""0":"v","2":"v","10":"v","4294967294":"v","+1":"v","-0":"v","01":"v","1.0":"v","1e0":"v","4294967295":"v""#;
+    assert!(
+        out.contains(&alloc::format!("\"options\":{{{expected},")),
+        "{out}"
+    );
+    let object = super::Json::Obj(
+        keys.into_iter()
+            .map(|key| (String::from(key), super::Json::Str(String::from("v"))))
+            .collect(),
+    );
+    assert_eq!(
+        object.to_canonical_string(),
+        alloc::format!("{{{expected}}}")
+    );
+    Ok(())
+}
+
+#[test]
 fn streaming_matches_owned_records_and_appends() -> TestResult {
     for sidc in [
         "10031000001211000000",

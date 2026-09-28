@@ -70,6 +70,21 @@ impl<'a, const N: usize> Object<'a, N> {
         self
     }
 
+    /// Extra fields have unique keys; only the native schema can collide.
+    pub(super) fn extend_missing(&mut self, extra: impl IntoIterator<Item = (&'a str, Value<'a>)>) {
+        let native_len = self.len;
+        for (key, value) in extra {
+            if !self
+                .fields()
+                .iter()
+                .take(native_len)
+                .any(|(k, _, _)| *k == key)
+            {
+                self.put(key, value);
+            }
+        }
+    }
+
     fn fields(&mut self) -> &mut [Entry<'a>] {
         if self.spill.is_empty() {
             self.stack.get_mut(..self.len).unwrap_or_default()
@@ -109,11 +124,7 @@ impl<'a> Value<'a> {
             _ => self.with_object(|fields| {
                 // Position breaks ties, preserving duplicate-key order without
                 // the scratch allocation of a stable sort.
-                fields.sort_unstable_by(|a, b| {
-                    a.0.encode_utf16()
-                        .cmp(b.0.encode_utf16())
-                        .then(a.2.cmp(&b.2))
-                });
+                fields.sort_unstable_by(|a, b| super::compare_keys(a.0, b.0).then(a.2.cmp(&b.2)));
                 out.push('{');
                 for (i, (key, value, _)) in fields.iter().enumerate() {
                     if i > 0 {

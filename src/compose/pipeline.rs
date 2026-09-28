@@ -222,6 +222,7 @@ pub(crate) fn compose(
     let mut instructions = Vec::new();
     let mut bbox = BBox::default();
     let mut valid_icon = true;
+    let mut icon_checked = false;
     for (index, slot) in registry.parts.iter().enumerate() {
         let state = SymbolState {
             sidc: &sidc,
@@ -233,7 +234,10 @@ pub(crate) fn compose(
             registry,
         };
         let out = match slot {
-            PartSlot::Builtin(p) => p.render(&state)?,
+            PartSlot::Builtin(p) => {
+                icon_checked |= options.style.icon && matches!(p, super::BuiltinPart::Icon);
+                p.render(&state)?
+            }
             PartSlot::Custom(p) => p
                 .draw(&state)
                 .map_err(|source| RenderError::Part { index, source })?,
@@ -242,7 +246,7 @@ pub(crate) fn compose(
         merge(out, &mut instructions, &mut bbox)?;
     }
     let icon_known = valid_icon
-        && (options.style.icon
+        && (icon_checked
             || super::icon::known(&SymbolState {
                 sidc: &sidc,
                 options,

@@ -238,7 +238,9 @@ returns a borrowed `compat::JsMetadata<'_>` view preserving the upstream
 string sentinels without allocating. `compat::write_canonical_json(&symbol,
 &mut buffer)` appends the oracle record directly to a reusable `String`;
 `canonical_json_string` returns a fresh string, and `canonical_json` builds
-an owned JSON tree when inspection is needed.
+an owned JSON tree when inspection is needed. Canonical options give emitted
+native fields precedence over same-named custom text fields. Keys use
+JavaScript order: integer indices first, then UTF-16-sorted names.
 
 ## Compatibility
 

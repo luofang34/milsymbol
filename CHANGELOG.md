@@ -34,3 +34,7 @@ First release: native Rust port of milsymbol.js 3.0.4.
   option keys.
 - Oracle comparison rejects malformed records; path preparation caches all
   valid paths even when another path or clip geometry fails to parse.
+- SIDC support checks include icons when a custom pipeline omits the icon
+  stage. Canonical options have unique keys and follow JavaScript property
+  ordering, including numeric extension keys. Oracle JSON-lines input
+  preserves Unicode line separators inside strings.

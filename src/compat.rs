@@ -16,13 +16,16 @@ pub use metadata::{Metadata as JsMetadata, OptionalFlags};
 /// Canonical JSON of the symbol's observable state, in the same shape as
 /// the oracle records: instructions, metadata, colours, bounding box, size,
 /// anchors, validity and options.
+/// Emitted native options take precedence over same-named custom text
+/// fields; the text values remain available through [`Symbol::options`].
 pub fn canonical_json(symbol: &Symbol) -> Json {
     Value::Symbol(symbol).to_json()
 }
 
 /// Appends the canonical record directly to `out`, without constructing an
 /// owned JSON tree. Reuse the buffer for bulk output. Object fields are
-/// sorted by UTF-16 code units, exactly as in [`canonical_json`].
+/// ordered as in JavaScript: array-index keys first in numeric order, then
+/// other keys sorted by UTF-16 code units, exactly as in [`canonical_json`].
 pub fn write_canonical_json(symbol: &Symbol, out: &mut String) {
     Value::Symbol(symbol).write(out);
 }

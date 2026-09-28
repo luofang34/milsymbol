@@ -109,6 +109,59 @@ fn icon_extension_adds_sidc_with_builtin_parts() -> TestResult {
     Ok(())
 }
 
+#[test]
+fn extension_icons_are_recognised_without_an_icon_stage() -> TestResult {
+    let r = Renderer::default()
+        .with_icons(Custom)
+        .with_builtin_parts(&[milsymbol::BuiltinPart::BaseGeometry]);
+    let sidc = "10031000009999000000";
+    r.check_sidc(sidc)?;
+    for icon in [true, false] {
+        assert!(
+            r.symbol(sidc)
+                .with(|o| o.style.icon = icon)
+                .render()?
+                .is_sidc_valid()
+        );
+    }
+    Ok(())
+}
+
+struct IncompleteIcon;
+
+impl IconExtension for IncompleteIcon {
+    fn icon(&self, _: &IconPartContext<'_>, key: IconKey<'_>, _: &dyn PartLookup) -> Option<Node> {
+        matches!(
+            key,
+            IconKey::Entity {
+                symbol_set: "10",
+                entity: "999900"
+            }
+        )
+        .then(|| Node::Group(vec![Node::Missing]))
+    }
+}
+
+#[test]
+fn incomplete_extension_icons_fail_sidc_validation_even_when_not_drawn() -> TestResult {
+    use milsymbol::BuiltinPart;
+    for parts in [&BuiltinPart::DEFAULT[..], &[BuiltinPart::BaseGeometry][..]] {
+        let renderer = Renderer::default()
+            .with_icons(IncompleteIcon)
+            .with_builtin_parts(parts);
+        let sidc = "10031000009999000000";
+        assert!(renderer.check_sidc(sidc).is_err());
+        for icon in [true, false] {
+            let symbol = renderer
+                .symbol(sidc)
+                .with(|o| o.style.icon = icon)
+                .render()?;
+            assert!(!symbol.is_sidc_valid(), "icon={icon}");
+        }
+    }
+    Ok(())
+}
+
 /// Replaces the built-in infantry part, as `tests/data/override_oracle.txt`
 /// does in milsymbol.js via `ms.addIconParts`.
 struct InfantryCircle;

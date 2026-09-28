@@ -160,7 +160,7 @@ pub(super) fn draw(s: &SymbolState<'_>) -> Result<PartOutput, RenderError> {
 
 /// Whether the SIDC's icon exists, looked up as if icons were drawn.
 pub(super) fn known(s: &SymbolState<'_>) -> bool {
-    icon(s).is_ok_and(|(_, _, invalid)| !invalid)
+    icon(s).is_ok_and(|(nodes, _, invalid)| !invalid && !crate::ir::contains_missing(&nodes))
 }
 
 fn default_icon_bbox() -> BBox {

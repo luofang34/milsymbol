@@ -7,6 +7,7 @@
 use crate::js::write_number;
 use alloc::string::String;
 use alloc::vec::Vec;
+use core::cmp::Ordering;
 
 /// A JSON value.
 #[derive(Debug, Clone, PartialEq)]
@@ -26,7 +27,8 @@ pub enum Json {
 }
 
 impl Json {
-    /// Serializes with keys sorted by UTF-16 code units, as the oracle does.
+    /// Serializes in the oracle's JavaScript property order: array-index
+    /// keys first, numerically, then other keys sorted by UTF-16 code units.
     pub fn to_canonical_string(&self) -> String {
         let mut out = String::new();
         self.write(&mut out);
@@ -52,7 +54,7 @@ impl Json {
             }
             Json::Obj(fields) => {
                 let mut sorted: Vec<&(String, Json)> = fields.iter().collect();
-                sorted.sort_by(|a, b| a.0.encode_utf16().cmp(b.0.encode_utf16()));
+                sorted.sort_by(|a, b| compare_keys(&a.0, &b.0));
                 out.push('{');
                 for (i, (k, v)) in sorted.into_iter().enumerate() {
                     if i > 0 {
@@ -65,6 +67,22 @@ impl Json {
                 out.push('}');
             }
         }
+    }
+}
+
+fn array_index(key: &str) -> Option<u32> {
+    if !key.as_bytes().first()?.is_ascii_digit() || (key.starts_with('0') && key.len() != 1) {
+        return None;
+    }
+    key.parse::<u32>().ok().filter(|&index| index != u32::MAX)
+}
+
+fn compare_keys(a: &str, b: &str) -> Ordering {
+    match (array_index(a), array_index(b)) {
+        (Some(a), Some(b)) => a.cmp(&b),
+        (Some(_), None) => Ordering::Less,
+        (None, Some(_)) => Ordering::Greater,
+        (None, None) => a.encode_utf16().cmp(b.encode_utf16()),
     }
 }
 

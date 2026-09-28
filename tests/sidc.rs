@@ -127,6 +127,32 @@ fn sidc_validity_does_not_depend_on_icon_visibility() -> TestResult {
 }
 
 #[test]
+fn sidc_validation_checks_icons_without_an_icon_stage() -> TestResult {
+    use milsymbol::{BuiltinPart, sidc::SidcCheckError};
+    for parts in [&[][..], &[BuiltinPart::BaseGeometry][..]] {
+        let renderer = Renderer::default().with_builtin_parts(parts);
+        assert!(renderer.check_sidc(INFANTRY).is_ok());
+        for sidc in [
+            "10031000009999990000",
+            "100310000012110099009000000000",
+            "SFGPZZZZZZ--",
+        ] {
+            for icon in [true, false] {
+                let s = renderer
+                    .symbol(sidc)
+                    .with(|o| o.style.icon = icon)
+                    .render()?;
+                assert!(!s.is_sidc_valid(), "{sidc}, icon={icon}");
+            }
+            assert!(matches!(renderer.check_sidc(sidc),
+                Err(SidcCheckError::Unsupported { issues })
+                    if issues.contains(&ValidityIssue::UnknownIcon)));
+        }
+    }
+    Ok(())
+}
+
+#[test]
 fn strict_parse_accepts_every_icon_the_tables_define() -> TestResult {
     use milsymbol::sidc::Sidc;
     let mut checked = 0;

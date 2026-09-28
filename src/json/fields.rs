@@ -169,12 +169,7 @@ pub(super) fn metadata<'a>(md: &'a crate::metadata::Metadata, o: &mut Object<'a,
 }
 pub(super) fn options<'a>(sidc: &'a str, o: &'a SymbolOptions, j: &mut Object<'a, 80>) {
     for k in crate::options::field::DEFAULTS {
-        if !o.text.contains_key(k) {
-            j.put(k, s(""));
-        }
-    }
-    for (k, v) in &o.text {
-        j.put(k, s(v));
+        j.put(k, s(o.text(k)));
     }
     j.put("sidc", s(sidc))
         .opt("direction", o.direction.map(Json::Num))
@@ -228,6 +223,7 @@ pub(super) fn options<'a>(sidc: &'a str, o: &'a SymbolOptions, j: &mut Object<'a
         )
         .put("strokeWidth", n(st.stroke_width))
         .put("styleFill", b(st.style_fill));
+    j.extend_missing(o.text.iter().map(|(k, v)| (k.as_str(), s(v))));
 }
 
 pub(super) fn symbol<'a>(s: &'a crate::Symbol, o: &mut Object<'a, 10>) {
