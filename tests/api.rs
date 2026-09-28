@@ -590,3 +590,65 @@ fn cached_symbols_can_carry_parsed_paths() -> TestResult {
     assert!(all_borrowed(first.instructions())?);
     Ok(())
 }
+
+/// Draws clipped groups with the given requested ids.
+struct Clips(Vec<Option<&'static str>>);
+
+impl SymbolPart for Clips {
+    fn draw(&self, _: &SymbolState<'_>) -> Result<PartOutput, milsymbol::PartError> {
+        let post = self
+            .0
+            .iter()
+            .enumerate()
+            .map(|(i, id)| {
+                let d = milsymbol::ir::PathData::new(format!("M0,0 L{},0 L0,10 Z", i + 1));
+                Node::clip(
+                    d,
+                    id.map(Cow::Borrowed),
+                    vec![Node::circle(100.0, 100.0, 5.0)],
+                )
+            })
+            .collect();
+        Ok(PartOutput::new(vec![], post, PartialBBox::default()))
+    }
+}
+
+fn clip_ids(svg: &str) -> Vec<String> {
+    svg.split("<clipPath id=\"")
+        .skip(1)
+        .filter_map(|s| s.split('"').next())
+        .map(String::from)
+        .collect()
+}
+
+#[test]
+fn clip_ids_are_unique_and_prefixable() -> TestResult {
+    let r = Renderer::default().with_symbol_part(Clips(vec![
+        Some("clip-custom-0"),
+        None,
+        Some("a b"),
+        Some("a_b"),
+    ]));
+    let s = r.symbol(INFANTRY).render()?;
+    let ids = clip_ids(&s.to_svg());
+    assert_eq!(ids, ["clip-custom-0", "clip-custom-1", "a_b", "a_b-1"]);
+    let mut prefixed = String::new();
+    s.write_svg_with(
+        &mut prefixed,
+        &milsymbol::SvgOptions::default().with_id_prefix("sym7-"),
+    );
+    let ids = clip_ids(&prefixed);
+    assert_eq!(
+        ids,
+        [
+            "sym7-clip-custom-0",
+            "sym7-clip-custom-1",
+            "sym7-a_b",
+            "sym7-a_b-1"
+        ]
+    );
+    for id in &ids {
+        assert!(prefixed.contains(&format!("url(#{id})")), "{id}");
+    }
+    Ok(())
+}

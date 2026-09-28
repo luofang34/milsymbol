@@ -149,3 +149,9 @@ These are deliberate and do not occur in the corpus:
   them.
 - **`sanitizeId`** (only used by the extension-only `clip` instruction)
   replaces a non-BMP character with one `_` where upstream writes two.
+- **Clip-path ids are unique.** Upstream numbers generated ids without
+  checking requested ones and keeps repeated requested ids, so one document
+  can define the same id twice. Here generated ids skip requested ones and a
+  repeated requested id gets `-1`, `-2`, … appended; `SvgOptions::id_prefix`
+  prefixes every id. Only the extension-only `clip` instruction and
+  extension styles with `clip_path` create clip paths.

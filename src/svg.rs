@@ -5,8 +5,27 @@ use crate::ir::{Node, Num, Paint, Style, TextNode};
 use crate::js::write_number;
 use alloc::string::String;
 
+mod ids;
 mod sanitize;
+use ids::ClipIds;
 use sanitize::*;
+
+/// SVG output settings.
+#[derive(Debug, Clone, PartialEq, Eq, Default)]
+#[non_exhaustive]
+pub struct SvgOptions {
+    /// Prefix for every id in the document (clip paths), so several symbols
+    /// can be inlined in one page. Characters invalid in an id are dropped.
+    pub id_prefix: Option<crate::ir::Str>,
+}
+
+impl SvgOptions {
+    /// Sets [`SvgOptions::id_prefix`].
+    pub fn with_id_prefix(mut self, prefix: impl Into<crate::ir::Str>) -> Self {
+        self.id_prefix = Some(prefix.into());
+        self
+    }
+}
 
 /// Inputs of the serializer besides the instructions.
 pub(crate) struct SvgFrame {
@@ -65,7 +84,12 @@ fn clip_path_attr(out: &mut String, id: &str) {
 }
 
 /// Appends a complete SVG document to `out`.
-pub(crate) fn render_into(frame: &SvgFrame, nodes: &[Node], out: &mut String) {
+pub(crate) fn render_into(
+    frame: &SvgFrame,
+    nodes: &[Node],
+    options: &SvgOptions,
+    out: &mut String,
+) {
     let sw = safe(frame.stroke_width, 0.0);
     let ow = safe(frame.outline_width, 0.0);
     let x = safe(frame.bbox_x1, 0.0) - sw - ow;
@@ -89,9 +113,14 @@ pub(crate) fn render_into(frame: &SvgFrame, nodes: &[Node], out: &mut String) {
         write_number(out, v);
     }
     out.push_str("\">");
+    let prefix = options
+        .id_prefix
+        .as_deref()
+        .map(ids::sanitize_prefix)
+        .unwrap_or_default();
     let mut w = Writer {
         out,
-        clip_counter: 0,
+        clip_ids: ClipIds::new(&prefix, nodes),
         stroke_width: frame.stroke_width,
         style_fill: frame.style_fill,
     };
@@ -101,7 +130,7 @@ pub(crate) fn render_into(frame: &SvgFrame, nodes: &[Node], out: &mut String) {
 
 struct Writer<'o> {
     out: &'o mut String,
-    clip_counter: u32,
+    clip_ids: ClipIds<'o>,
     stroke_width: f64,
     style_fill: bool,
 }
@@ -137,8 +166,7 @@ impl Writer<'_> {
         let Some(style) = style else { return };
         let mut inline_clip = None;
         if let (Some(clip), false) = (&style.clip_path, matches!(node, Node::Clip(_))) {
-            let id = alloc::format!("clip-inline-{}", self.clip_counter);
-            self.clip_counter = self.clip_counter.wrapping_add(1);
+            let id = self.clip_ids.generate("inline");
             self.clip_def(&id, clip);
             inline_clip = Some(id);
         }
@@ -191,12 +219,8 @@ impl Writer<'_> {
                 let id = c
                     .clip_id
                     .as_deref()
-                    .and_then(sanitize_id)
-                    .unwrap_or_else(|| {
-                        let id = alloc::format!("clip-custom-{}", self.clip_counter);
-                        self.clip_counter = self.clip_counter.wrapping_add(1);
-                        id
-                    });
+                    .and_then(|r| self.clip_ids.request(r))
+                    .unwrap_or_else(|| self.clip_ids.generate("custom"));
                 self.clip_def(&id, c.d.source());
                 self.out.push_str("<g");
                 clip_path_attr(self.out, &id);

@@ -59,6 +59,7 @@ pub use domain::Metadata;
 pub use error::{PartError, RenderError};
 pub use registry::{IconExtension, IconKey, IconPartContext, PartLookup};
 pub use renderer::{Renderer, SymbolBuilder};
+pub use svg::SvgOptions;
 pub use symbol::{Size, Symbol, Validity, ValidityIssue};
 
 /// Version of milsymbol.js this crate reproduces.

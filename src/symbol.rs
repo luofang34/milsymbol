@@ -168,6 +168,11 @@ impl Symbol {
     /// Appends the SVG document of [`Symbol::to_svg`] to `out`, so bulk
     /// rendering can reuse one buffer.
     pub fn write_svg(&self, out: &mut String) {
+        self.write_svg_with(out, &svg::SvgOptions::default());
+    }
+
+    /// [`Symbol::write_svg`] with output settings such as an id prefix.
+    pub fn write_svg_with(&self, out: &mut String, options: &svg::SvgOptions) {
         let st = &self.options.style;
         let frame = SvgFrame {
             stroke_width: st.stroke_width,
@@ -180,6 +185,6 @@ impl Symbol {
             base_width: self.base_width,
             base_height: self.base_height,
         };
-        svg::render_into(&frame, &self.instructions, out);
+        svg::render_into(&frame, &self.instructions, options, out);
     }
 }
