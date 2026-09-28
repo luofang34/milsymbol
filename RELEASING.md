@@ -14,8 +14,10 @@ Releases are published to crates.io by `.github/workflows/release.yml` when a
 
 - `main`: no force pushes or deletion; the CI jobs are required status
   checks (repository admins may still push directly).
-- Tags `v*`: only repository admins may create them; they cannot be moved
-  or deleted.
+- Tags `v*`: only repository admins may create them (ruleset "release
+  tags: admins create"), and nobody can move or delete them (ruleset
+  "release tags: immutable"). To remove a mistaken tag that was never
+  released, disable the immutable ruleset, delete the tag, and re-enable it.
 - Environment `crates-io` (used by the release job and holding its
   secrets): deployments only from `v*` tags. No reviewer is required.
 
