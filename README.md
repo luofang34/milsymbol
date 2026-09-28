@@ -52,7 +52,7 @@ readme_images`, and `cargo test` checks they match the renderer.
   `wasm32` and bare-metal targets. The only dependency is `libm`.
 - No global state: a `Renderer` holds configuration and extensions, is
   `Send + Sync`, and renders deterministically.
-- About 350,000 symbols per second to SVG on one core
+- About 400,000 symbols per second to SVG on one core
   ([BENCHMARKS.md](BENCHMARKS.md)).
 
 ## Getting started
@@ -179,7 +179,11 @@ let svg = app6.symbol("SFGPUCFRM---").render()?.to_svg();
 
 ## Drawing instructions
 
-`to_svg()` is one renderer. The same symbol is available as data:
+`to_svg()` is one renderer. For bulk output, `write_svg(&mut buf)` appends
+to a reused `String`, and `write_svg_with(&mut buf, &SvgOptions::default()
+.with_id_prefix("s1-"))` prefixes clip-path ids so several symbols can be
+inlined in one page. `CachedRenderer::with_prepared_paths()` stores symbols
+with parsed path segments for backends that read them. The same symbol is available as data:
 
 ```rust
 use milsymbol::{Renderer, ir::{Node, Segment}};
@@ -236,7 +240,8 @@ rendered as by a freshly initialised milsymbol. [UPSTREAM.md](UPSTREAM.md)
 describes how the icon tables were extracted from upstream, the differential
 corpus, and the few deliberate differences (upstream's cross-render cache
 pollution is not reproduced; inputs on which upstream throws return
-`RenderError`; options are typed; `stack` is bounded).
+`RenderError`; options are typed; `stack` is bounded; clip-path ids are
+unique).
 
 Upstream's own output depends on the platform in one place. Direction
 arrows and speed leaders use `Math.sin`/`Math.cos`, whose last bit differs

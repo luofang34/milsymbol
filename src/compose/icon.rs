@@ -192,14 +192,16 @@ fn icon(s: &SymbolState<'_>) -> Result<(Vec<Node>, BBox, bool), RenderError> {
         -1
     };
     let dashes = &s.config.dash_arrays;
-    let typed = crate::domain::Metadata::from_js(s.metadata);
-    let ctx = IconPartContext {
-        metadata: &typed,
+    // Extensions get typed metadata; without any, none is computed.
+    let typed =
+        (!s.registry.icons.is_empty()).then(|| crate::domain::Metadata::from_js(s.metadata));
+    let ctx = typed.as_ref().map(|typed| IconPartContext {
+        metadata: typed,
         js_metadata: s.metadata,
         colors: s.colors,
         mono_color: &s.options.style.mono_color,
         alternate_medal: s.options.style.alternate_medal,
-    };
+    });
     let parts = Parts {
         resolver: Resolver {
             colors: s.colors,
@@ -211,7 +213,7 @@ fn icon(s: &SymbolState<'_>) -> Result<(Vec<Node>, BBox, bool), RenderError> {
             ctx: context(s, &part_aff),
             user: UserParts {
                 extensions: &s.registry.icons,
-                ctx: (!s.registry.icons.is_empty()).then_some(&ctx),
+                ctx: ctx.as_ref(),
             },
         },
     };

@@ -89,6 +89,7 @@ fn strict_parse_checks_the_standard_code_tables() -> TestResult {
     };
     assert_eq!(field_of("SFQPUCI-----"), Some("battle dimension"));
     assert_eq!(field_of("SFGPUCI---MZ"), Some("symbol modifier"));
+    assert_eq!(field_of("SFGPUCI---Z"), Some("symbol modifier"));
     assert_eq!(field_of("GFQPUCI-----"), Some("battle dimension"));
     for ok in [
         "SFGPUCI---MO",

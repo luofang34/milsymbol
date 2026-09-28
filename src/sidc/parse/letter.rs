@@ -69,7 +69,9 @@ impl LetterSidc {
         if !"PACDXF-".contains(code.at(4)) {
             return Err(invalid("status", 4, code.field(4, 1)));
         }
-        if len >= 12 && !modifier_ok(scheme, code.at(11), code.at(12)) {
+        // A missing position 12 reads as `-`.
+        let m12 = if len >= 12 { code.at(12) } else { '-' };
+        if len >= 11 && !modifier_ok(scheme, code.at(11), m12) {
             return Err(invalid("symbol modifier", 11, code.field(11, 2)));
         }
         Ok(LetterSidc(code))

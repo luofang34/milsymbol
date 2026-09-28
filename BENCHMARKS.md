@@ -14,14 +14,14 @@
 
 | Benchmark | What it measures | Rust | milsymbol.js |
 |---|---|---:|---:|
-| `single/compose_infantry` | SIDC → composed `Symbol` (no SVG), friendly infantry | 1.69 µs | — |
-| `single/compose_and_svg_infantry` | compose + `to_svg()` | 2.19 µs | 4.61 µs |
-| `single/compose_and_svg_with_fields` | HQ battalion + 2 text fields + direction arrow | 5.37 µs | — |
-| `single/compose_and_svg_letter` | letter SIDC `SFGPUCI----D` | 3.85 µs | — |
-| `repeated_cached_render` | `CachedRenderer` hit (returns the cached `Symbol`, no SVG) | 0.17 µs | — |
-| `bulk/all_number_icons_1431` | compose + SVG for every numeric main icon (1,431 SIDCs, 20 symbol sets) | 4.07 ms | 9.17 ms |
+| `single/compose_infantry` | SIDC → composed `Symbol` (no SVG), friendly infantry | 1.49 µs | — |
+| `single/compose_and_svg_infantry` | compose + `to_svg()` | 1.92 µs | 4.61 µs |
+| `single/compose_and_svg_with_fields` | HQ battalion + 2 text fields + direction arrow | 4.88 µs | — |
+| `single/compose_and_svg_letter` | letter SIDC `SFGPUCI----D` | 3.46 µs | — |
+| `repeated_cached_render` | `CachedRenderer` hit (returns the cached `Symbol`, no SVG) | 0.16 µs | — |
+| `bulk/all_number_icons_1431` | compose + SVG for every numeric main icon (1,431 SIDCs, 20 symbol sets) | 3.58 ms | 9.17 ms |
 
-Bulk throughput is ≈ 351,000 symbols/s on one core. A cache hit returns
+Bulk throughput is ≈ 400,000 symbols/s on one core. A cache hit returns
 an already composed symbol; it is not comparable with SVG output times.
 
 ## Memory
@@ -31,13 +31,13 @@ heap profiler, one profiling session per operation:
 
 | Operation | Peak heap | Allocated | Blocks | SVG size |
 |---|---:|---:|---:|---:|
-| compose: infantry | 3,540 B | 4,060 B | 28 | |
+| compose: infantry | 3,540 B | 4,055 B | 27 | |
 | `to_svg`: infantry | 1,024 B | 1,024 B | 1 | 343 B |
-| compose: HQ battalion + text + direction | 7,936 B | 15,136 B | 65 | |
+| compose: HQ battalion + text + direction | 7,926 B | 15,121 B | 62 | |
 | `to_svg`: HQ battalion + text + direction | 2,048 B | 3,072 B | 2 | 1,051 B |
-| compose: letter SIDC | 4,307 B | 6,744 B | 28 | |
+| compose: letter SIDC | 4,307 B | 6,739 B | 27 | |
 | `to_svg`: letter SIDC | 1,024 B | 1,024 B | 1 | 595 B |
-| compose: HQ + text + direction + outline + stack 3 | 26,765 B | 73,859 B | 126 | |
+| compose: HQ + text + direction + outline + stack 3 | 26,565 B | 73,510 B | 103 | |
 | `to_svg`: same | 4,096 B | 7,168 B | 3 | 3,361 B |
 | `is_valid()`: infantry | 0 B | 0 B | 0 | |
 | `write_svg` into a reused `String` | 0 B | 0 B | 0 | |

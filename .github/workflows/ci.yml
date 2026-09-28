@@ -84,7 +84,7 @@ jobs:
           tar -xzf "$CRATE" -C /tmp/pkg
           cd /tmp/pkg/milsymbol-*
           CARGO_TARGET_DIR=/tmp/pkg/target cargo test --locked --all-targets --no-run
-          CARGO_TARGET_DIR=/tmp/pkg/target cargo test --locked --lib --test api
+          CARGO_TARGET_DIR=/tmp/pkg/target cargo test --locked --lib --test api --test extensions --test sidc
 
   js-guard:
     name: no JavaScript runtime in dependency tree
