@@ -1,9 +1,10 @@
 // Generates the differential corpus case lists.
 //
 // Usage: node cases.mjs <suite> > cases.jsonl
-// Suites: base, modifiers, options, config, invalid, fuzz, all-letter
+// Suites: base, modifiers, options, config, invalid, fuzz, direction, known
 //
-// Cases are {sidc, options?, cfg?}. Entity codes are discovered from the
+// Cases are {sidc, options?, cfg?, known?}. `known` names a documented
+// difference (UPSTREAM.md) that `cargo xtask compare` expects exactly. Entity codes are discovered from the
 // upstream mapping functions themselves, independently of tools/codegen.
 
 import { ms } from "./oracle.mjs";
@@ -278,7 +279,22 @@ function direction() {
     }
 }
 
-const suites = { base, modifiers, options, config, invalid, fuzz, direction };
+// Inputs with documented differences (UPSTREAM.md, "Known differences").
+// Only compared live: the checked-in fixtures hold no such cases.
+function known() {
+  const face = "\u{1F600}";
+  const infantry = "10031000001211000000";
+  // Non-BMP characters split into lone surrogates in modifier metadata and
+  // in the function id.
+  for (const sidc of [infantry + face, "100310000012110000001" + face, "1003100000121100000" + face])
+    out({ sidc, known: "lone-surrogate" });
+  // `hasOwnProperty` shadows the method milsymbol.js calls, so it throws.
+  out({ sidc: infantry, options: { hasOwnProperty: "x" }, known: "throws-upstream" });
+  // An own `__proto__` key (JSON.parse creates one) is dropped upstream.
+  out({ sidc: infantry, options: JSON.parse('{"__proto__":"x","uniqueDesignation":"A"}'), known: "proto-key" });
+}
+
+const suites = { base, modifiers, options, config, invalid, fuzz, direction, known };
 const suite = process.argv[2];
 if (!suites[suite]) {
   console.error(`unknown suite ${suite}; one of ${Object.keys(suites).join(", ")}`);

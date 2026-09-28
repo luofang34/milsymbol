@@ -105,8 +105,10 @@ struct Tally {
     sem: usize,
     errors: usize,
     reported: usize,
-    /// Cases whose records differ only by lone UTF-16 surrogates.
-    lone_surrogates: usize,
+    /// Cases that differ exactly as they declare (see `known.rs`).
+    known: usize,
+    /// Cases that declare a difference which did not occur as documented.
+    undocumented: usize,
     by_path: BTreeMap<String, usize>,
 }
 
@@ -197,14 +199,11 @@ impl Tally {
             // are still a serialization difference.
             match first_diff(&xv, &yv, "sem") {
                 Some(d) => Some(d),
-                // Equal once lone surrogates read as U+FFFD: the documented
-                // difference, reported but not counted as a mismatch.
-                None if lone && svg_x == svg_y => {
-                    self.lone_surrogates += 1;
-                    return Some(String::from(
-                        "known difference: lone UTF-16 surrogate in metadata (UPSTREAM.md)",
-                    ));
-                }
+                // Equal once lone surrogates read as U+FFFD: a documented
+                // difference, but only accepted where a case declares it.
+                None if lone => Some(String::from(
+                    "sem differs only by lone UTF-16 surrogates; declare \"known\": \"lone-surrogate\" if intended",
+                )),
                 None => Some(format!(
                     "sem text differs: {} != {}",
                     clip_str(xs),
@@ -258,7 +257,24 @@ fn compare(
         };
         let x = Record::read(&x).map_err(|e| format!("oracle record for case #{i}: {e}"))?;
         let y = Record::read(&y).map_err(|e| format!("rust record for case #{i}: {e}"))?;
-        if let Some(problem) = tally.case(x, y) {
+        let declared = known::declared(&line).map_err(|e| format!("case #{i}: {e}"))?;
+        let problem = match declared {
+            Some(kind) => {
+                tally.cases += 1;
+                match known::check(kind, &x, &y) {
+                    Ok(()) => {
+                        tally.known += 1;
+                        None
+                    }
+                    Err(why) => {
+                        tally.undocumented += 1;
+                        Some(why)
+                    }
+                }
+            }
+            None => tally.case(x, y),
+        };
+        if let Some(problem) = problem {
             if tally.reported < max {
                 writeln!(out, "#{i} {line}\n   {problem}")?;
             }
@@ -273,11 +289,11 @@ fn compare(
         "cases {}: svg mismatches {}, semantic mismatches {}, error mismatches {}",
         tally.cases, tally.svg, tally.sem, tally.errors
     )?;
-    if tally.lone_surrogates > 0 {
+    if tally.known + tally.undocumented > 0 {
         writeln!(
             out,
-            "known differences (lone UTF-16 surrogates, see UPSTREAM.md): {}",
-            tally.lone_surrogates
+            "declared known differences (UPSTREAM.md): {} as documented, {} not",
+            tally.known, tally.undocumented
         )?;
     }
     let mut paths: Vec<(&String, &usize)> = tally.by_path.iter().collect();
@@ -285,9 +301,10 @@ fn compare(
     for (path, n) in paths.into_iter().take(15) {
         writeln!(out, "  {n}\t{path}")?;
     }
-    Ok(tally.svg + tally.sem + tally.errors == 0)
+    Ok(tally.svg + tally.sem + tally.errors + tally.undocumented == 0)
 }
 
+mod known;
 mod surrogates;
 
 #[cfg(test)]

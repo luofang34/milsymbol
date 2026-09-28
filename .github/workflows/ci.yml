@@ -113,7 +113,7 @@ jobs:
         run: git diff --exit-code -- src/generated
       - name: Live differential check against the oracle
         run: |
-          for suite in invalid config options fuzz modifiers base direction; do
+          for suite in invalid config options fuzz modifiers base direction known; do
             tools/oracle/diff.sh "$suite" 10
           done
       - name: Fixtures are up to date

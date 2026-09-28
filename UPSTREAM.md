@@ -132,7 +132,10 @@ formatter does not (`tests/data/v8_numbers.txt`).
 
 ## Known differences
 
-These are deliberate and do not occur in the corpus:
+These are deliberate and do not occur in the corpus. The `known` oracle
+suite (`tools/oracle/cases.mjs`) holds a case for each difference that the
+oracle can observe, labelled with its kind; `cargo xtask compare` accepts
+such a case only if exactly that difference occurs, and fails it otherwise.
 
 - **Cross-render cache pollution** is not reproduced (see determinism policy).
 - **JavaScript exceptions become typed errors.** Inputs on which upstream
@@ -167,8 +170,7 @@ These are deliberate and do not occur in the corpus:
   emoji) can put half a surrogate pair into `_modifier1`, `_modifier2` or
   `functionid`, which `JSON.stringify` writes as `\udXXX`. Rust strings
   cannot hold a lone surrogate; each half becomes U+FFFD. The SVG is
-  unaffected (`tests/data/unicode_oracle.txt`), and `cargo xtask compare`
-  reports such cases as known differences instead of mismatches.
+  unaffected (`tests/data/unicode_oracle.txt`).
 - **JavaScript object keys as option names.** Upstream assigns options onto
   a plain object: a `__proto__` key is swallowed by the prototype setter,
   and a `hasOwnProperty` key shadows the method upstream later calls, so it

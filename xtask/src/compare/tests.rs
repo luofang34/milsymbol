@@ -112,21 +112,66 @@ fn extra_records_are_an_error() {
     assert!(r.is_err());
 }
 
-#[test]
-fn lone_surrogates_are_a_reported_known_difference() -> TestResult {
-    // The oracle's sem text holds the escape `\ud83d`; Rust writes U+FFFD.
-    let oracle = record(r#"{"m":"\ud83d00","n":"\ude00"}"#);
-    let rust = record("{\"m\":\"\u{fffd}00\",\"n\":\"\u{fffd}\"}");
+/// Runs the comparison over one case line with the given records.
+fn declared(
+    case: &str,
+    oracle: &str,
+    rust: &str,
+) -> Result<(bool, String), Box<dyn std::error::Error>> {
     let mut out = Vec::new();
     let agree = compare(
-        Cursor::new("case\n"),
+        Cursor::new(format!("{case}\n")),
         Cursor::new(format!("{oracle}\n")),
         Cursor::new(format!("{rust}\n")),
         10,
         &mut out,
     )?;
-    assert!(agree);
-    assert!(String::from_utf8(out)?.contains("known differences (lone UTF-16 surrogates"));
+    Ok((agree, String::from_utf8(out)?))
+}
+
+/// `sem` of a record carrying lone surrogates (oracle) or U+FFFD (Rust).
+fn surrogate_pair_records() -> (String, String) {
+    (
+        record(r#"{"m":"\ud83d00","n":"\ude00"}"#),
+        record("{\"m\":\"\u{fffd}00\",\"n\":\"\u{fffd}\"}"),
+    )
+}
+
+#[test]
+fn lone_surrogates_must_be_declared() -> TestResult {
+    let (oracle, rust) = surrogate_pair_records();
+    assert!(!one(&oracle, &rust)?, "undeclared");
+    let (agree, out) = declared(r#"{"known":"lone-surrogate"}"#, &oracle, &rust)?;
+    assert!(agree, "{out}");
+    assert!(out.contains("1 as documented, 0 not"), "{out}");
+    Ok(())
+}
+
+#[test]
+fn a_declared_difference_must_occur() -> TestResult {
+    let same = record(r#"{"x":1}"#);
+    for kind in ["lone-surrogate", "throws-upstream", "proto-key"] {
+        let case = format!(r#"{{"known":"{kind}"}}"#);
+        assert!(!declared(&case, &same, &same)?.0, "{kind}");
+    }
+    assert!(declared(r#"{"known":"other"}"#, &same, &same).is_err());
+    Ok(())
+}
+
+#[test]
+fn declared_upstream_exceptions_and_proto_keys() -> TestResult {
+    let throws = r#"{"known":"throws-upstream"}"#;
+    let err = r#"{"error":"options.hasOwnProperty is not a function"}"#;
+    assert!(declared(throws, err, &record("{}"))?.0);
+    let proto = r#"{"known":"proto-key"}"#;
+    let oracle = record(r#"{"options":{"a":"A"}}"#);
+    let rust = record(r#"{"options":{"__proto__":"x","a":"A"}}"#);
+    assert!(declared(proto, &oracle, &rust)?.0);
+    let other = record(r#"{"options":{"__proto__":"x","a":"B"}}"#);
+    assert!(
+        !declared(proto, &oracle, &other)?.0,
+        "other differences still fail"
+    );
     Ok(())
 }
 
