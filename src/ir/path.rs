@@ -137,13 +137,7 @@ impl PathData {
     /// unchanged.
     pub fn cache_segments(&mut self) -> Result<(), PathParseError> {
         if self.parsed.is_none() {
-            self.parsed = Some(
-                Parser {
-                    s: self.source.as_bytes(),
-                    i: 0,
-                }
-                .run()?,
-            );
+            self.parsed = Some(Parser::new(&self.source).run()?);
         }
         Ok(())
     }
@@ -158,12 +152,7 @@ impl PathData {
     pub fn segments(&self) -> Result<Cow<'_, [Segment]>, PathParseError> {
         match &self.parsed {
             Some(p) => Ok(Cow::Borrowed(p)),
-            None => Parser {
-                s: self.source.as_bytes(),
-                i: 0,
-            }
-            .run()
-            .map(Cow::Owned),
+            None => Parser::new(&self.source).run().map(Cow::Owned),
         }
     }
 }
@@ -221,6 +210,9 @@ fn write_segment(d: &mut alloc::string::String, seg: &Segment) {
 struct Parser<'a> {
     s: &'a [u8],
     i: usize,
+    /// The next argument directly follows a command letter, where the SVG
+    /// grammar allows whitespace but no comma.
+    first_arg: bool,
 }
 
 struct State {
@@ -230,25 +222,47 @@ struct State {
     last_ctrl: Option<(u8, Point)>,
 }
 
-impl Parser<'_> {
+impl<'a> Parser<'a> {
+    fn new(source: &'a str) -> Self {
+        Parser {
+            s: source.as_bytes(),
+            i: 0,
+            first_arg: false,
+        }
+    }
+
     fn skip_ws(&mut self) {
         while self.s.get(self.i).is_some_and(|c| c.is_ascii_whitespace()) {
             self.i += 1;
         }
     }
 
-    fn skip_sep(&mut self) {
-        self.skip_ws();
-        if self.s.get(self.i) == Some(&b',') {
-            self.i += 1;
-            self.skip_ws();
+    /// Index after the separator before the next argument: whitespace,
+    /// plus one comma unless the argument follows a command letter.
+    fn after_sep(&self) -> usize {
+        let ws = |mut i: usize| {
+            while self.s.get(i).is_some_and(|c| c.is_ascii_whitespace()) {
+                i += 1;
+            }
+            i
+        };
+        let i = ws(self.i);
+        if !self.first_arg && self.s.get(i) == Some(&b',') {
+            ws(i + 1)
+        } else {
+            i
         }
     }
 
-    fn at_number(&mut self) -> bool {
-        self.skip_sep();
+    fn skip_sep(&mut self) {
+        self.i = self.after_sep();
+        self.first_arg = false;
+    }
+
+    /// Whether another argument follows (without consuming anything).
+    fn at_number(&self) -> bool {
         self.s
-            .get(self.i)
+            .get(self.after_sep())
             .is_some_and(|c| c.is_ascii_digit() || matches!(c, b'-' | b'+' | b'.'))
     }
 
@@ -343,6 +357,7 @@ impl Parser<'_> {
                 return Err(self.err(st));
             }
             self.i += 1;
+            self.first_arg = true;
             if self.command(c, &mut st).is_none() {
                 return Err(self.err(st));
             }

@@ -133,3 +133,36 @@ fn caching_keeps_failing_paths_intact() {
         Ok(alloc::borrow::Cow::Borrowed(_))
     ));
 }
+
+#[test]
+fn comma_is_a_separator_between_arguments_only() {
+    let err = |d: &'static str| PathData::new(d).segments().err();
+    let e = err("M,0,0 L10,10");
+    assert!(
+        matches!(&e, Some(e) if e.offset == 1 && e.valid_prefix.is_empty()),
+        "{e:?}"
+    );
+    let e = err("M0,0 L,10,10");
+    assert!(matches!(&e, Some(e) if e.valid_prefix.len() == 1), "{e:?}");
+    assert!(err("M0,0 L1,,2").is_some());
+    assert!(err("M0,0 L1,1,").is_some());
+    assert!(err("M0,0 Z 1,1").is_some());
+    for ok in ["M 0 0, 1 1", "M0,0L1-1", "M0 0 , 1 1 z", "m1,1\t2\n3"] {
+        assert!(PathData::new(ok).segments().is_ok(), "{ok}");
+    }
+}
+
+#[test]
+fn every_generated_path_parses() {
+    use crate::generated::pool::NODES;
+    use crate::template::TNode;
+    let mut checked = 0;
+    for n in NODES.iter() {
+        if let TNode::Path { d, .. } = n {
+            let parsed = PathData::new(*d).segments().map(|s| s.len());
+            assert!(parsed.is_ok(), "{d}: {parsed:?}");
+            checked += 1;
+        }
+    }
+    assert!(checked > 3000, "{checked}");
+}

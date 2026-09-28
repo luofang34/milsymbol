@@ -652,3 +652,30 @@ fn clip_ids_are_unique_and_prefixable() -> TestResult {
     }
     Ok(())
 }
+
+#[test]
+fn every_catalog_symbol_has_parseable_paths() -> TestResult {
+    let r = Renderer::default();
+    let mut sidcs: Vec<String> = catalog::number_symbol_sets()
+        .flat_map(|ss| catalog::number_entities(ss).map(move |e| format!("1003{ss}0016{e}0000")))
+        .collect();
+    sidcs.extend(catalog::letter_icons().map(|g| {
+        g.chars()
+            .enumerate()
+            .map(|(i, c)| match i {
+                1 => 'H',
+                3 => 'A',
+                _ => c,
+            })
+            .collect::<String>()
+    }));
+    for sidc in &sidcs {
+        let mut s = r
+            .symbol(sidc)
+            .text(field::UNIQUE_DESIGNATION, "A")
+            .render()?;
+        s.cache_path_segments()
+            .map_err(|e| format!("{sidc}: {e}"))?;
+    }
+    Ok(())
+}
