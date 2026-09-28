@@ -558,3 +558,35 @@ fn sidc_validity_requires_a_well_formed_code() -> TestResult {
     }
     Ok(())
 }
+
+#[cfg(feature = "std")]
+#[test]
+fn cached_symbols_can_carry_parsed_paths() -> TestResult {
+    use milsymbol::cache::CachedRenderer;
+    use milsymbol::ir::Node;
+    fn all_borrowed(nodes: &[Node]) -> Result<bool, milsymbol::ir::PathParseError> {
+        for n in nodes {
+            if let Node::Path(p) = n {
+                if matches!(p.d.segments()?, Cow::Owned(_)) {
+                    return Ok(false);
+                }
+            }
+            if !all_borrowed(n.children().unwrap_or(&[]))? {
+                return Ok(false);
+            }
+        }
+        Ok(true)
+    }
+    let plain = CachedRenderer::new(Renderer::default(), 4);
+    assert!(!all_borrowed(
+        plain
+            .render(INFANTRY, &SymbolOptions::default())?
+            .instructions()
+    )?);
+    let c = CachedRenderer::new(Renderer::default(), 4).with_prepared_paths();
+    let first = c.render(INFANTRY, &SymbolOptions::default())?;
+    let hit = c.render(INFANTRY, &SymbolOptions::default())?;
+    assert!(std::sync::Arc::ptr_eq(&first, &hit));
+    assert!(all_borrowed(first.instructions())?);
+    Ok(())
+}

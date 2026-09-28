@@ -23,6 +23,7 @@ use std::vec::Vec;
 pub struct CachedRenderer {
     renderer: Renderer,
     capacity: usize,
+    prepare_paths: bool,
     entries: Mutex<HashMap<Vec<u8>, Arc<Symbol>>>,
 }
 
@@ -31,6 +32,7 @@ impl core::fmt::Debug for CachedRenderer {
         f.debug_struct("CachedRenderer")
             .field("renderer", &self.renderer)
             .field("capacity", &self.capacity)
+            .field("prepare_paths", &self.prepare_paths)
             .finish()
     }
 }
@@ -41,8 +43,19 @@ impl CachedRenderer {
         CachedRenderer {
             renderer,
             capacity,
+            prepare_paths: false,
             entries: Mutex::new(HashMap::new()),
         }
+    }
+
+    /// Parses every path's segments before a symbol is cached, so backends
+    /// that read [`PathData::segments`](crate::ir::PathData::segments) get
+    /// them without parsing (a shared `Arc<Symbol>` cannot be prepared
+    /// afterwards). A path that fails to parse is left as is; `segments()`
+    /// then reports the error.
+    pub fn with_prepared_paths(mut self) -> Self {
+        self.prepare_paths = true;
+        self
     }
 
     /// The wrapped renderer.
@@ -63,7 +76,7 @@ impl CachedRenderer {
     /// Renders `sidc` with `options`, reusing an earlier identical render.
     pub fn render(&self, sidc: &str, options: &SymbolOptions) -> Result<Arc<Symbol>, RenderError> {
         if self.capacity == 0 {
-            return Ok(Arc::new(self.renderer.render(sidc, options.clone())?));
+            return Ok(Arc::new(self.render_uncached(sidc, options)?));
         }
         let mut key = KeyBuf::default();
         write_key(&mut key, sidc, options);
@@ -72,7 +85,7 @@ impl CachedRenderer {
             return Ok(hit);
         }
         // Rendering happens outside the lock so concurrent misses do not serialize.
-        let symbol = Arc::new(self.renderer.render(sidc, options.clone())?);
+        let symbol = Arc::new(self.render_uncached(sidc, options)?);
         let evicted = match self.entries.lock() {
             Ok(mut entries) => {
                 let old = if entries.len() >= self.capacity {
@@ -136,6 +149,16 @@ impl KeyBuf {
         } else {
             &self.heap
         }
+    }
+}
+
+impl CachedRenderer {
+    fn render_uncached(&self, sidc: &str, options: &SymbolOptions) -> Result<Symbol, RenderError> {
+        let mut symbol = self.renderer.render(sidc, options.clone())?;
+        if self.prepare_paths {
+            symbol.cache_path_segments().ok();
+        }
+        Ok(symbol)
     }
 }
 
