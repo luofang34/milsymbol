@@ -34,11 +34,11 @@ heap profiler, one profiling session per operation:
 |---|---:|---:|---:|---:|
 | compose: infantry | 3,502 B | 3,944 B | 13 | |
 | `to_svg`: infantry | 1,024 B | 1,024 B | 1 | 343 B |
-| compose: HQ battalion (`10031002161211000000`) + text + direction | 7,876 B | 14,992 B | 47 | |
+| compose: HQ battalion (`10031002161211000000`) + text + direction | 6,687 B | 13,803 B | 43 | |
 | `to_svg`: HQ battalion + text + direction | 2,048 B | 3,072 B | 2 | 1,051 B |
 | compose: letter SIDC | 4,242 B | 6,618 B | 14 | |
 | `to_svg`: letter SIDC | 1,024 B | 1,024 B | 1 | 595 B |
-| compose: HQ + text + direction + outline + stack 3 | 26,515 B | 73,381 B | 88 | |
+| compose: HQ + text + direction + outline + stack 3 | 25,326 B | 72,192 B | 84 | |
 | `to_svg`: same | 4,096 B | 7,168 B | 3 | 3,361 B |
 | `is_valid()`: infantry | 0 B | 0 B | 0 | |
 | `write_svg` into a reused `String` | 0 B | 0 B | 0 | |
@@ -54,7 +54,8 @@ owns. Canonical streaming buffers only the current object's borrowed fields;
 large extension option maps can spill this scratch buffer to the heap. The
 zero-allocation figures use default fields plus the text shown above, with
 output capacity reserved before profiling. `tests/allocations.rs` guards
-buffer reuse, borrowed metadata/paint access and prepared cache hits.
+buffer reuse, borrowed metadata/paint access, prepared cache hits, direction
+rendering budgets and borrowing unused extension label definitions.
 
 `size_of::<Symbol>()` is 2,616 B and `size_of::<ir::Node>()` 384 B (both
 excluding their heap data).

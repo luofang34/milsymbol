@@ -39,11 +39,13 @@ pub struct LabelField {
 }
 
 impl Label {
-    /// A placement at `(x, y)` with the default font size and anchoring.
+    /// A placement at `(x, y)` with a font size of 12 and `start` anchoring.
     pub fn at(x: f64, y: f64) -> Self {
         Label {
             x: Some(x),
             y: Some(y),
+            font_size: Some(12.0),
+            anchor: Some(Cow::Borrowed("start")),
             ..Label::default()
         }
     }

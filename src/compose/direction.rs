@@ -126,20 +126,21 @@ pub(super) fn draw(s: &SymbolState<'_>) -> Result<PartOutput, RenderError> {
         return Ok(PartOutput::new(pre, post, gbbox));
     };
     let arrow = if opts.speed_leader == 0.0 {
-        let arrow = movement(s, bbox, direction, &color, &mut gbbox);
-        post.push(arrow.clone());
-        arrow
+        movement(s, bbox, direction, &color, &mut gbbox)
     } else {
-        let arrow = speed_leader(s, direction, &color, &mut gbbox);
-        pre.push(arrow.clone());
-        arrow
+        speed_leader(s, direction, &color, &mut gbbox)
     };
     if st.outline_width > 0.0 {
         let outline = match &arrow {
             Node::Group(list) => s.outline(list)?,
             other => s.outline_one(other)?,
         };
-        pre.insert(0, outline);
+        pre.push(outline);
+    }
+    if opts.speed_leader == 0.0 {
+        post.push(arrow);
+    } else {
+        pre.push(arrow);
     }
     Ok(PartOutput::new(pre, post, gbbox))
 }

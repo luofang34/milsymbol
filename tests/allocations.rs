@@ -1,18 +1,26 @@
-//! Allocation guards for observers and buffer reuse. This integration test
+//! Allocation guards for rendering, observers and buffer reuse. This integration test
 //! has its own process so other tests cannot contaminate allocator counts.
 
-use milsymbol::Renderer;
 use milsymbol::compat;
 use milsymbol::domain::Affiliation;
-#[cfg(feature = "std")]
+use milsymbol::labels::{Label, LabelField};
 use milsymbol::options::SymbolOptions;
 use milsymbol::options::field;
+use milsymbol::{IconExtension, Renderer, Symbol};
+use std::collections::BTreeMap;
 use std::hint::black_box;
 
 #[global_allocator]
 static ALLOC: dhat::Alloc = dhat::Alloc;
 
 #[test]
+fn allocation_budgets() -> Result<(), Box<dyn std::error::Error>> {
+    prepared_observers_and_reused_json_buffer_do_not_allocate()?;
+    unused_label_definitions_do_not_add_allocations()?;
+    direction_rendering_stays_within_allocation_budgets()?;
+    Ok(())
+}
+
 fn prepared_observers_and_reused_json_buffer_do_not_allocate()
 -> Result<(), Box<dyn std::error::Error>> {
     let renderer = Renderer::default();
@@ -44,5 +52,80 @@ fn prepared_observers_and_reused_json_buffer_do_not_allocate()
     drop(profiler);
     assert_eq!(stats.total_blocks, 0);
     assert_eq!(buffer, expected);
+    Ok(())
+}
+
+struct OwnedLabels(usize);
+
+impl IconExtension for OwnedLabels {
+    fn letter_labels(&self, out: &mut BTreeMap<String, Vec<LabelField>>) {
+        let fields = (0..self.0)
+            .map(|i| {
+                LabelField::new(
+                    format!("custom{i}"),
+                    vec![Label::at(300.0, 100.0), Label::at(300.0, 120.0)],
+                )
+            })
+            .collect();
+        out.insert("S-G-UCI---".into(), fields);
+    }
+}
+
+fn measured_render(
+    renderer: &Renderer,
+    sidc: &str,
+    options: SymbolOptions,
+) -> Result<(Symbol, dhat::HeapStats), milsymbol::RenderError> {
+    let profiler = dhat::Profiler::builder().testing().build();
+    let symbol = renderer.render(sidc, options)?;
+    let stats = dhat::HeapStats::get();
+    drop(profiler);
+    Ok((symbol, stats))
+}
+
+fn unused_label_definitions_do_not_add_allocations() -> Result<(), Box<dyn std::error::Error>> {
+    let one = Renderer::default().with_icons(OwnedLabels(1));
+    let ten = Renderer::default().with_icons(OwnedLabels(10));
+    for text in ["", "VISIBLE"] {
+        let mut options = SymbolOptions::default();
+        options.set_text("custom0", text);
+        let (a, a_stats) = measured_render(&one, "SFGPUCI-----", options.clone())?;
+        let (b, b_stats) = measured_render(&ten, "SFGPUCI-----", options)?;
+        assert_eq!(a_stats.total_blocks, b_stats.total_blocks, "{text:?}");
+        assert_eq!(a_stats.total_bytes, b_stats.total_bytes, "{text:?}");
+        assert_eq!(a.to_svg(), b.to_svg());
+        assert_eq!(
+            compat::canonical_json_string(&a),
+            compat::canonical_json_string(&b)
+        );
+    }
+    Ok(())
+}
+
+fn direction_rendering_stays_within_allocation_budgets() -> Result<(), Box<dyn std::error::Error>> {
+    let renderer = Renderer::default();
+    for (sidc, budgets) in [
+        ("10031000001211000000", [26, 38, 21, 28]),
+        ("10031002161211000000", [38, 54, 38, 50]),
+        ("10030100001100000000", [20, 30, 21, 28]),
+        ("SFGPUCI----D", [28, 43, 22, 32]),
+    ] {
+        for ((speed, outline), budget) in [(0.0, 0.0), (0.0, 3.0), (60.0, 0.0), (60.0, 3.0)]
+            .into_iter()
+            .zip(budgets)
+        {
+            let mut options = SymbolOptions::default();
+            options.direction = Some(45.0);
+            options.speed_leader = speed;
+            options.style.outline_width = outline;
+            let (symbol, stats) = measured_render(&renderer, sidc, options)?;
+            assert!(symbol.is_valid());
+            assert!(
+                stats.total_blocks <= budget,
+                "{sidc} speed={speed} outline={outline}: {} allocations exceeds {budget}",
+                stats.total_blocks
+            );
+        }
+    }
     Ok(())
 }

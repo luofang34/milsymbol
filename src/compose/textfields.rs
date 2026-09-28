@@ -86,7 +86,7 @@ pub(super) fn draw(s: &SymbolState<'_>) -> Result<PartOutput, RenderError> {
     let mut pre = Vec::new();
     let mut post = Vec::new();
     if let Some(label) = label_override(s) {
-        post.push(Node::Group(label_texts(s, &ts, &label, &mut gbbox)));
+        post.push(Node::Group(label_texts(s, &ts, label, &mut gbbox)));
         if st.outline_width > 0.0 {
             pre.push(s.outline(&post)?);
         }
@@ -113,7 +113,7 @@ pub(super) fn draw(s: &SymbolState<'_>) -> Result<PartOutput, RenderError> {
 }
 
 /// Label override for this SIDC: extension entries first, then built-ins.
-fn label_override(s: &SymbolState<'_>) -> Option<Cow<'static, [LabelField]>> {
+fn label_override<'a>(s: &'a SymbolState<'_>) -> Option<&'a [LabelField]> {
     let md = s.metadata;
     let (key, user) = if md.number_sidc {
         if !md.control_measure() {
@@ -133,9 +133,9 @@ fn label_override(s: &SymbolState<'_>) -> Option<Cow<'static, [LabelField]>> {
         )
     };
     if let Some(v) = user.get(&*key) {
-        return Some(Cow::Owned(v.clone()));
+        return Some(v.as_slice());
     }
-    labels::builtin(md.number_sidc, &key).map(Cow::Borrowed)
+    labels::builtin(md.number_sidc, &key)
 }
 
 fn label_texts(

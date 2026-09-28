@@ -10,6 +10,9 @@ First release: native Rust port of milsymbol.js 3.0.4.
 - Typed drawing IR with typed path segments.
 - Renderer-scoped configuration and extensions (symbol parts, icons, labels,
   colour modes).
+- `Label::at` supplies default font size and anchoring for correct bounds;
+  extension labels are borrowed during rendering and direction arrows are moved
+  without cloning their instruction trees.
 - `no_std + alloc`; `wasm32` and bare-metal builds.
 - Strict typed SIDC parsing (`sidc::Sidc`), typed symbol info
   (`Symbol::metadata`, `domain`) and typed validity issues.
@@ -25,6 +28,8 @@ First release: native Rust port of milsymbol.js 3.0.4.
   also checks renderer support; `is_sidc_valid` ignores icon visibility.
 - `CachedRenderer::with_prepared_paths`; unique clip-path ids and
   `SvgOptions::id_prefix`; SVG path grammar enforced by the path parser.
+- Concurrent identical cache misses reuse the inserted entry without evicting
+  other keys.
 - `Symbol::write_svg` appends to a caller's buffer; SVG serialization,
   `is_valid()` and cache hits make no temporary allocations.
 - Enum-backed internal metadata and borrowed `JsMetadata` views;

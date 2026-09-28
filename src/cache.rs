@@ -18,7 +18,7 @@ use std::vec::Vec;
 
 /// A renderer with a bounded cache of rendered symbols.
 ///
-/// When the cache holds `capacity` entries it is emptied before inserting;
+/// When the cache holds `capacity` entries it is emptied before inserting a new key;
 /// a capacity of zero disables caching.
 pub struct CachedRenderer {
     renderer: Renderer,
@@ -94,6 +94,11 @@ impl CachedRenderer {
         let symbol = Arc::new(self.render_uncached(sidc, options)?);
         let evicted = match self.entries.lock() {
             Ok(mut entries) => {
+                // Another render may have populated this key while the lock was released.
+                if let Some(hit) = entries.get(key).cloned() {
+                    drop(entries);
+                    return Ok(hit);
+                }
                 let old = if entries.len() >= self.capacity {
                     core::mem::take(&mut *entries)
                 } else {
