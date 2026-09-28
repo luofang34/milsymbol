@@ -8,8 +8,9 @@
 use crate::color::{ColorSet, SlotMode};
 use crate::generated::{pool, tables, vars};
 use crate::ir::{self, Node, Num, Paint, Style};
+use crate::registry::{IconExtension, IconPartContext, PartLookup};
 use alloc::borrow::Cow;
-use alloc::collections::BTreeMap;
+use alloc::boxed::Box;
 use alloc::string::String;
 use alloc::vec::Vec;
 
@@ -182,6 +183,12 @@ pub(crate) struct Entry {
     pub start: u32,
 }
 
+impl PartLookup for Resolver<'_> {
+    fn part(&self, name: &str) -> Option<Node> {
+        Resolver::part(self, name)
+    }
+}
+
 /// Values of the context variables for one symbol.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub(crate) struct IconContext {
@@ -237,7 +244,15 @@ impl IconContext {
     }
 }
 
+/// Extensions consulted before the generated tables.
+#[derive(Clone, Copy)]
+pub(crate) struct UserParts<'a> {
+    pub extensions: &'a [Box<dyn IconExtension>],
+    pub ctx: Option<&'a IconPartContext<'a>>,
+}
+
 /// Resolves symbolic template values.
+#[derive(Clone, Copy)]
 pub(crate) struct Resolver<'a> {
     pub colors: &'a ColorSet,
     /// Affiliation the icon parts were built for (after `|| "Friend"`).
@@ -248,9 +263,9 @@ pub(crate) struct Resolver<'a> {
     /// Mapping whose in-place part mutations apply (symbol set, or -1 for letter).
     pub mapping: i16,
     pub ctx: IconContext,
-    /// Parts added or replaced by extensions; they take precedence over the
-    /// generated tables everywhere a part is referenced.
-    pub user_parts: &'a BTreeMap<String, Node>,
+    /// Extensions whose parts take precedence over the generated tables
+    /// everywhere a part is referenced.
+    pub user: UserParts<'a>,
 }
 
 fn num(t: TNum) -> Num {
@@ -407,8 +422,8 @@ impl Resolver<'_> {
                 .get(index.checked_sub(tables::PARTS.len())?)
                 .copied()
         })?;
-        if let Some(user) = self.user_parts.get(name) {
-            return Some(user.clone());
+        if let Some(user) = self.user_part(name) {
+            return Some(user);
         }
         builtin?;
         let entry = tables::OVERRIDES
@@ -427,10 +442,27 @@ impl Resolver<'_> {
         }
     }
 
+    /// The part `name` as the latest extension defining it returns it; each
+    /// extension sees the parts defined before it.
+    fn user_part(&self, name: &str) -> Option<Node> {
+        let ctx = self.user.ctx?;
+        let exts = self.user.extensions;
+        (0..exts.len()).rev().find_map(|i| {
+            let earlier = Resolver {
+                user: UserParts {
+                    extensions: exts.get(..i)?,
+                    ctx: Some(ctx),
+                },
+                ..*self
+            };
+            exts.get(i)?.icon_part(ctx, name, &earlier)
+        })
+    }
+
     /// Instantiates a named icon part (extension parts first).
     pub(crate) fn part(&self, name: &str) -> Option<Node> {
-        if let Some(user) = self.user_parts.get(name) {
-            return Some(user.clone());
+        if let Some(user) = self.user_part(name) {
+            return Some(user);
         }
         let idx = tables::PARTS
             .binary_search_by(|(n, _)| n.as_bytes().cmp(name.as_bytes()))

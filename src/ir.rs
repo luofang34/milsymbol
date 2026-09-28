@@ -77,6 +77,7 @@ impl From<f64> for Num {
 
 /// Presentation attributes shared by every node type.
 #[derive(Debug, Clone, PartialEq, Default)]
+#[non_exhaustive]
 pub struct Style {
     /// Fill paint; `None` leaves the attribute unset.
     pub fill: Option<Paint>,
@@ -103,6 +104,7 @@ pub struct Style {
 
 /// A path node.
 #[derive(Debug, Clone, PartialEq)]
+#[non_exhaustive]
 pub struct PathNode {
     /// Path geometry.
     pub d: PathData,
@@ -112,6 +114,7 @@ pub struct PathNode {
 
 /// A circle node.
 #[derive(Debug, Clone, PartialEq)]
+#[non_exhaustive]
 pub struct CircleNode {
     /// Centre x.
     pub cx: Num,
@@ -125,6 +128,7 @@ pub struct CircleNode {
 
 /// A text node.
 #[derive(Debug, Clone, PartialEq)]
+#[non_exhaustive]
 pub struct TextNode {
     /// Anchor x.
     pub x: Num,
@@ -148,6 +152,7 @@ pub struct TextNode {
 
 /// A group translated by `(x, y)`.
 #[derive(Debug, Clone, PartialEq)]
+#[non_exhaustive]
 pub struct TranslateNode {
     /// Horizontal offset.
     pub x: Num,
@@ -161,6 +166,7 @@ pub struct TranslateNode {
 
 /// A group rotated by `degree` around `(x, y)`.
 #[derive(Debug, Clone, PartialEq)]
+#[non_exhaustive]
 pub struct RotateNode {
     /// Rotation in degrees, clockwise.
     pub degree: Num,
@@ -176,6 +182,7 @@ pub struct RotateNode {
 
 /// A group uniformly scaled by `factor` about the origin.
 #[derive(Debug, Clone, PartialEq)]
+#[non_exhaustive]
 pub struct ScaleNode {
     /// Scale factor.
     pub factor: Num,
@@ -187,6 +194,7 @@ pub struct ScaleNode {
 
 /// A group clipped by a path (extension instruction).
 #[derive(Debug, Clone, PartialEq)]
+#[non_exhaustive]
 pub struct ClipNode {
     /// Requested clip id; sanitized on output.
     pub clip_id: Option<Str>,
@@ -200,6 +208,7 @@ pub struct ClipNode {
 
 /// One drawing instruction.
 #[derive(Debug, Clone, PartialEq)]
+#[non_exhaustive]
 pub enum Node {
     /// A path.
     Path(PathNode),
@@ -274,12 +283,26 @@ impl Node {
         }
     }
 
+    /// Mutable access to the child instructions of a group-like node.
+    pub fn children_mut(&mut self) -> Option<&mut Vec<Node>> {
+        match self {
+            Node::Translate(n) => Some(&mut n.draw),
+            Node::Rotate(n) => Some(&mut n.draw),
+            Node::Scale(n) => Some(&mut n.draw),
+            Node::Clip(n) => Some(&mut n.draw),
+            Node::Group(v) => Some(v),
+            _ => None,
+        }
+    }
+
     /// Creates a path node with default style.
     pub fn path(d: impl Into<Str>) -> Self {
-        Node::Path(PathNode {
-            d: PathData::new(d),
-            style: Style::default(),
-        })
+        Node::Path(PathNode::new(PathData::new(d)))
+    }
+
+    /// Creates a path node from already built path data.
+    pub fn path_data(d: PathData) -> Self {
+        Node::Path(PathNode::new(d))
     }
 
     /// Creates a circle node with default style.
@@ -292,6 +315,12 @@ impl Node {
         })
     }
 
+    /// Creates a text node with default attributes; see [`TextNode::new`]
+    /// to set fonts and anchoring first.
+    pub fn text(x: f64, y: f64, text: impl Into<Str>) -> Self {
+        Node::Text(TextNode::new(x, y, text))
+    }
+
     /// Creates a translate group.
     pub fn translate(x: f64, y: f64, draw: Vec<Node>) -> Self {
         Node::Translate(TranslateNode {
@@ -302,8 +331,51 @@ impl Node {
         })
     }
 
-    /// Creates a text node with default attributes.
-    pub fn text(x: f64, y: f64, text: impl Into<Str>) -> TextNode {
+    /// Creates a group rotated by `degree` (clockwise) around `(x, y)`.
+    pub fn rotate(degree: f64, x: f64, y: f64, draw: Vec<Node>) -> Self {
+        Node::Rotate(RotateNode {
+            degree: degree.into(),
+            x: x.into(),
+            y: y.into(),
+            draw,
+            style: Style::default(),
+        })
+    }
+
+    /// Creates a group scaled by `factor` about the origin.
+    pub fn scale(factor: f64, draw: Vec<Node>) -> Self {
+        Node::Scale(ScaleNode {
+            factor: factor.into(),
+            draw,
+            style: Style::default(),
+        })
+    }
+
+    /// Creates a group clipped by `d`; `clip_id` requests an id for the
+    /// clip path (sanitized, and made unique, on SVG output).
+    pub fn clip(d: PathData, clip_id: Option<Str>, draw: Vec<Node>) -> Self {
+        Node::Clip(ClipNode {
+            clip_id,
+            d,
+            draw,
+            style: Style::default(),
+        })
+    }
+}
+
+impl PathNode {
+    /// A path with default style.
+    pub fn new(d: PathData) -> Self {
+        PathNode {
+            d,
+            style: Style::default(),
+        }
+    }
+}
+
+impl TextNode {
+    /// A text run with default attributes.
+    pub fn new(x: f64, y: f64, text: impl Into<Str>) -> Self {
         TextNode {
             x: x.into(),
             y: y.into(),

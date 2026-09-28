@@ -6,7 +6,6 @@ use crate::bbox::{BBox, PartialBBox};
 use crate::error::RenderError;
 use crate::ir::{Node, Num, Paint, PathData, PathNode, Style};
 use crate::js::{self, number_to_string as n};
-use alloc::borrow::Cow;
 use alloc::string::String;
 use alloc::vec::Vec;
 
@@ -273,7 +272,7 @@ fn feint_dummy(s: &SymbolState<'_>, acc: &mut Acc, bbox: &BBox) -> Result<(), Re
         n(bbox.y1 - 0.0)
     );
     let dash = Style {
-        stroke_dasharray: Some(Cow::Owned(s.config.dash_arrays.feint_dummy.clone())),
+        stroke_dasharray: Some(s.config.dash_arrays.feint_dummy.clone()),
         ..Style::default()
     };
     acc.push_leaf(s, d, dash)?;

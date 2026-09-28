@@ -6,7 +6,6 @@ use crate::bbox::{BBox, PartialBBox};
 use crate::color::truthy;
 use crate::error::RenderError;
 use crate::ir::{Node, Num, Paint, Str};
-use alloc::borrow::Cow;
 use alloc::vec::Vec;
 
 fn letter(
@@ -18,9 +17,9 @@ fn letter(
     anchor: &'static str,
     color: &Option<Paint>,
 ) -> Node {
-    let mut t = Node::text(x, y, Str::Borrowed(text));
+    let mut t = crate::ir::TextNode::new(x, y, Str::Borrowed(text));
     t.style.fill = color.clone();
-    t.font_family = Some(Cow::Owned(s.options.style.font_family.clone()));
+    t.font_family = Some(s.options.style.font_family.clone());
     t.font_size = Some(Num::Number(size));
     t.font_weight = lit("bold");
     t.text_anchor = lit(anchor);

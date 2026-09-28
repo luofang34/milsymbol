@@ -2,7 +2,6 @@
 
 use super::Symbol;
 use crate::ir::{Node, Num, Paint, Style};
-use alloc::string::String;
 use alloc::vec::Vec;
 
 /// Why a symbol is not valid.
@@ -24,29 +23,39 @@ pub enum ValidityIssue {
     NullInDrawing,
 }
 
-/// Detailed validity (upstream `isValid(true)`) plus typed issues.
-#[derive(Debug, Clone, PartialEq)]
+/// Why a symbol is or is not valid.
+#[derive(Debug, Clone, PartialEq, Eq)]
+#[non_exhaustive]
 pub struct Validity {
-    /// Affiliation the symbol was drawn with.
-    pub affiliation: Option<String>,
-    /// Dimension the symbol was drawn with.
-    pub dimension: String,
-    /// The battle dimension is unknown.
-    pub dimension_unknown: bool,
-    /// No draw instruction is missing and no value serializes as `null`.
-    pub draw_instructions: bool,
-    /// The icon was found.
-    pub icon: bool,
-    /// The mobility code was recognised.
-    pub mobility: bool,
-    /// Every reason the symbol is not valid; empty for a valid symbol.
+    /// Every reason the symbol is not valid (as milsymbol.js `isValid()`
+    /// judges it); empty for a valid symbol.
     pub issues: Vec<ValidityIssue>,
+}
+
+impl Validity {
+    /// Whether there are no issues.
+    pub fn is_valid(&self) -> bool {
+        self.issues.is_empty()
+    }
+}
+
+/// Which icon lookup an issue list reports.
+#[derive(Clone, Copy)]
+pub(super) enum IconCheck {
+    /// Upstream: the drawn icon (always found when icons are hidden).
+    Drawn,
+    /// The SIDC's icon, whether or not it is drawn.
+    Sidc,
 }
 
 /// The reasons `s` is not valid, in declaration order. Allocates only when
 /// there is at least one.
-pub(super) fn issues(s: &Symbol) -> Vec<ValidityIssue> {
+pub(super) fn issues(s: &Symbol, icon: IconCheck) -> Vec<ValidityIssue> {
     let md = &s.metadata;
+    let icon_found = match icon {
+        IconCheck::Drawn => s.valid_icon,
+        IconCheck::Sidc => s.icon_known,
+    };
     [
         (
             md.affiliation.as_deref() == Some("undefined"),
@@ -56,7 +65,7 @@ pub(super) fn issues(s: &Symbol) -> Vec<ValidityIssue> {
             md.dimension == "undefined" && !md.control_measure(),
             ValidityIssue::UnknownDimension,
         ),
-        (!s.valid_icon, ValidityIssue::UnknownIcon),
+        (!icon_found, ValidityIssue::UnknownIcon),
         (md.mobility.is_none(), ValidityIssue::UnknownAmplifier),
         (
             crate::ir::contains_missing(&s.instructions),
@@ -67,26 +76,6 @@ pub(super) fn issues(s: &Symbol) -> Vec<ValidityIssue> {
     .into_iter()
     .filter_map(|(present, issue)| present.then_some(issue))
     .collect()
-}
-
-pub(super) fn of(s: &Symbol) -> Validity {
-    let md = &s.metadata;
-    let issues = issues(s);
-    let drawing_ok = !issues.iter().any(|i| {
-        matches!(
-            i,
-            ValidityIssue::MissingInstruction | ValidityIssue::NullInDrawing
-        )
-    });
-    Validity {
-        affiliation: md.affiliation.clone(),
-        dimension: md.dimension.clone(),
-        dimension_unknown: md.dimension_unknown,
-        draw_instructions: drawing_ok,
-        icon: s.valid_icon,
-        mobility: md.mobility.is_some(),
-        issues,
-    }
 }
 
 /// Whether `JSON.stringify(nodes)` would contain `null` other than for a

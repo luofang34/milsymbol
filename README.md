@@ -81,7 +81,7 @@ let svg: String = symbol.to_svg();
 # let symbol = milsymbol::Renderer::default().symbol("130310001412110000000000000000").render()?;
 let anchor = symbol.anchor();   // pixel offset of the map position (frame centre or HQ staff foot)
 let size = symbol.size();       // width and height in pixels
-let info = symbol.info();       // typed: affiliation, dimension, status, echelon, mobility, …
+let info = symbol.metadata();   // typed: affiliation, dimension, status, echelon, mobility, …
 let ok = symbol.is_sidc_valid(); // false for unknown codes, which still render with a "?" icon
 # Ok::<(), milsymbol::RenderError>(())
 ```
@@ -214,10 +214,17 @@ configured renderers can coexist:
 | a default standard, dash arrays, HQ staff length | `with_standard`, `with_dash_arrays`, `with_hq_staff_length` |
 | the icon octagon (debugging) | `Renderer::with_octagon()` |
 
-Extensions can compose new icons from the 2,108 built-in parts by name
-(`PartLookup::part("GR.IC.FF.INFANTRY")`, listed by `catalog::icon_parts()`).
-`tests/api.rs` has complete examples of a custom symbol part, a new SIDC icon
-and a label override.
+An `IconExtension` answers queries while a symbol is drawn: `icon_part(name)`
+replaces or adds a named part, `icon(IconKey)` an icon for an entity,
+modifier or generic letter SIDC, and nothing is built per symbol for keys it
+does not define. Extensions can compose new icons from the 2,108 built-in
+parts by name (`PartLookup::part("GR.IC.FF.INFANTRY")`, listed by
+`catalog::icon_parts()`). `tests/api.rs` has complete examples of a custom
+symbol part, a new SIDC icon and a label override.
+
+`milsymbol::compat` holds milsymbol.js's representations: `JsMetadata` (its
+string-valued `symbol.metadata`) and `canonical_json`, the record the
+differential oracle compares.
 
 ## Compatibility
 

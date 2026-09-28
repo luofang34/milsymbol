@@ -16,6 +16,7 @@ pub struct Point {
 
 /// One absolute path segment.
 #[derive(Debug, Clone, Copy, PartialEq)]
+#[non_exhaustive]
 pub enum Segment {
     /// Start a new subpath.
     MoveTo(Point),

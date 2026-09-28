@@ -7,7 +7,6 @@ use crate::error::RenderError;
 use crate::ir::{Node, Num, Paint, PathData, PathNode, Str, Style};
 use crate::js::{self, number_to_string as n};
 use crate::options::field;
-use alloc::borrow::Cow;
 use alloc::string::String;
 use alloc::vec::Vec;
 
@@ -21,10 +20,10 @@ fn bar_text(s: &SymbolState<'_>, bar: &str, y: f64) -> Node {
         s.color_of(&s.colors.icon_color),
         s.colors.icon_color.get("Friend"),
     );
-    let mut text = Node::text(100.0, y, Str::Owned(String::from(bar)));
+    let mut text = crate::ir::TextNode::new(100.0, y, Str::Owned(String::from(bar)));
     text.text_anchor = lit("middle");
     text.font_size = Some(Num::Number(22.0));
-    text.font_family = Some(Cow::Owned(s.options.style.font_family.clone()));
+    text.font_family = Some(s.options.style.font_family.clone());
     text.font_weight = lit("bold");
     text.style.fill = font_color;
     text.style.stroke = Some(Paint::None);

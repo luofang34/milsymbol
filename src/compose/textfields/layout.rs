@@ -8,7 +8,6 @@ use crate::ir::{Node, Num, Paint, PathData, PathNode, Str, Style};
 use crate::js::{self, number_to_string as n};
 use crate::labels::str_width;
 use crate::options::field as f;
-use alloc::borrow::Cow;
 use alloc::string::String;
 use alloc::vec::Vec;
 
@@ -21,13 +20,13 @@ fn centre_text(ts: &TextStyle, s: &str) -> Node {
         len if len >= 4 => 33.0,
         _ => 45.0,
     };
-    let mut t = Node::text(100.0, 103.0, Str::Owned(String::from(s)));
+    let mut t = crate::ir::TextNode::new(100.0, 103.0, Str::Owned(String::from(s)));
     t.style.stroke = Some(Paint::None);
     t.text_anchor = lit("middle");
     t.alignment_baseline = lit("middle");
     t.font_size = Some(Num::Number(size));
     t.font_weight = lit("bold");
-    t.font_family = Some(Cow::Owned(ts.family.clone()));
+    t.font_family = Some(ts.family.clone());
     t.style.fill = ts.color.clone();
     Node::Text(t)
 }

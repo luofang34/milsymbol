@@ -7,10 +7,9 @@ use crate::error::RenderError;
 use crate::generated::{tables, vars};
 use crate::ir::{Node, Paint, PathData, PathNode, Style};
 use crate::js;
-use crate::registry::{IconPartContext, IconTable, PartLookup};
-use crate::template::{self, IconContext, Resolver, Var};
+use crate::registry::{IconKey, IconPartContext};
+use crate::template::{self, IconContext, Resolver, UserParts, Var};
 use alloc::borrow::Cow;
-use alloc::collections::BTreeMap;
 use alloc::string::String;
 use alloc::vec::Vec;
 
@@ -25,15 +24,37 @@ const UNSCALED_EQUIPMENT: [f64; 25] = [
 
 const SEA_MINE_EXERCISE: [&str; 5] = ["WMGX--", "WMMX--", "WMFX--", "WMX---", "WMSX--"];
 
-/// Icon parts as upstream passes them to mapping functions: extension parts
-/// first, then the generated tables.
+/// Icon parts as upstream passes them to mapping functions (extension
+/// parts first, then the generated tables), and the extensions to ask for
+/// icons.
 struct Parts<'a> {
     resolver: Resolver<'a>,
 }
 
-impl PartLookup for Parts<'_> {
+impl Parts<'_> {
     fn part(&self, name: &str) -> Option<Node> {
         self.resolver.part(name)
+    }
+
+    /// The icon for `key` from the latest extension defining it.
+    fn user_icon(&self, key: IconKey<'_>) -> Option<Node> {
+        let UserParts { extensions, ctx } = self.resolver.user;
+        let ctx = ctx?;
+        extensions
+            .iter()
+            .rev()
+            .find_map(|e| e.icon(ctx, key, &self.resolver))
+    }
+
+    /// Icon bounds for `key` from the latest extension defining them.
+    fn user_bbox(&self, key: IconKey<'_>) -> Option<BBox> {
+        let UserParts { extensions, ctx } = self.resolver.user;
+        let ctx = ctx?;
+        extensions
+            .iter()
+            .rev()
+            .find_map(|e| e.icon_bbox(ctx, key))
+            .map(PartialBBox::complete)
     }
 }
 
@@ -123,87 +144,12 @@ fn bbox_from(b: [Option<f64>; 4]) -> BBox {
     PartialBBox { x1, y1, x2, y2 }.complete()
 }
 
-/// Icon tables contributed by extensions for this symbol.
-fn user_tables(s: &SymbolState<'_>, parts: &Parts<'_>, symbol_set: Option<&str>) -> IconTable {
-    let mut table = IconTable::default();
-    for ext in &s.registry.icons {
-        match symbol_set {
-            Some(ss) => ext.number_icons(
-                ss,
-                parts,
-                s.metadata.std2525,
-                s.metadata.edition(),
-                &mut table,
-            ),
-            None => ext.letter_icons(parts, s.metadata.std2525, &mut table),
-        }
-    }
-    table
-}
-
 pub(super) fn draw(s: &SymbolState<'_>) -> Result<PartOutput, RenderError> {
-    let mut post = Vec::new();
-    let mut gbbox = BBox {
-        x1: 50.0,
-        y1: 50.0,
-        x2: 150.0,
-        y2: 150.0,
+    let (post, gbbox, invalid) = if s.options.style.icon {
+        icon(s)?
+    } else {
+        (Vec::new(), default_icon_bbox(), false)
     };
-    let mut invalid = false;
-    if s.options.style.icon {
-        let part_aff = part_affiliation(s);
-        let symbol_set = js::substr(s.sidc, 4, 2);
-        let mapping = if s.metadata.number_sidc {
-            symbol_set
-                .parse::<i16>()
-                .ok()
-                .filter(|_| symbol_set.len() == 2)
-                .unwrap_or(i16::MIN)
-        } else {
-            -1
-        };
-        let dashes = &s.config.dash_arrays;
-        let mut user_parts = BTreeMap::new();
-        if !s.registry.icons.is_empty() {
-            let ctx = IconPartContext {
-                metadata: s.metadata,
-                colors: s.colors,
-                std2525: s.metadata.std2525,
-                mono_color: &s.options.style.mono_color,
-                alternate_medal: s.options.style.alternate_medal,
-            };
-            for ext in &s.registry.icons {
-                ext.icon_parts(&ctx, &mut user_parts);
-            }
-        }
-        let parts = Parts {
-            resolver: Resolver {
-                colors: s.colors,
-                part_affiliation: &part_aff,
-                mono_color: &s.options.style.mono_color,
-                dash_pending: &dashes.pending,
-                dash_anticipated: &dashes.anticipated,
-                mapping,
-                ctx: context(s, &part_aff),
-                user_parts: &user_parts,
-            },
-        };
-        if s.metadata.number_sidc {
-            let user = if s.registry.icons.is_empty() {
-                IconTable::default()
-            } else {
-                user_tables(s, &parts, Some(&symbol_set))
-            };
-            invalid = number_icon(s, &parts, &user, &symbol_set, &mut post, &mut gbbox)?;
-        } else {
-            let user = if s.registry.icons.is_empty() {
-                IconTable::default()
-            } else {
-                user_tables(s, &parts, None)
-            };
-            invalid = letter_icon(s, &parts, &user, &mut post, &mut gbbox);
-        }
-    }
     let (md, st) = (s.metadata, &s.options.style);
     let mut pre = Vec::new();
     if (!(st.frame && md.fill) || !st.mono_color.is_empty() || md.control_measure())
@@ -216,16 +162,85 @@ pub(super) fn draw(s: &SymbolState<'_>) -> Result<PartOutput, RenderError> {
     Ok(out)
 }
 
+/// Whether the SIDC's icon exists, looked up as if icons were drawn.
+pub(super) fn known(s: &SymbolState<'_>) -> bool {
+    icon(s).is_ok_and(|(_, _, invalid)| !invalid)
+}
+
+fn default_icon_bbox() -> BBox {
+    BBox {
+        x1: 50.0,
+        y1: 50.0,
+        x2: 150.0,
+        y2: 150.0,
+    }
+}
+
+/// The icon's instructions and bounds, and whether it was not found.
+fn icon(s: &SymbolState<'_>) -> Result<(Vec<Node>, BBox, bool), RenderError> {
+    let mut post = Vec::new();
+    let mut gbbox = default_icon_bbox();
+    let part_aff = part_affiliation(s);
+    let symbol_set = js::substr(s.sidc, 4, 2);
+    let mapping = if s.metadata.number_sidc {
+        symbol_set
+            .parse::<i16>()
+            .ok()
+            .filter(|_| symbol_set.len() == 2)
+            .unwrap_or(i16::MIN)
+    } else {
+        -1
+    };
+    let dashes = &s.config.dash_arrays;
+    let typed = crate::domain::Metadata::from_js(s.metadata);
+    let ctx = IconPartContext {
+        metadata: &typed,
+        js_metadata: s.metadata,
+        colors: s.colors,
+        mono_color: &s.options.style.mono_color,
+        alternate_medal: s.options.style.alternate_medal,
+    };
+    let parts = Parts {
+        resolver: Resolver {
+            colors: s.colors,
+            part_affiliation: &part_aff,
+            mono_color: &s.options.style.mono_color,
+            dash_pending: &dashes.pending,
+            dash_anticipated: &dashes.anticipated,
+            mapping,
+            ctx: context(s, &part_aff),
+            user: UserParts {
+                extensions: &s.registry.icons,
+                ctx: (!s.registry.icons.is_empty()).then_some(&ctx),
+            },
+        },
+    };
+    let invalid = if s.metadata.number_sidc {
+        number_icon(s, &parts, &symbol_set, &mut post, &mut gbbox)?
+    } else {
+        letter_icon(s, &parts, &mut post, &mut gbbox)
+    };
+    Ok((post, gbbox, invalid))
+}
+
 /// Number-table lookup: extension entries first, then generated tables.
-fn number_entry(
-    parts: &Parts<'_>,
-    user: &BTreeMap<String, Node>,
-    ss: &str,
-    kind: usize,
-    code: &str,
-) -> Option<Node> {
-    if let Some(n) = user.get(code) {
-        return Some(n.clone());
+fn number_entry(parts: &Parts<'_>, ss: &str, kind: usize, code: &str) -> Option<Node> {
+    let key = match kind {
+        0 => IconKey::Entity {
+            symbol_set: ss,
+            entity: code,
+        },
+        1 => IconKey::Modifier1 {
+            symbol_set: ss,
+            code,
+        },
+        _ => IconKey::Modifier2 {
+            symbol_set: ss,
+            code,
+        },
+    };
+    if let Some(n) = parts.user_icon(key) {
+        return Some(n);
     }
     let table = ss
         .parse::<usize>()
@@ -244,7 +259,6 @@ fn defined(n: Option<Node>) -> Option<Node> {
 fn number_icon(
     s: &SymbolState<'_>,
     parts: &Parts<'_>,
-    user: &IconTable,
     ss: &str,
     post: &mut Vec<Node>,
     gbbox: &mut BBox,
@@ -253,15 +267,9 @@ fn number_icon(
     let fid = js::JsStr::new(&md.function_id);
     let fid6 = fid.substr(0, 6);
     let mut invalid = false;
-    let mut main = defined(number_entry(parts, &user.icons, ss, 0, &fid6));
+    let mut main = defined(number_entry(parts, ss, 0, &fid6));
     if main.is_none() && js::string_to_number(&fid.substr(4, 2)) >= 95.0 {
-        main = defined(number_entry(
-            parts,
-            &user.icons,
-            ss,
-            0,
-            &(fid.substr(0, 4) + "00"),
-        ));
+        main = defined(number_entry(parts, ss, 0, &(fid.substr(0, 4) + "00")));
     }
     let m1_code = md.flags.modifier1.as_deref().unwrap_or("");
     let m2_code = md.flags.modifier2.as_deref().unwrap_or("");
@@ -274,11 +282,11 @@ fn number_icon(
         }
         Some(icon) => post.push(scale_for_modifiers(ss, &fid6, m1_code, m2_code, icon)?),
     }
-    let special = user
-        .bbox
-        .get(&*fid6)
-        .copied()
-        .map(PartialBBox::complete)
+    let special = parts
+        .user_bbox(IconKey::Entity {
+            symbol_set: ss,
+            entity: &fid6,
+        })
         .or_else(|| {
             let table = ss
                 .parse::<usize>()
@@ -301,9 +309,9 @@ fn number_icon(
     if let Some(name) = hq_part {
         post.push(parts.part(name).unwrap_or(Node::Missing));
     }
-    for (kind, code, fid_code, table) in [
-        (1, m1_code, fid.substr(6, 2), &user.modifier1),
-        (2, m2_code, fid.substr(8, 2), &user.modifier2),
+    for (kind, code, fid_code) in [
+        (1, m1_code, fid.substr(6, 2)),
+        (2, m2_code, fid.substr(8, 2)),
     ] {
         let key = if code.starts_with('0') {
             if fid_code == "00" {
@@ -313,7 +321,7 @@ fn number_icon(
         } else {
             Cow::Borrowed(code)
         };
-        match defined(number_entry(parts, table, ss, kind, &key)) {
+        match defined(number_entry(parts, ss, kind, &key)) {
             Some(n) => post.push(n),
             None => invalid = true,
         }
@@ -348,7 +356,6 @@ fn scale_for_modifiers(
 fn letter_icon(
     s: &SymbolState<'_>,
     parts: &Parts<'_>,
-    user: &IconTable,
     post: &mut Vec<Node>,
     gbbox: &mut BBox,
 ) -> bool {
@@ -367,7 +374,8 @@ fn letter_icon(
         sidc.substr(2, 1),
         sidc.substr(4, 6)
     );
-    let found = user.icons.get(&generic).cloned().map(Some).or_else(|| {
+    let key = IconKey::Letter { generic: &generic };
+    let found = parts.user_icon(key).map(Some).or_else(|| {
         let entry = template::find(tables::LETTER_ICONS, &generic)?;
         Some(parts.resolver.value(entry))
     });
@@ -381,15 +389,10 @@ fn letter_icon(
             }
         }
     }
-    let special = user
-        .bbox
-        .get(&generic)
-        .copied()
-        .map(PartialBBox::complete)
-        .or_else(|| {
-            let entry = template::find(tables::LETTER_BBOX, &generic)?;
-            parts.resolver.bbox(entry).map(bbox_from)
-        });
+    let special = parts.user_bbox(key).or_else(|| {
+        let entry = template::find(tables::LETTER_BBOX, &generic)?;
+        parts.resolver.bbox(entry).map(bbox_from)
+    });
     if let Some(b) = special {
         *gbbox = b;
     }

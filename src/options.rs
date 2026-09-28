@@ -4,6 +4,7 @@
 //! [`SymbolOptions::set`]; [`field`] lists the text amplifier names.
 
 use crate::color::ColorMode;
+use crate::ir::Str;
 use alloc::collections::BTreeMap;
 use alloc::string::String;
 
@@ -109,7 +110,7 @@ pub mod field {
 #[derive(Debug, Clone, PartialEq)]
 pub enum StyleColor {
     /// A single colour (the empty string means "not set").
-    Str(String),
+    Str(Str),
     /// One colour per affiliation.
     PerAffiliation(ColorMode),
 }
@@ -117,7 +118,7 @@ pub enum StyleColor {
 impl StyleColor {
     /// The unset value (`""`).
     pub fn unset() -> Self {
-        StyleColor::Str(String::new())
+        StyleColor::Str(Str::Borrowed(""))
     }
 
     /// JavaScript truthiness of the style value.
@@ -139,12 +140,16 @@ impl StyleColor {
 
 impl From<&str> for StyleColor {
     fn from(s: &str) -> Self {
-        StyleColor::Str(String::from(s))
+        StyleColor::Str(Str::Owned(String::from(s)))
     }
 }
 
 /// Style options.
+///
+/// Start from [`Style::default`] and assign fields, or set options by their
+/// milsymbol.js names with [`SymbolOptions::set`].
 #[derive(Debug, Clone, PartialEq)]
+#[non_exhaustive]
 pub struct Style {
     /// Use the alternate MEDAL icons for sea mines.
     pub alternate_medal: bool,
@@ -155,11 +160,11 @@ pub struct Style {
     /// Fill the frame.
     pub fill: bool,
     /// Frame fill colour override.
-    pub fill_color: String,
+    pub fill_color: Str,
     /// Frame fill opacity.
     pub fill_opacity: f64,
     /// Font family for text.
-    pub font_family: String,
+    pub font_family: Str,
     /// Draw the frame.
     pub frame: bool,
     /// Frame colour override (per affiliation).
@@ -179,13 +184,13 @@ pub struct Style {
     /// Draw information fields.
     pub info_fields: bool,
     /// Information-field outline colour.
-    pub info_outline_color: String,
+    pub info_outline_color: Str,
     /// Information-field outline width; `None` follows `outline_width`.
     pub info_outline_width: Option<f64>,
     /// Information-field font size.
     pub info_size: f64,
     /// Monochrome colour; empty for full colour.
-    pub mono_color: String,
+    pub mono_color: Str,
     /// Outline colour.
     pub outline_color: StyleColor,
     /// Outline width; `0` disables the outline.
@@ -211,11 +216,11 @@ impl Default for Style {
         Style {
             alternate_medal: false,
             civilian_color: true,
-            color_mode: StyleColor::Str(String::from("Light")),
+            color_mode: StyleColor::Str(Str::Borrowed("Light")),
             fill: true,
-            fill_color: String::new(),
+            fill_color: Str::Borrowed(""),
             fill_opacity: 1.0,
-            font_family: String::from("Arial"),
+            font_family: Str::Borrowed("Arial"),
             frame: true,
             frame_color: StyleColor::unset(),
             hq_staff_length: 0.0,
@@ -225,11 +230,11 @@ impl Default for Style {
             info_background_frame: StyleColor::unset(),
             info_color: StyleColor::unset(),
             info_fields: true,
-            info_outline_color: String::from("rgb(239, 239, 239)"),
+            info_outline_color: Str::Borrowed("rgb(239, 239, 239)"),
             info_outline_width: None,
             info_size: 40.0,
-            mono_color: String::new(),
-            outline_color: StyleColor::Str(String::from("rgb(239, 239, 239)")),
+            mono_color: Str::Borrowed(""),
+            outline_color: StyleColor::Str(Str::Borrowed("rgb(239, 239, 239)")),
             outline_width: 0.0,
             padding: 0.0,
             simple_status_modifier: false,
@@ -243,7 +248,11 @@ impl Default for Style {
 }
 
 /// Non-style symbol options.
+///
+/// Start from [`SymbolOptions::default`] and assign fields, or set options
+/// by their milsymbol.js names with [`SymbolOptions::set`].
 #[derive(Debug, Clone, PartialEq)]
+#[non_exhaustive]
 pub struct SymbolOptions {
     /// Text amplifiers that were set, keyed by option name (see
     /// [`field`]; extra keys such as `dtg1` are used by label overrides).

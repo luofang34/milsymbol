@@ -30,23 +30,55 @@ pub(crate) use pipeline::{Composition, compose};
 
 /// Read-only view of a symbol while its parts are drawn (upstream `this`).
 pub struct SymbolState<'a> {
-    /// The normalized SIDC.
-    pub sidc: &'a str,
-    /// Options and style.
-    pub options: &'a SymbolOptions,
-    /// Interpreted metadata.
-    pub metadata: &'a Metadata,
-    /// Resolved colours.
-    pub colors: &'a ColorSet,
-    /// Bounding box accumulated from the parts drawn so far.
-    pub bbox: BBox,
-    /// Renderer configuration.
-    pub config: &'a RendererConfig,
+    pub(crate) sidc: &'a str,
+    pub(crate) options: &'a SymbolOptions,
+    pub(crate) metadata: &'a Metadata,
+    pub(crate) colors: &'a ColorSet,
+    pub(crate) bbox: BBox,
+    pub(crate) config: &'a RendererConfig,
     pub(crate) registry: &'a Registry,
+}
+
+impl<'a> SymbolState<'a> {
+    /// The normalized SIDC.
+    pub fn sidc(&self) -> &'a str {
+        self.sidc
+    }
+
+    /// Options and style.
+    pub fn options(&self) -> &'a SymbolOptions {
+        self.options
+    }
+
+    /// Typed metadata.
+    pub fn metadata(&self) -> crate::domain::Metadata {
+        crate::domain::Metadata::from_js(self.metadata)
+    }
+
+    /// Metadata in milsymbol.js's representation.
+    pub fn js_metadata(&self) -> &'a Metadata {
+        self.metadata
+    }
+
+    /// Resolved colours.
+    pub fn colors(&self) -> &'a ColorSet {
+        self.colors
+    }
+
+    /// Bounding box accumulated from the parts drawn so far.
+    pub fn bbox(&self) -> BBox {
+        self.bbox
+    }
+
+    /// Renderer configuration.
+    pub fn config(&self) -> &'a RendererConfig {
+        self.config
+    }
 }
 
 /// Output of one symbol part.
 #[derive(Debug, Clone, Default)]
+#[non_exhaustive]
 pub struct PartOutput {
     /// Instructions drawn before everything drawn so far.
     pub pre: Vec<Node>,
@@ -59,7 +91,9 @@ pub struct PartOutput {
 }
 
 impl PartOutput {
-    pub(crate) fn new(pre: Vec<Node>, post: Vec<Node>, bbox: impl Into<PartialBBox>) -> Self {
+    /// Instructions to draw behind and in front of the symbol so far, and
+    /// the bounds they add.
+    pub fn new(pre: Vec<Node>, post: Vec<Node>, bbox: impl Into<PartialBBox>) -> Self {
         PartOutput {
             pre,
             post,
@@ -80,6 +114,7 @@ pub trait SymbolPart: Send + Sync {
 
 /// The built-in symbol parts, in upstream order.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[non_exhaustive]
 pub enum BuiltinPart {
     /// Stacked frames behind the symbol.
     Stack,
@@ -200,7 +235,7 @@ impl SymbolState<'_> {
 /// per-affiliation entry.
 pub(crate) fn style_color_value(c: &StyleColor, aff: &str) -> Option<Paint> {
     match c {
-        StyleColor::Str(s) => Some(Paint::Color(Cow::Owned(s.clone()))),
+        StyleColor::Str(s) => Some(Paint::Color(s.clone())),
         StyleColor::PerAffiliation(m) => m.get(aff),
     }
 }

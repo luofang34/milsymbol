@@ -88,6 +88,6 @@ proptest! {
         for k in [field::UNIQUE_DESIGNATION, field::QUANTITY, field::ENGAGEMENT_BAR, field::STAFF_COMMENTS] {
             o.set_text(k, text.clone());
         }
-        Renderer::default().render(&sidc, o).map(|s| (s.to_svg(), s.to_canonical_json().to_canonical_string())).ok();
+        Renderer::default().render(&sidc, o).map(|s| (s.to_svg(), milsymbol::compat::canonical_json_string(&s))).ok();
     }
 }

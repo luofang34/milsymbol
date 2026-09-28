@@ -49,17 +49,17 @@ const TRIGGER_FIELDS: [&str; 26] = [
 /// Values shared by every text node of the part.
 pub(super) struct TextStyle {
     pub color: Option<Paint>,
-    pub family: String,
+    pub family: Str,
     pub size: f64,
 }
 
 impl TextStyle {
     /// A plain information-field text node.
     pub fn text(&self, text: &str, x: f64, y: f64, anchor: &'static str) -> Node {
-        let mut t = Node::text(x, y, Str::Owned(String::from(text)));
+        let mut t = crate::ir::TextNode::new(x, y, Str::Owned(String::from(text)));
         t.text_anchor = lit(anchor);
         t.font_size = Some(Num::Number(self.size));
-        t.font_family = Some(Cow::Owned(self.family.clone()));
+        t.font_family = Some(self.family.clone());
         t.style.fill = self.color.clone();
         t.style.stroke = Some(Paint::None);
         Node::Text(t)
@@ -104,7 +104,7 @@ pub(super) fn draw(s: &SymbolState<'_>) -> Result<PartOutput, RenderError> {
             let color = if st.info_outline_color.is_empty() {
                 s.outline_color()
             } else {
-                Some(Paint::Color(Cow::Owned(st.info_outline_color.clone())))
+                Some(Paint::Color(st.info_outline_color.clone()))
             };
             pre.push(super::outline_list(&post, w, st.stroke_width, &color)?);
         }
@@ -192,10 +192,10 @@ fn label_texts(
 
 fn label_text(ts: &TextStyle, value: &str, lbl: &labels::Label) -> TextNode {
     let num = |v: Option<f64>| Num::Number(v.unwrap_or(f64::NAN));
-    let mut t = Node::text(0.0, 0.0, Str::Owned(String::from(value)));
+    let mut t = crate::ir::TextNode::new(0.0, 0.0, Str::Owned(String::from(value)));
     t.x = num(lbl.x);
     t.y = num(lbl.y);
-    t.font_family = Some(Cow::Owned(ts.family.clone()));
+    t.font_family = Some(ts.family.clone());
     t.style.fill = ts.color.clone();
     t.alignment_baseline = lbl.baseline.clone();
     if let Some(f) = &lbl.fill {

@@ -5,7 +5,8 @@ use crate::generated::misc;
 use alloc::borrow::Cow;
 
 /// Placement of one text field.
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Default)]
+#[non_exhaustive]
 pub struct Label {
     /// Anchor x.
     pub x: Option<f64>,
@@ -27,6 +28,7 @@ pub struct Label {
 
 /// Placements of one option field.
 #[derive(Debug, Clone, PartialEq)]
+#[non_exhaustive]
 pub struct LabelField {
     /// Upstream option name, e.g. `uniqueDesignation` or `dtg1`.
     pub field: Cow<'static, str>,
@@ -34,6 +36,32 @@ pub struct LabelField {
     pub is_array: bool,
     /// Placements; the field text is drawn at each.
     pub labels: Cow<'static, [Label]>,
+}
+
+impl Label {
+    /// A placement at `(x, y)` with the default font size and anchoring.
+    pub fn at(x: f64, y: f64) -> Self {
+        Label {
+            x: Some(x),
+            y: Some(y),
+            ..Label::default()
+        }
+    }
+}
+
+impl LabelField {
+    /// Placements of the option `field`.
+    pub fn new(
+        field: impl Into<Cow<'static, str>>,
+        labels: impl Into<Cow<'static, [Label]>>,
+    ) -> Self {
+        let labels = labels.into();
+        LabelField {
+            field: field.into(),
+            is_array: labels.len() > 1,
+            labels,
+        }
+    }
 }
 
 /// Built-in label overrides for a letter-SIDC generic code or numeric entity.

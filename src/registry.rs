@@ -5,9 +5,10 @@
 use crate::bbox::PartialBBox;
 use crate::color::ColorSet;
 use crate::compose::{BuiltinPart, SymbolPart};
+use crate::domain::Metadata;
 use crate::ir::Node;
 use crate::labels::LabelField;
-use crate::metadata::Metadata;
+use crate::metadata::Metadata as JsMetadata;
 use alloc::boxed::Box;
 use alloc::collections::BTreeMap;
 use alloc::string::String;
@@ -19,35 +20,55 @@ pub(crate) enum PartSlot {
     Custom(Box<dyn SymbolPart>),
 }
 
-/// Context passed to [`IconExtension::icon_parts`] (upstream icon-part
-/// function arguments).
+/// The symbol an [`IconExtension`] is asked about (upstream icon-part and
+/// icon function arguments).
+#[derive(Debug, Clone, Copy)]
+#[non_exhaustive]
 pub struct IconPartContext<'a> {
-    /// Metadata of the symbol being drawn.
+    /// Typed metadata of the symbol being drawn.
     pub metadata: &'a Metadata,
+    /// Metadata in milsymbol.js's representation.
+    pub js_metadata: &'a JsMetadata,
     /// Resolved colours of the symbol.
     pub colors: &'a ColorSet,
-    /// Whether MIL-STD-2525 rules apply.
-    pub std2525: bool,
     /// Monochrome colour, empty for full colour.
     pub mono_color: &'a str,
     /// Alternate MEDAL icons requested.
     pub alternate_medal: bool,
 }
 
-/// Icons contributed for one SIDC table (a numeric symbol set, or the letter
-/// SIDC table). Keys follow upstream: six-digit entity codes and two-digit
-/// modifier codes for numeric SIDCs, generic SIDCs such as `S-G-UCI---` for
-/// letter SIDCs.
-#[derive(Debug, Clone, Default)]
-pub struct IconTable {
-    /// Main icons.
-    pub icons: BTreeMap<String, Node>,
-    /// Sector 1 modifiers (numeric SIDCs only).
-    pub modifier1: BTreeMap<String, Node>,
-    /// Sector 2 modifiers (numeric SIDCs only).
-    pub modifier2: BTreeMap<String, Node>,
-    /// Icon bounding boxes that differ from the default octagon.
-    pub bbox: BTreeMap<String, PartialBBox>,
+/// Which icon an [`IconExtension`] is asked for. Keys follow upstream:
+/// six-digit entity codes and two-digit modifier codes for numeric SIDCs,
+/// generic SIDCs such as `S-G-UCI---` for letter SIDCs.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[non_exhaustive]
+pub enum IconKey<'k> {
+    /// Main icon of a numeric SIDC.
+    Entity {
+        /// Two-digit symbol set.
+        symbol_set: &'k str,
+        /// Six-digit entity code.
+        entity: &'k str,
+    },
+    /// Sector 1 modifier of a numeric SIDC.
+    Modifier1 {
+        /// Two-digit symbol set.
+        symbol_set: &'k str,
+        /// Two-digit modifier code.
+        code: &'k str,
+    },
+    /// Sector 2 modifier of a numeric SIDC.
+    Modifier2 {
+        /// Two-digit symbol set.
+        symbol_set: &'k str,
+        /// Two-digit modifier code.
+        code: &'k str,
+    },
+    /// Icon of a letter SIDC, by generic SIDC.
+    Letter {
+        /// Generic SIDC, e.g. `S-G-UCI---`.
+        generic: &'k str,
+    },
 }
 
 /// Read access to icon parts: extension parts first, then built-ins.
@@ -56,33 +77,48 @@ pub trait PartLookup {
     fn part(&self, name: &str) -> Option<Node>;
 }
 
-/// An icon extension (upstream `ms.addIcons` object).
+/// An icon extension (upstream `ms.addIconParts`, `ms.addIcons` and
+/// `ms.addLabelOverrides`).
 ///
-/// All methods have empty defaults; implement the ones you need. Extensions
-/// are consulted in registration order after the built-in tables, so later
-/// definitions replace earlier ones, as in upstream.
+/// Extensions are queried by key while a symbol is drawn, so nothing is
+/// built per symbol for keys they do not define. All methods have empty
+/// defaults. Later registrations take precedence over earlier ones and over
+/// the built-in tables, as in upstream.
 pub trait IconExtension: Send + Sync {
-    /// Adds or replaces named icon parts.
-    fn icon_parts(&self, _ctx: &IconPartContext<'_>, _parts: &mut BTreeMap<String, Node>) {}
-
-    /// Adds numeric-SIDC icons for `symbol_set` (two digits).
-    fn number_icons(
+    /// Adds or replaces the icon part `name`. `parts` resolves parts as
+    /// defined before this extension (earlier extensions, then built-ins).
+    fn icon_part(
         &self,
-        _symbol_set: &str,
+        _ctx: &IconPartContext<'_>,
+        _name: &str,
         _parts: &dyn PartLookup,
-        _std2525: bool,
-        _edition: Option<&str>,
-        _out: &mut IconTable,
-    ) {
+    ) -> Option<Node> {
+        None
     }
 
-    /// Adds letter-SIDC icons.
-    fn letter_icons(&self, _parts: &dyn PartLookup, _std2525: bool, _out: &mut IconTable) {}
+    /// Adds or replaces the icon for `key`. `parts` resolves parts with all
+    /// extensions applied.
+    fn icon(
+        &self,
+        _ctx: &IconPartContext<'_>,
+        _key: IconKey<'_>,
+        _parts: &dyn PartLookup,
+    ) -> Option<Node> {
+        None
+    }
 
-    /// Adds label overrides for numeric SIDCs, keyed by entity code.
+    /// Bounds of the icon for `key` when they differ from the octagon
+    /// (entity and letter keys only).
+    fn icon_bbox(&self, _ctx: &IconPartContext<'_>, _key: IconKey<'_>) -> Option<PartialBBox> {
+        None
+    }
+
+    /// Adds label overrides for numeric SIDCs, keyed by entity code. Called
+    /// once, when the extension is registered.
     fn number_labels(&self, _out: &mut BTreeMap<String, Vec<LabelField>>) {}
 
-    /// Adds label overrides for letter SIDCs, keyed by generic SIDC.
+    /// Adds label overrides for letter SIDCs, keyed by generic SIDC. Called
+    /// once, when the extension is registered.
     fn letter_labels(&self, _out: &mut BTreeMap<String, Vec<LabelField>>) {}
 }
 

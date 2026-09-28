@@ -21,6 +21,7 @@ pub enum GeomShape {
 
 /// A base frame geometry with its bounding box.
 #[derive(Debug, Clone, Copy, PartialEq)]
+#[non_exhaustive]
 pub struct BaseGeometry {
     /// Frame shape.
     pub shape: GeomShape,

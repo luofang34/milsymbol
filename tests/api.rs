@@ -1,10 +1,12 @@
 //! Public API behaviour: extensions, configuration, determinism, errors.
 
+use milsymbol::ValidityIssue;
+use milsymbol::domain::Affiliation;
 use milsymbol::ir::{Node, Paint};
 use milsymbol::labels::{Label, LabelField};
 use milsymbol::options::{OptionError, OptionValue, SymbolOptions, field};
 use milsymbol::{
-    IconExtension, IconPartContext, IconTable, PartLookup, PartOutput, PartialBBox, RenderError,
+    IconExtension, IconKey, IconPartContext, PartLookup, PartOutput, PartialBBox, RenderError,
     Renderer, Standard, SymbolPart, SymbolState, catalog,
 };
 use std::borrow::Cow;
@@ -23,8 +25,8 @@ fn renders_valid_infantry_with_expected_frame() -> TestResult {
         "<svg xmlns=\"http://www.w3.org/2000/svg\" version=\"1.2\" baseProfile=\"tiny\""
     ));
     assert!(svg.contains("d=\"M25,50 l150,0 0,100 -150,0 z\""), "{svg}");
-    assert_eq!(s.metadata().affiliation.as_deref(), Some("Friend"));
-    assert_eq!(s.metadata().dimension, "Ground");
+    assert_eq!(s.metadata().affiliation, Some(Affiliation::Friend));
+    assert_eq!(s.js_metadata().dimension, "Ground");
     let a = s.anchor();
     assert_eq!((a.x, a.y), (79.0, 54.0));
     Ok(())
@@ -121,15 +123,10 @@ impl SymbolPart for Marker {
             st.fill = Some(Paint::color("magenta"));
         }
         let bbox = PartialBBox {
-            y1: Some(s.bbox.y1 - 30.0),
+            y1: Some(s.bbox().y1 - 30.0),
             ..PartialBBox::default()
         };
-        Ok(PartOutput {
-            pre: vec![],
-            post: vec![n],
-            bbox,
-            invalid_icon: false,
-        })
+        Ok(PartOutput::new(vec![], vec![n], bbox))
     }
 }
 
@@ -146,53 +143,48 @@ fn custom_symbol_part_extends_pipeline_and_bbox() -> TestResult {
 struct Custom;
 
 impl IconExtension for Custom {
-    fn icon_parts(&self, ctx: &IconPartContext<'_>, parts: &mut BTreeMap<String, Node>) {
+    fn icon_part(&self, ctx: &IconPartContext<'_>, name: &str, _: &dyn PartLookup) -> Option<Node> {
+        if name != "MY.PART" {
+            return None;
+        }
         let mut n = Node::path("M80,80 L120,120");
         if let Some(st) = n.style_mut() {
-            st.stroke = ctx
-                .colors
-                .icon_color
-                .get(ctx.metadata.affiliation.as_deref().unwrap_or("Friend"));
+            let aff = ctx
+                .metadata
+                .affiliation
+                .map_or("Friend", Affiliation::as_str);
+            st.stroke = ctx.colors.icon_color.get(aff);
         }
-        parts.insert("MY.PART".into(), n);
+        Some(n)
     }
 
-    fn number_icons(
+    fn icon(
         &self,
-        ss: &str,
+        _: &IconPartContext<'_>,
+        key: IconKey<'_>,
         parts: &dyn PartLookup,
-        _: bool,
-        _: Option<&str>,
-        out: &mut IconTable,
-    ) {
-        if ss == "10" {
-            if let (Some(mine), Some(infantry)) =
-                (parts.part("MY.PART"), parts.part("GR.IC.FF.INFANTRY"))
-            {
-                out.icons
-                    .insert("999900".into(), Node::Group(vec![mine, infantry]));
-            }
-        }
+    ) -> Option<Node> {
+        let IconKey::Entity {
+            symbol_set: "10",
+            entity: "999900",
+        } = key
+        else {
+            return None;
+        };
+        Some(Node::Group(vec![
+            parts.part("MY.PART")?,
+            parts.part("GR.IC.FF.INFANTRY")?,
+        ]))
     }
 
     fn number_labels(&self, out: &mut BTreeMap<String, Vec<LabelField>>) {
-        let label = Label {
-            x: Some(100.0),
-            y: Some(20.0),
-            font_size: Some(30.0),
-            anchor: Some(Cow::Borrowed("middle")),
-            weight: None,
-            baseline: None,
-            fill: None,
-            stroke: Some(false),
-        };
+        let mut label = Label::at(100.0, 20.0);
+        label.font_size = Some(30.0);
+        label.anchor = Some(Cow::Borrowed("middle"));
+        label.stroke = Some(false);
         out.insert(
             "999900".into(),
-            vec![LabelField {
-                field: Cow::Borrowed("uniqueDesignation"),
-                is_array: false,
-                labels: Cow::Owned(vec![label]),
-            }],
+            vec![LabelField::new("uniqueDesignation", vec![label])],
         );
     }
 }
@@ -226,7 +218,10 @@ fn catalog_lists_renderable_icons() -> TestResult {
     assert!(entities.len() > 150, "{}", entities.len());
     for e in entities.iter().take(50) {
         let s = r.render(&format!("1003100000{e}0000"), SymbolOptions::default())?;
-        assert!(s.validity().icon, "{e}");
+        assert!(
+            !s.validity().issues.contains(&ValidityIssue::UnknownIcon),
+            "{e}"
+        );
     }
     assert!(catalog::letter_icons().any(|c| c == "S-G-UCI---"));
     assert!(catalog::icon_parts().any(|p| p == "GR.IC.FF.INFANTRY"));
@@ -298,17 +293,22 @@ fn write_svg_appends_the_same_document() -> TestResult {
 struct InfantryCircle;
 
 impl IconExtension for InfantryCircle {
-    fn icon_parts(&self, ctx: &IconPartContext<'_>, parts: &mut BTreeMap<String, Node>) {
+    fn icon_part(&self, ctx: &IconPartContext<'_>, name: &str, _: &dyn PartLookup) -> Option<Node> {
+        if name != "GR.IC.FF.INFANTRY" {
+            return None;
+        }
         let mut n = Node::circle(100.0, 100.0, 20.0);
         if let Some(st) = n.style_mut() {
             st.fill = Some(Paint::None);
-            st.stroke = ctx
-                .colors
-                .icon_color
-                .get(ctx.metadata.affiliation.as_deref().unwrap_or("undefined"));
+            st.stroke = ctx.colors.icon_color.get(
+                ctx.js_metadata
+                    .affiliation
+                    .as_deref()
+                    .unwrap_or("undefined"),
+            );
             st.stroke_width = Some(milsymbol::ir::Num::Number(3.0));
         }
-        parts.insert("GR.IC.FF.INFANTRY".into(), n);
+        Some(n)
     }
 }
 
@@ -366,10 +366,8 @@ fn failing_part_keeps_its_position_and_source() -> TestResult {
 #[test]
 fn unbounded_stack_is_rejected_instead_of_looping() -> TestResult {
     for bad in [f64::INFINITY, f64::NAN, 1e20, 1001.0] {
-        let o = SymbolOptions {
-            stack: Some(bad),
-            ..SymbolOptions::default()
-        };
+        let mut o = SymbolOptions::default();
+        o.stack = Some(bad);
         let err = Renderer::default().render(INFANTRY, o).err();
         assert!(
             matches!(err, Some(RenderError::InvalidOption { name: "stack", .. })),
@@ -377,10 +375,8 @@ fn unbounded_stack_is_rejected_instead_of_looping() -> TestResult {
         );
     }
     for ok in [-3.0, 0.0, 2.5, 1000.0] {
-        let o = SymbolOptions {
-            stack: Some(ok),
-            ..SymbolOptions::default()
-        };
+        let mut o = SymbolOptions::default();
+        o.stack = Some(ok);
         Renderer::default().render(INFANTRY, o)?;
     }
     Ok(())
@@ -434,12 +430,11 @@ fn sidc_parse_validates_fields_and_exposes_typed_values() -> TestResult {
 
 #[test]
 fn typed_info_and_validity_issues() -> TestResult {
-    use milsymbol::ValidityIssue;
     use milsymbol::domain::{Affiliation, Dimension, Echelon};
     let s = Renderer::default()
         .symbol("10061000161211000000")
         .render()?;
-    let info = s.info();
+    let info = s.metadata();
     assert_eq!(info.affiliation, Some(Affiliation::Hostile));
     assert_eq!(info.dimension, Some(Dimension::Ground));
     assert_eq!(info.echelon, Some(Echelon::BattalionSquadron));

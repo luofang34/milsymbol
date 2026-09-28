@@ -100,7 +100,7 @@ pub(super) fn frame(s: &SymbolState<'_>) -> Result<Option<FrameNodes>, crate::Re
     let fill = if st.fill_color.is_empty() {
         s.color_of(&s.colors.fill_color)
     } else {
-        Some(Paint::Color(Cow::Owned(st.fill_color.clone())))
+        Some(Paint::Color(st.fill_color.clone()))
     };
     let mut geom_style = Style {
         fill,

@@ -1,10 +1,9 @@
-//! Typed symbology values.
-//!
-//! [`SymbolInfo`] is the typed view of a rendered symbol; the string-valued
-//! [`Metadata`] remains available as the milsymbol.js-compatible view
-//! (including its `"undefined"` sentinels).
+//! Typed symbology values and [`Metadata`], the typed description of a
+//! rendered symbol. milsymbol.js's string-valued metadata is available as
+//! [`compat::JsMetadata`](crate::compat::JsMetadata).
 
-use crate::metadata::Metadata;
+use crate::geometry::BaseGeometry;
+use crate::metadata::Metadata as JsMetadata;
 
 /// Standard identity (affiliation code of the SIDC).
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -74,6 +73,7 @@ pub enum Affiliation {
 
 /// Dimension the frame is drawn for.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[non_exhaustive]
 pub enum Dimension {
     /// Air and space.
     Air,
@@ -89,6 +89,7 @@ pub enum Dimension {
 
 /// Echelon indicator.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[non_exhaustive]
 #[allow(missing_docs)]
 pub enum Echelon {
     TeamCrew,
@@ -109,6 +110,7 @@ pub enum Echelon {
 
 /// Mobility indicator.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[non_exhaustive]
 #[allow(missing_docs)]
 pub enum Mobility {
     WheeledLimitedCrossCountry,
@@ -180,13 +182,29 @@ impl Mobility {
     }
 }
 
+/// Edition of the standard a numeric SIDC follows.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum Edition {
+    /// MIL-STD-2525D / APP-6D (SIDC versions 10–12).
+    D,
+    /// MIL-STD-2525E / APP-6E (SIDC versions 13–14).
+    E,
+}
+
 /// Typed description of a rendered symbol.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub struct SymbolInfo {
+#[derive(Debug, Clone, PartialEq)]
+#[non_exhaustive]
+pub struct Metadata {
     /// Frame affiliation; `None` when the SIDC's identity is not recognised.
     pub affiliation: Option<Affiliation>,
+    /// Affiliation before joker/faker remapping.
+    pub base_affiliation: Option<Affiliation>,
     /// Frame dimension; `None` when not recognised.
     pub dimension: Option<Dimension>,
+    /// Dimension before equipment/dismounted remapping.
+    pub base_dimension: Option<Dimension>,
+    /// The battle dimension is unknown (drawn with a question mark).
+    pub dimension_unknown: bool,
     /// Context; `None` when not recognised.
     pub context: Option<Context>,
     /// Operational condition, if the SIDC encodes one.
@@ -197,8 +215,14 @@ pub struct SymbolInfo {
     pub echelon: Option<Echelon>,
     /// Mobility amplifier, if any.
     pub mobility: Option<Mobility>,
+    /// The echelon/mobility amplifier code is not recognised.
+    pub amplifier_unknown: bool,
     /// Leadership amplifier, if any.
     pub leadership: Option<Leadership>,
+    /// Edition of a numeric SIDC.
+    pub edition: Option<Edition>,
+    /// Base frame geometry, if the affiliation and dimension have one.
+    pub geometry: Option<&'static BaseGeometry>,
     /// Headquarters.
     pub headquarters: bool,
     /// Task force.
@@ -207,36 +231,76 @@ pub struct SymbolInfo {
     pub feint_dummy: bool,
     /// Installation.
     pub installation: bool,
+    /// Activity or event.
+    pub activity: bool,
+    /// Space.
+    pub space: bool,
+    /// Unit (as opposed to equipment).
+    pub unit: bool,
+    /// Land equipment.
+    pub land_equipment: bool,
+    /// Dismounted individual.
+    pub dismounted: bool,
+    /// Cyberspace.
+    pub cyberspace: bool,
+    /// Control measure (tactical graphic).
+    pub control_measure: bool,
     /// Civilian.
     pub civilian: bool,
+    /// Suspect (MIL-STD-2525E).
+    pub suspect: bool,
     /// Joker.
     pub joker: bool,
     /// Faker.
     pub faker: bool,
+    /// The frame is drawn.
+    pub frame: bool,
+    /// The frame is filled.
+    pub fill: bool,
     /// Rendered with MIL-STD-2525 (rather than APP-6) rules.
     pub std2525: bool,
     /// Numeric (rather than letter) SIDC.
     pub numeric_sidc: bool,
 }
 
-impl SymbolInfo {
-    /// Typed view of upstream-compatible metadata.
-    pub fn from_metadata(md: &Metadata) -> Self {
-        let affiliation = match md.affiliation.as_deref() {
-            Some("Friend") => Some(Affiliation::Friend),
-            Some("Hostile") => Some(Affiliation::Hostile),
-            Some("Neutral") => Some(Affiliation::Neutral),
-            Some("Unknown") => Some(Affiliation::Unknown),
-            _ => None,
-        };
-        let dimension = match md.dimension.as_str() {
-            "Air" => Some(Dimension::Air),
-            "Ground" => Some(Dimension::Ground),
-            "Sea" => Some(Dimension::Sea),
-            "Subsurface" => Some(Dimension::Subsurface),
-            "LandDismountedIndividual" => Some(Dimension::LandDismountedIndividual),
-            _ => None,
-        };
+impl Affiliation {
+    /// Upstream's name, as used for colour-mode keys (`"Friend"`, …).
+    pub fn as_str(self) -> &'static str {
+        match self {
+            Affiliation::Friend => "Friend",
+            Affiliation::Hostile => "Hostile",
+            Affiliation::Neutral => "Neutral",
+            Affiliation::Unknown => "Unknown",
+        }
+    }
+
+    fn from_name(s: Option<&str>) -> Option<Self> {
+        Some(match s? {
+            "Friend" => Affiliation::Friend,
+            "Hostile" => Affiliation::Hostile,
+            "Neutral" => Affiliation::Neutral,
+            "Unknown" => Affiliation::Unknown,
+            _ => return None,
+        })
+    }
+}
+
+impl Dimension {
+    fn from_name(s: &str) -> Option<Self> {
+        Some(match s {
+            "Air" => Dimension::Air,
+            "Ground" => Dimension::Ground,
+            "Sea" => Dimension::Sea,
+            "Subsurface" => Dimension::Subsurface,
+            "LandDismountedIndividual" => Dimension::LandDismountedIndividual,
+            _ => return None,
+        })
+    }
+}
+
+impl Metadata {
+    /// Typed view of milsymbol.js-compatible metadata.
+    pub fn from_js(md: &JsMetadata) -> Self {
         let context = match md.context.as_deref() {
             Some("Reality") => Some(Context::Reality),
             Some("Exercise") => Some(Context::Exercise),
@@ -255,22 +319,44 @@ impl SymbolInfo {
             Some("Deputy Individual") => Some(Leadership::Deputy),
             _ => None,
         };
-        SymbolInfo {
-            affiliation,
-            dimension,
+        let edition = match md.edition() {
+            Some("D") => Some(Edition::D),
+            Some("E") => Some(Edition::E),
+            _ => None,
+        };
+        let flag = |f: Option<bool>| f == Some(true);
+        Metadata {
+            affiliation: Affiliation::from_name(md.affiliation.as_deref()),
+            base_affiliation: Affiliation::from_name(md.base_affiliation.as_deref()),
+            dimension: Dimension::from_name(&md.dimension),
+            base_dimension: Dimension::from_name(&md.base_dimension),
+            dimension_unknown: md.dimension_unknown,
             context,
             condition,
             not_present: !md.notpresent.is_empty(),
             echelon: md.echelon.as_deref().and_then(Echelon::from_name),
             mobility: md.mobility.as_deref().and_then(Mobility::from_name),
+            amplifier_unknown: md.mobility.is_none(),
             leadership,
+            edition,
+            geometry: md.geometry(),
             headquarters: md.headquarters,
             task_force: md.task_force,
-            feint_dummy: md.flags.feint_dummy == Some(true),
+            feint_dummy: flag(md.flags.feint_dummy),
             installation: md.installation,
+            activity: md.activity,
+            space: md.space,
+            unit: md.unit,
+            land_equipment: flag(md.flags.landequipment),
+            dismounted: flag(md.flags.dismounted),
+            cyberspace: flag(md.flags.cyberspace),
+            control_measure: flag(md.flags.control_measure),
             civilian: md.civilian,
+            suspect: flag(md.flags.suspect),
             joker: md.joker,
             faker: md.faker,
+            frame: md.frame,
+            fill: md.fill,
             std2525: md.std2525,
             numeric_sidc: md.number_sidc,
         }

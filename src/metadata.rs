@@ -9,6 +9,7 @@ use alloc::string::String;
 
 /// Flags upstream only sets for some SIDCs; `None` means "not present".
 #[derive(Debug, Clone, PartialEq, Default)]
+#[non_exhaustive]
 pub struct OptionalFlags {
     /// Standard edition for numeric SIDCs (`"D"` or `"E"`).
     pub edition: Option<String>,
@@ -34,6 +35,7 @@ pub struct OptionalFlags {
 
 /// Parsed and derived properties of a symbol.
 #[derive(Debug, Clone, PartialEq)]
+#[non_exhaustive]
 pub struct Metadata {
     /// Activity/event symbol.
     pub activity: bool,

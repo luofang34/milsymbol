@@ -4,14 +4,14 @@ use crate::bbox::BBox;
 use crate::color::ColorSet;
 use crate::compose::Composition;
 use crate::ir::{Node, Point};
-use crate::json::{self, Json, Obj};
-use crate::metadata::Metadata;
+use crate::metadata::Metadata as JsMetadata;
 use crate::options::SymbolOptions;
 use crate::svg::{self, SvgFrame};
 use alloc::string::String;
 use alloc::vec::Vec;
 
 mod validity;
+use validity::IconCheck;
 pub use validity::{Validity, ValidityIssue};
 
 /// Pixel size of a rendered symbol.
@@ -28,7 +28,7 @@ pub struct Size {
 pub struct Symbol {
     pub(crate) sidc: String,
     pub(crate) options: SymbolOptions,
-    pub(crate) metadata: Metadata,
+    pub(crate) metadata: JsMetadata,
     pub(crate) colors: ColorSet,
     pub(crate) instructions: Vec<Node>,
     pub(crate) bbox: BBox,
@@ -38,6 +38,7 @@ pub struct Symbol {
     pub(crate) anchor: Point,
     pub(crate) octagon_anchor: Point,
     pub(crate) valid_icon: bool,
+    pub(crate) icon_known: bool,
 }
 
 impl Symbol {
@@ -58,6 +59,7 @@ impl Symbol {
             anchor: c.anchor,
             octagon_anchor: c.octagon_anchor,
             valid_icon: c.valid_icon,
+            icon_known: c.icon_known,
         }
     }
 
@@ -73,8 +75,8 @@ impl Symbol {
     }
 
     /// Typed description: affiliation, dimension, status, amplifiers.
-    pub fn info(&self) -> crate::domain::SymbolInfo {
-        crate::domain::SymbolInfo::from_metadata(&self.metadata)
+    pub fn metadata(&self) -> crate::domain::Metadata {
+        crate::domain::Metadata::from_js(&self.metadata)
     }
 
     /// Parses every path once and caches the segments, for renderers that
@@ -84,8 +86,8 @@ impl Symbol {
     }
 
     /// Metadata in milsymbol.js's representation (string values, including
-    /// its `"undefined"` sentinels); see [`Symbol::info`] for typed values.
-    pub fn metadata(&self) -> &Metadata {
+    /// its `"undefined"` sentinels); see [`Symbol::metadata`] for typed values.
+    pub fn js_metadata(&self) -> &JsMetadata {
         &self.metadata
     }
 
@@ -120,25 +122,29 @@ impl Symbol {
         self.octagon_anchor
     }
 
-    /// Detailed validity, with typed [`Validity::issues`].
+    /// Every reason milsymbol.js `isValid()` would reject the symbol.
     pub fn validity(&self) -> Validity {
-        validity::of(self)
+        Validity {
+            issues: validity::issues(self, IconCheck::Drawn),
+        }
     }
 
     /// Whether milsymbol.js considers the symbol valid (`isValid()`).
     ///
     /// This mirrors upstream exactly, including its heuristic that treats
     /// any text containing `null` (e.g. a unique designation `"null value"`)
-    /// or a non-finite number as invalid. To check the SIDC itself, use
-    /// [`Symbol::is_sidc_valid`] or [`crate::sidc::Sidc::parse`].
+    /// or a non-finite number as invalid, and its treatment of hidden icons
+    /// as found. To check the SIDC itself, use [`Symbol::is_sidc_valid`] or
+    /// [`Renderer::check_sidc`](crate::Renderer::check_sidc).
     pub fn is_valid(&self) -> bool {
-        validity::issues(self).is_empty()
+        validity::issues(self, IconCheck::Drawn).is_empty()
     }
 
-    /// Whether the SIDC was fully recognised: [`Symbol::is_valid`] without
-    /// upstream's `null`-text heuristic.
+    /// Whether the SIDC was fully recognised: every code is known and the
+    /// icon exists, whether or not icons are drawn, and without upstream's
+    /// `null`-text heuristic.
     pub fn is_sidc_valid(&self) -> bool {
-        validity::issues(self)
+        validity::issues(self, IconCheck::Sidc)
             .iter()
             .all(|i| *i == ValidityIssue::NullInDrawing)
     }
@@ -166,44 +172,5 @@ impl Symbol {
             base_height: self.base_height,
         };
         svg::render_into(&frame, &self.instructions, out);
-    }
-
-    /// Canonical JSON of the symbol's observable state, in the same shape as
-    /// the oracle records (`tools/oracle`): instructions, metadata, colours,
-    /// bounding box, size, anchors, validity and options.
-    pub fn to_canonical_json(&self) -> Json {
-        let point = |p: Point| {
-            Obj::default()
-                .put("x", Json::Num(p.x))
-                .put("y", Json::Num(p.y))
-                .done()
-        };
-        let v = self.validity();
-        let valid_ext = Obj::default()
-            .opt("affiliation", v.affiliation.as_deref().map(json::s))
-            .put("dimension", json::s(&v.dimension))
-            .put("dimensionUnknown", Json::Bool(v.dimension_unknown))
-            .put("drawInstructions", Json::Bool(v.draw_instructions))
-            .put("icon", Json::Bool(v.icon))
-            .put("mobility", Json::Bool(v.mobility))
-            .done();
-        Obj::default()
-            .put("instructions", json::instructions(&self.instructions))
-            .put("metadata", json::metadata(&self.metadata))
-            .put("colors", json::colors(&self.colors))
-            .put("bbox", json::bbox(self.bbox))
-            .put(
-                "size",
-                Obj::default()
-                    .put("width", Json::Num(self.size.width))
-                    .put("height", Json::Num(self.size.height))
-                    .done(),
-            )
-            .put("anchor", point(self.anchor))
-            .put("octagonAnchor", point(self.octagon_anchor))
-            .put("valid", Json::Bool(self.is_valid()))
-            .put("validExtended", valid_ext)
-            .put("options", json::options(&self.sidc, &self.options))
-            .done()
     }
 }

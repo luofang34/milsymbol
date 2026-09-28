@@ -29,6 +29,8 @@ pub(crate) struct Composition {
     pub anchor: Point,
     pub octagon_anchor: Point,
     pub valid_icon: bool,
+    /// The SIDC's icon exists, whether or not icons are drawn.
+    pub icon_known: bool,
 }
 
 /// Upstream `getMetadata`.
@@ -244,6 +246,17 @@ pub(crate) fn compose(
         valid_icon &= !out.invalid_icon;
         merge(out, &mut instructions, &mut bbox)?;
     }
+    let icon_known = valid_icon
+        && (options.style.icon
+            || super::icon::known(&SymbolState {
+                sidc: &sidc,
+                options,
+                metadata: &md,
+                colors: &colors,
+                bbox,
+                config,
+                registry,
+            }));
     let l = layout(bbox, &md, options, config);
     Ok(Composition {
         sidc,
@@ -258,6 +271,7 @@ pub(crate) fn compose(
         anchor: l.anchor,
         octagon_anchor: l.octagon_anchor,
         valid_icon,
+        icon_known,
     })
 }
 

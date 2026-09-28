@@ -2,6 +2,7 @@
 
 use crate::color::ColorMode;
 use crate::generated::misc;
+use crate::ir::Str;
 use alloc::collections::BTreeMap;
 use alloc::string::String;
 
@@ -24,6 +25,7 @@ pub enum Standard {
 /// platforms. This crate reproduces either one exactly, independently of
 /// the platform it runs on.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+#[non_exhaustive]
 pub enum ReferencePlatform {
     /// V8 on x86-64 (Node/Chrome on Intel and AMD); also what WebAssembly
     /// engines compute.
@@ -36,27 +38,44 @@ pub enum ReferencePlatform {
 /// Dash arrays of not-present frames and feint/dummy indicators
 /// (upstream `ms.setDashArrays`).
 #[derive(Debug, Clone, PartialEq, Eq)]
+#[non_exhaustive]
 pub struct DashArrays {
     /// Pending / suspect / assumed friend frames.
-    pub pending: String,
+    pub pending: Str,
     /// Planned / anticipated frames.
-    pub anticipated: String,
+    pub anticipated: Str,
     /// Feint/dummy indicator.
-    pub feint_dummy: String,
+    pub feint_dummy: Str,
+}
+
+impl DashArrays {
+    /// Dash arrays for pending, anticipated and feint/dummy lines.
+    pub fn new(
+        pending: impl Into<Str>,
+        anticipated: impl Into<Str>,
+        feint_dummy: impl Into<Str>,
+    ) -> Self {
+        DashArrays {
+            pending: pending.into(),
+            anticipated: anticipated.into(),
+            feint_dummy: feint_dummy.into(),
+        }
+    }
 }
 
 impl Default for DashArrays {
     fn default() -> Self {
         DashArrays {
-            pending: String::from("4,4"),
-            anticipated: String::from("8,12"),
-            feint_dummy: String::from("8,8"),
+            pending: Str::Borrowed("4,4"),
+            anticipated: Str::Borrowed("8,12"),
+            feint_dummy: Str::Borrowed("8,8"),
         }
     }
 }
 
 /// Configuration shared by all symbols a [`Renderer`](crate::Renderer) draws.
 #[derive(Debug, Clone, PartialEq)]
+#[non_exhaustive]
 pub struct RendererConfig {
     /// Default standard (upstream `ms.setStandard`).
     pub standard: Standard,

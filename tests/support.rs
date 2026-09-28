@@ -62,10 +62,8 @@ pub fn options(case: &Value) -> Result<SymbolOptions, String> {
 
 /// Renderer configured for a case, reproducing V8 on `platform`.
 pub fn renderer(case: &Value, platform: ReferencePlatform) -> Renderer {
-    let mut config = RendererConfig {
-        reference_platform: platform,
-        ..RendererConfig::default()
-    };
+    let mut config = RendererConfig::default();
+    config.reference_platform = platform;
     if let Some(cfg) = case.get("cfg") {
         if let Some(s) = cfg.get("standard").and_then(Value::as_str) {
             if s == "APP6" {
@@ -79,11 +77,7 @@ pub fn renderer(case: &Value, platform: ReferencePlatform) -> Renderer {
                     .unwrap_or_default()
                     .to_string()
             };
-            config.dash_arrays = DashArrays {
-                pending: g(0),
-                anticipated: g(1),
-                feint_dummy: g(2),
-            };
+            config.dash_arrays = DashArrays::new(g(0), g(1), g(2));
         }
         if let Some(h) = cfg.get("hqStaffLength").and_then(Value::as_f64) {
             config.hq_staff_length = h;
@@ -105,6 +99,6 @@ pub fn render_for(case: &Value, platform: ReferencePlatform) -> Result<(String, 
     let symbol = r.render(sidc, options).map_err(|e| e.to_string())?;
     Ok((
         symbol.to_svg(),
-        symbol.to_canonical_json().to_canonical_string(),
+        milsymbol::compat::canonical_json_string(&symbol),
     ))
 }

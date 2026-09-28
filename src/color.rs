@@ -131,6 +131,7 @@ pub(crate) fn truthy(v: &Option<Paint>) -> bool {
 
 /// Resolved colours of one symbol (upstream `symbol.colors`).
 #[derive(Debug, Clone, PartialEq, Default)]
+#[non_exhaustive]
 pub struct ColorSet {
     /// Frame fill colours.
     pub fill_color: ColorMode,
