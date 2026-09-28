@@ -9,6 +9,7 @@ use crate::ir::{Node, Paint, PathData, PathNode, Style};
 use crate::js;
 use crate::registry::{IconPartContext, IconTable, PartLookup};
 use crate::template::{self, IconContext, Resolver, Var};
+use alloc::borrow::Cow;
 use alloc::collections::BTreeMap;
 use alloc::string::String;
 use alloc::vec::Vec;
@@ -275,7 +276,7 @@ fn number_icon(
     }
     let special = user
         .bbox
-        .get(&fid6)
+        .get(&*fid6)
         .copied()
         .map(PartialBBox::complete)
         .or_else(|| {
@@ -290,7 +291,7 @@ fn number_icon(
     if let Some(b) = special {
         *gbbox = b;
     }
-    let hq_part = match fid.substr(4, 2).as_str() {
+    let hq_part = match &*fid.substr(4, 2) {
         "95" => Some("GR.IC.FF.HEADQUARTERS OR HEADQUARTERS ELEMENT"),
         "96" => Some("GR.IC.FF.DIVISION AND BELOW SUPPORT"),
         "97" => Some("GR.IC.FF.CORPS SUPPORT"),
@@ -310,7 +311,7 @@ fn number_icon(
             }
             fid_code
         } else {
-            String::from(code)
+            Cow::Borrowed(code)
         };
         match defined(number_entry(parts, table, ss, kind, &key)) {
             Some(n) => post.push(n),

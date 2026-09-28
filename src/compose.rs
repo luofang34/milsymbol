@@ -258,19 +258,22 @@ pub(crate) fn outline_node(
     Ok(match node {
         Node::Group(v) => Node::Group(kids(v)?),
         Node::Translate(n) => Node::Translate(crate::ir::TranslateNode {
+            x: n.x.clone(),
+            y: n.y.clone(),
             draw: kids(&n.draw)?,
             style: strip(&n.style),
-            ..n.clone()
         }),
         Node::Rotate(n) => Node::Rotate(crate::ir::RotateNode {
+            degree: n.degree.clone(),
+            x: n.x.clone(),
+            y: n.y.clone(),
             draw: kids(&n.draw)?,
             style: strip(&n.style),
-            ..n.clone()
         }),
         Node::Scale(n) => Node::Scale(crate::ir::ScaleNode {
+            factor: n.factor.clone(),
             draw: kids(&n.draw)?,
             style: strip(&n.style),
-            ..n.clone()
         }),
         Node::Path(n) => Node::Path(crate::ir::PathNode {
             style: leaf(&n.style),

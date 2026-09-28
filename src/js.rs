@@ -5,6 +5,7 @@
 //! equality. Byte-identical output therefore needs `Number.prototype.toString`,
 //! `ToNumber(string)` and UTF-16 `substr` semantics.
 
+use alloc::borrow::Cow;
 use alloc::string::String;
 use alloc::vec::Vec;
 use core::fmt::Write as _;
@@ -91,32 +92,102 @@ pub fn write_number(out: &mut String, v: f64) {
 
 /// Shortest round-trip decimal digits of a positive finite `v`, and the
 /// exponent `n` such that `v = 0.d1d2… × 10^n`.
-fn shortest_digits(v: f64) -> (String, i32) {
+fn shortest_digits(v: f64) -> (ShortStr, i32) {
     // Rust's `{:e}` gives the shortest round-tripping digit count k, but
     // breaks ties (a double exactly halfway between two k-digit decimals)
     // upwards. ECMAScript Number::toString picks the k-digit value closest
     // to v and, on a tie, the even one: that is the correctly rounded
     // k-digit value, which Rust's fixed precision produces (half-to-even).
-    let shortest = alloc::format!("{v:e}");
-    let k = split_exp(&shortest).0.len().max(1);
-    let even = alloc::format!("{v:.prec$e}", prec = k - 1);
-    let (digits, exp) = split_exp(if even.parse::<f64>().ok() == Some(v) {
-        &even
+    let mut shortest = ShortStr::default();
+    write!(shortest, "{v:e}").ok();
+    let k = split_exp(shortest.as_str()).0.len().max(1);
+    let mut even = ShortStr::default();
+    write!(even, "{v:.prec$e}", prec = k - 1).ok();
+    let (mut digits, exp) = split_exp(if even.as_str().parse::<f64>().ok() == Some(v) {
+        even.as_str()
     } else {
-        &shortest
+        shortest.as_str()
     });
-    let trimmed = digits.trim_end_matches('0');
-    (
-        String::from(if trimmed.is_empty() { "0" } else { trimmed }),
-        exp + 1,
-    )
+    digits.trim_end_zeros();
+    (digits, exp + 1)
 }
 
 /// Splits Rust `{:e}` output into its digit string and exponent.
-fn split_exp(s: &str) -> (String, i32) {
+fn split_exp(s: &str) -> (ShortStr, i32) {
     let (mantissa, exp) = s.split_once('e').unwrap_or((s, "0"));
-    let digits = mantissa.chars().filter(char::is_ascii_digit).collect();
+    let mut digits = ShortStr::default();
+    for part in mantissa.split('.') {
+        digits.write_str(part).ok();
+    }
     (digits, exp.parse().unwrap_or(0))
+}
+
+/// A string on the stack, spilling to the heap past [`ShortStr::INLINE`]
+/// bytes. Scientific notation of a double needs at most 24 bytes.
+struct ShortStr {
+    stack: [u8; ShortStr::INLINE],
+    len: usize,
+    heap: String,
+}
+
+impl Default for ShortStr {
+    fn default() -> Self {
+        ShortStr {
+            stack: [0; ShortStr::INLINE],
+            len: 0,
+            heap: String::new(),
+        }
+    }
+}
+
+impl ShortStr {
+    const INLINE: usize = 32;
+
+    fn as_str(&self) -> &str {
+        if self.heap.is_empty() {
+            // Only whole `&str`s are copied in, so the prefix is valid UTF-8.
+            self.stack
+                .get(..self.len)
+                .and_then(|b| core::str::from_utf8(b).ok())
+                .unwrap_or("")
+        } else {
+            &self.heap
+        }
+    }
+
+    /// Drops trailing zeros, keeping at least one digit.
+    fn trim_end_zeros(&mut self) {
+        let keep = self.as_str().trim_end_matches('0').len().max(1);
+        if self.heap.is_empty() {
+            self.len = keep.min(self.len);
+        } else {
+            self.heap.truncate(keep);
+        }
+    }
+}
+
+impl core::ops::Deref for ShortStr {
+    type Target = str;
+    fn deref(&self) -> &str {
+        self.as_str()
+    }
+}
+
+impl core::fmt::Write for ShortStr {
+    fn write_str(&mut self, s: &str) -> core::fmt::Result {
+        if self.heap.is_empty() {
+            let end = self.len.saturating_add(s.len());
+            if let Some(dst) = self.stack.get_mut(self.len..end) {
+                dst.copy_from_slice(s.as_bytes());
+                self.len = end;
+                return Ok(());
+            }
+            let head = String::from(self.as_str());
+            self.heap = head;
+        }
+        self.heap.push_str(s);
+        Ok(())
+    }
 }
 
 /// JavaScript `WhiteSpace` and `LineTerminator` (what `String.prototype.trim`
@@ -230,8 +301,8 @@ pub fn parse_int(s: &str) -> Option<i64> {
         Some(r) => (true, r),
         None => (false, t.strip_prefix('+').unwrap_or(t)),
     };
-    let digits: String = t.chars().take_while(char::is_ascii_digit).collect();
-    let v: i64 = digits.parse().ok()?;
+    let end = t.find(|c: char| !c.is_ascii_digit()).unwrap_or(t.len());
+    let v: i64 = t.get(..end)?.parse().ok()?;
     Some(if neg { -v } else { v })
 }
 
@@ -263,24 +334,24 @@ pub fn min(a: f64, b: f64) -> f64 {
 
 /// A string viewed as UTF-16 code units, as JavaScript string methods see it.
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub enum JsStr {
-    /// ASCII text: bytes and code units coincide.
-    Ascii(String),
+pub enum JsStr<'a> {
+    /// ASCII text, borrowed: bytes and code units coincide.
+    Ascii(&'a str),
     /// Other text, as UTF-16 code units.
     Utf16(Vec<u16>),
 }
 
-impl Default for JsStr {
+impl Default for JsStr<'_> {
     fn default() -> Self {
-        JsStr::Ascii(String::new())
+        JsStr::Ascii("")
     }
 }
 
-impl JsStr {
+impl<'a> JsStr<'a> {
     /// Wraps `s`.
-    pub fn new(s: &str) -> Self {
+    pub fn new(s: &'a str) -> Self {
         if s.is_ascii() {
-            JsStr::Ascii(String::from(s))
+            JsStr::Ascii(s)
         } else {
             JsStr::Utf16(s.encode_utf16().collect())
         }
@@ -294,18 +365,21 @@ impl JsStr {
         }
     }
 
-    /// `String.prototype.substr(start, len)` for non-negative arguments.
-    pub fn substr(&self, start: usize, len: usize) -> String {
+    /// `String.prototype.substr(start, len)` for non-negative arguments;
+    /// borrows from ASCII input.
+    pub fn substr(&self, start: usize, len: usize) -> Cow<'a, str> {
         let end = start.saturating_add(len).min(self.len());
         let start = start.min(end);
         match self {
-            JsStr::Ascii(s) => String::from(s.get(start..end).unwrap_or("")),
-            JsStr::Utf16(u) => String::from_utf16_lossy(u.get(start..end).unwrap_or(&[])),
+            JsStr::Ascii(s) => Cow::Borrowed(s.get(start..end).unwrap_or("")),
+            JsStr::Utf16(u) => {
+                Cow::Owned(String::from_utf16_lossy(u.get(start..end).unwrap_or(&[])))
+            }
         }
     }
 
     /// `String.prototype.charAt(i)`.
-    pub fn char_at(&self, i: usize) -> String {
+    pub fn char_at(&self, i: usize) -> Cow<'a, str> {
         self.substr(i, 1)
     }
 }
@@ -320,7 +394,7 @@ pub fn utf16_len(s: &str) -> usize {
 }
 
 /// JavaScript `substr(start, len)` on a Rust string (UTF-16 semantics).
-pub fn substr(s: &str, start: usize, len: usize) -> String {
+pub fn substr(s: &str, start: usize, len: usize) -> Cow<'_, str> {
     JsStr::new(s).substr(start, len)
 }
 

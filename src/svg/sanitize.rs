@@ -1,5 +1,6 @@
 //! Escaping and sanitization rules of upstream `assvg.js`.
 
+use alloc::borrow::Cow;
 use alloc::string::String;
 
 /// JavaScript regular-expression `\s` (and `String.prototype.trim`).
@@ -57,8 +58,18 @@ pub(super) fn sanitize_dash_array(v: &str) -> Option<&str> {
     .then_some(t)
 }
 
+/// JavaScript `toLowerCase()`, borrowing when that changes nothing (the
+/// common case of lowercase ASCII).
+fn js_lower(v: &str) -> Cow<'_, str> {
+    if v.bytes().all(|b| b.is_ascii() && !b.is_ascii_uppercase()) {
+        Cow::Borrowed(v)
+    } else {
+        Cow::Owned(v.to_lowercase())
+    }
+}
+
 pub(super) fn sanitize_line_cap(v: &str) -> Option<&'static str> {
-    match v.to_lowercase().as_str() {
+    match &*js_lower(v) {
         "butt" => Some("butt"),
         "round" => Some("round"),
         "square" => Some("square"),
@@ -66,9 +77,9 @@ pub(super) fn sanitize_line_cap(v: &str) -> Option<&'static str> {
     }
 }
 
-pub(super) fn sanitize_font_weight(v: &str) -> Option<String> {
-    let l = v.to_lowercase();
-    let ok = matches!(l.as_str(), "normal" | "bold" | "bolder" | "lighter")
+pub(super) fn sanitize_font_weight(v: &str) -> Option<Cow<'_, str>> {
+    let l = js_lower(v);
+    let ok = matches!(&*l, "normal" | "bold" | "bolder" | "lighter")
         || (l.len() == 3
             && l.ends_with("00")
             && l.as_bytes()
@@ -78,7 +89,7 @@ pub(super) fn sanitize_font_weight(v: &str) -> Option<String> {
 }
 
 pub(super) fn sanitize_text_anchor(v: &str) -> Option<&'static str> {
-    match v.to_lowercase().as_str() {
+    match &*js_lower(v) {
         "start" => Some("start"),
         "middle" => Some("middle"),
         "end" => Some("end"),
@@ -101,7 +112,7 @@ const BASELINES: [&str; 11] = [
 ];
 
 pub(super) fn sanitize_baseline(v: &str) -> Option<&'static str> {
-    let l = v.to_lowercase();
+    let l = js_lower(v);
     BASELINES.iter().find(|b| **b == l).copied()
 }
 
@@ -117,7 +128,7 @@ pub(super) fn sanitize_font_family(v: Option<&str>) -> &str {
 }
 
 fn contains_ci(hay: &str, needle: &str) -> bool {
-    hay.to_lowercase().contains(needle)
+    js_lower(hay).contains(needle)
 }
 
 /// Rejects `url(`, `javascript:` and `data:` colours; returns the trimmed value.
@@ -126,7 +137,7 @@ pub(super) fn sanitize_color(v: &str) -> Option<&str> {
     if t.is_empty() {
         return None;
     }
-    let lower = t.to_lowercase();
+    let lower = js_lower(t);
     let url = lower.match_indices("url").any(|(i, _)| {
         lower
             .get(i + 3..)

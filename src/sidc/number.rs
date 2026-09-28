@@ -3,6 +3,7 @@
 use super::{CONTEXT, ParseInput, STATUS, echelon_mobility};
 use crate::js::{self, JsStr};
 use crate::metadata::Metadata;
+use alloc::borrow::Cow;
 use alloc::string::String;
 
 fn affiliation(si2: &str) -> Option<&'static str> {
@@ -41,10 +42,10 @@ pub(super) fn interpret(sidc: &str, md: &mut Metadata, input: &ParseInput<'_>) {
     let echelon_mob = s.substr(8, 2);
     let frameshape = non_empty_or(s.substr(22, 1), "0");
 
-    if matches!(version.as_str(), "10" | "11" | "12") {
+    if matches!(&*version, "10" | "11" | "12") {
         md.flags.edition = Some(String::from("D"));
     }
-    if matches!(version.as_str(), "13" | "14") {
+    if matches!(&*version, "13" | "14") {
         md.flags.edition = Some(String::from("E"));
     }
     if eq_num(&version, 13.0) && eq_num(&si2, 5.0) {
@@ -53,11 +54,14 @@ pub(super) fn interpret(sidc: &str, md: &mut Metadata, input: &ParseInput<'_>) {
 
     let function_id = s.substr(10, 10);
     let fid = JsStr::new(&function_id);
-    md.function_id = function_id.clone();
-    md.flags.modifier1 =
-        Some(non_empty_or(s.substr(20, 1), "0") + &non_empty_or(fid.substr(6, 2), "00"));
-    md.flags.modifier2 =
-        Some(non_empty_or(s.substr(21, 1), "0") + &non_empty_or(fid.substr(8, 2), "00"));
+    md.function_id = String::from(&*function_id);
+    let modifier = |sector: usize, code: usize| {
+        let mut m = String::from(non_empty_or(s.substr(sector, 1), "0"));
+        m.push_str(&non_empty_or(fid.substr(code, 2), "00"));
+        m
+    };
+    md.flags.modifier1 = Some(modifier(20, 6));
+    md.flags.modifier2 = Some(modifier(21, 8));
 
     md.context = js::parse_int(&si1)
         .and_then(|i| usize::try_from(i).ok())
@@ -71,7 +75,7 @@ pub(super) fn interpret(sidc: &str, md: &mut Metadata, input: &ParseInput<'_>) {
     if status == "1" {
         md.notpresent = String::from(input.dashes.anticipated);
     }
-    if matches!(si2.as_str(), "0" | "2" | "5") {
+    if matches!(&*si2, "0" | "2" | "5") {
         md.notpresent = String::from(input.dashes.pending);
     }
     let entity = fid.substr(0, 6);
@@ -80,7 +84,7 @@ pub(super) fn interpret(sidc: &str, md: &mut Metadata, input: &ParseInput<'_>) {
     {
         md.notpresent = String::from(input.dashes.pending);
     }
-    if matches!(status.as_str(), "2" | "3" | "4" | "5") {
+    if matches!(&*status, "2" | "3" | "4" | "5") {
         let i = js::parse_int(&status)
             .and_then(|i| usize::try_from(i).ok())
             .unwrap_or(0);
@@ -95,9 +99,9 @@ pub(super) fn interpret(sidc: &str, md: &mut Metadata, input: &ParseInput<'_>) {
     amplifiers(&hq_tf_dummy, &echelon_mob, md);
 }
 
-fn non_empty_or(s: String, fallback: &str) -> String {
+fn non_empty_or<'a>(s: Cow<'a, str>, fallback: &'a str) -> Cow<'a, str> {
     if s.is_empty() {
-        String::from(fallback)
+        Cow::Borrowed(fallback)
     } else {
         s
     }

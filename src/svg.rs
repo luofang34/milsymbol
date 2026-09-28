@@ -41,8 +41,31 @@ fn str_attr(out: &mut String, name: &str, v: &str) {
     out.push('"');
 }
 
-/// Renders a complete SVG document.
-pub(crate) fn render(frame: &SvgFrame, nodes: &[Node]) -> String {
+/// ` transform="name(a,b,…)"`, non-finite arguments replaced by `fallback`.
+/// Numbers contain no characters that attribute escaping would change.
+fn transform_attr(out: &mut String, name: &str, args: &[f64], fallback: f64) {
+    out.push_str(" transform=\"");
+    out.push_str(name);
+    out.push('(');
+    for (i, v) in args.iter().enumerate() {
+        if i > 0 {
+            out.push(',');
+        }
+        write_number(out, safe(*v, fallback));
+    }
+    out.push_str(")\"");
+}
+
+/// ` clip-path="url(#id)"`. Clip ids are generated or pass `sanitize_id`,
+/// so they contain only ASCII alphanumerics and `.`, `_`, `:`, `-`.
+fn clip_path_attr(out: &mut String, id: &str) {
+    out.push_str(" clip-path=\"url(#");
+    escape_attr(out, id);
+    out.push_str(")\"");
+}
+
+/// Appends a complete SVG document to `out`.
+pub(crate) fn render_into(frame: &SvgFrame, nodes: &[Node], out: &mut String) {
     let sw = safe(frame.stroke_width, 0.0);
     let ow = safe(frame.outline_width, 0.0);
     let x = safe(frame.bbox_x1, 0.0) - sw - ow;
@@ -51,22 +74,21 @@ pub(crate) fn render(frame: &SvgFrame, nodes: &[Node]) -> String {
     let height = safe(frame.height, frame.base_height);
     let bw = safe(frame.base_width, width);
     let bh = safe(frame.base_height, height);
-    let mut out = String::with_capacity(1024);
     out.push_str("<svg");
-    str_attr(&mut out, "xmlns", "http://www.w3.org/2000/svg");
-    str_attr(&mut out, "version", "1.2");
-    str_attr(&mut out, "baseProfile", "tiny");
-    num_attr(&mut out, "width", width);
-    num_attr(&mut out, "height", height);
-    let mut vb = String::new();
+    str_attr(out, "xmlns", "http://www.w3.org/2000/svg");
+    str_attr(out, "version", "1.2");
+    str_attr(out, "baseProfile", "tiny");
+    num_attr(out, "width", width);
+    num_attr(out, "height", height);
+    // Numbers never contain characters that attribute escaping changes.
+    out.push_str(" viewBox=\"");
     for (i, v) in [x, y, bw, bh].into_iter().enumerate() {
         if i > 0 {
-            vb.push(' ');
+            out.push(' ');
         }
-        write_number(&mut vb, v);
+        write_number(out, v);
     }
-    str_attr(&mut out, "viewBox", &vb);
-    out.push('>');
+    out.push_str("\">");
     let mut w = Writer {
         out,
         clip_counter: 0,
@@ -75,17 +97,16 @@ pub(crate) fn render(frame: &SvgFrame, nodes: &[Node]) -> String {
     };
     w.list(nodes);
     w.out.push_str("</svg>");
-    w.out
 }
 
-struct Writer {
-    out: String,
+struct Writer<'o> {
+    out: &'o mut String,
     clip_counter: u32,
     stroke_width: f64,
     style_fill: bool,
 }
 
-impl Writer {
+impl Writer<'_> {
     fn list(&mut self, nodes: &[Node]) {
         for n in nodes {
             self.node(n);
@@ -94,10 +115,10 @@ impl Writer {
 
     fn clip_def(&mut self, id: &str, d: &str) {
         self.out.push_str("<clipPath");
-        str_attr(&mut self.out, "id", id);
+        str_attr(self.out, "id", id);
         self.out.push_str("><path");
-        str_attr(&mut self.out, "d", d);
-        str_attr(&mut self.out, "clip-rule", "nonzero");
+        str_attr(self.out, "d", d);
+        str_attr(self.out, "clip-rule", "nonzero");
         self.out.push_str(" /></clipPath>");
     }
 
@@ -132,7 +153,7 @@ impl Writer {
                 | Node::Scale(_)
         );
         if let (Some(id), true) = (&inline_clip, typed) {
-            str_attr(&mut self.out, "clip-path", &alloc::format!("url(#{id})"));
+            clip_path_attr(self.out, id);
         }
         self.presentation(style);
         self.out.push_str(" >");
@@ -140,7 +161,7 @@ impl Writer {
     }
 
     fn open(&mut self, node: &Node) {
-        let o = &mut self.out;
+        let o = &mut *self.out;
         match node {
             Node::Path(p) => {
                 o.push_str("<path");
@@ -155,30 +176,16 @@ impl Writer {
             Node::Text(t) => open_text(o, t),
             Node::Translate(t) => {
                 o.push_str("<g");
-                let v = alloc::format!(
-                    "translate({},{})",
-                    js_num(safe(t.x.value(), 0.0)),
-                    js_num(safe(t.y.value(), 0.0))
-                );
-                str_attr(o, "transform", &v);
+                transform_attr(o, "translate", &[t.x.value(), t.y.value()], 0.0);
             }
             Node::Rotate(r) => {
                 o.push_str("<g");
-                let v = alloc::format!(
-                    "rotate({},{},{})",
-                    js_num(safe(r.degree.value(), 0.0)),
-                    js_num(safe(r.x.value(), 0.0)),
-                    js_num(safe(r.y.value(), 0.0))
-                );
-                str_attr(o, "transform", &v);
+                let args = [r.degree.value(), r.x.value(), r.y.value()];
+                transform_attr(o, "rotate", &args, 0.0);
             }
             Node::Scale(sc) => {
                 o.push_str("<g");
-                str_attr(
-                    o,
-                    "transform",
-                    &alloc::format!("scale({})", js_num(safe(sc.factor.value(), 1.0))),
-                );
+                transform_attr(o, "scale", &[sc.factor.value()], 1.0);
             }
             Node::Clip(c) => {
                 let id = c
@@ -192,14 +199,14 @@ impl Writer {
                     });
                 self.clip_def(&id, c.d.source());
                 self.out.push_str("<g");
-                str_attr(&mut self.out, "clip-path", &alloc::format!("url(#{id})"));
+                clip_path_attr(self.out, &id);
             }
             _ => {}
         }
     }
 
     fn presentation(&mut self, st: &Style) {
-        let o = &mut self.out;
+        let o = &mut *self.out;
         if let Some(stroke) = &st.stroke {
             let nss = safe(st.non_scaling_stroke.unwrap_or(1.0), 1.0);
             let setting = st
@@ -234,7 +241,7 @@ impl Writer {
             Node::Path(_) => self.out.push_str("</path>"),
             Node::Circle(_) => self.out.push_str("</circle>"),
             Node::Text(t) => {
-                escape_text(&mut self.out, &t.text);
+                escape_text(self.out, &t.text);
                 self.out.push_str("</text>");
             }
             Node::Translate(n) => self.group_end(&n.draw),
@@ -249,10 +256,6 @@ impl Writer {
         self.list(draw);
         self.out.push_str("</g>");
     }
-}
-
-fn js_num(v: f64) -> String {
-    crate::js::number_to_string(v)
 }
 
 fn paint_value(p: &Paint) -> &str {

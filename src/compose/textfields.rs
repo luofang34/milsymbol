@@ -123,16 +123,16 @@ fn label_override(s: &SymbolState<'_>) -> Option<Cow<'static, [LabelField]>> {
     } else {
         let sidc = js::JsStr::new(s.sidc);
         (
-            alloc::format!(
+            Cow::Owned(alloc::format!(
                 "{}-{}-{}",
                 sidc.substr(0, 1),
                 sidc.substr(2, 1),
                 sidc.substr(4, 6)
-            ),
+            )),
             &s.registry.letter_labels,
         )
     };
-    if let Some(v) = user.get(&key) {
+    if let Some(v) = user.get(&*key) {
         return Some(Cow::Owned(v.clone()));
     }
     labels::builtin(md.number_sidc, &key).map(Cow::Borrowed)

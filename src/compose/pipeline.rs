@@ -12,7 +12,6 @@ use crate::metadata::Metadata;
 use crate::options::{StyleColor, SymbolOptions};
 use crate::registry::{PartSlot, Registry};
 use crate::sidc::{self, Dashes, ParseInput};
-use alloc::boxed::Box;
 use alloc::string::String;
 use alloc::vec::Vec;
 
@@ -122,9 +121,13 @@ pub(crate) fn colors(
 }
 
 /// A JavaScript value produced by unwrapping single-element arrays.
+///
+/// Short-lived and never stored, so the large inline `One` costs a stack
+/// move rather than the heap allocation a `Box` would.
+#[allow(clippy::large_enum_variant)]
 enum Unwrapped {
     Array(Vec<Node>),
-    One(Box<Node>),
+    One(Node),
     Undefined,
 }
 
@@ -147,7 +150,7 @@ fn unwrap_value(list: Vec<Node>, is_pre: bool) -> Result<Unwrapped, RenderError>
                         "single-character string instruction never terminates",
                     ));
                 }
-                Some(n) => Unwrapped::One(Box::new(n)),
+                Some(n) => Unwrapped::One(n),
             },
             other => return Ok(other),
         };
@@ -158,18 +161,29 @@ fn unwrap_value(list: Vec<Node>, is_pre: bool) -> Result<Unwrapped, RenderError>
 fn nonzero_length(v: &Unwrapped) -> bool {
     match v {
         Unwrapped::Array(a) => !a.is_empty(),
-        Unwrapped::One(n) if matches!(**n, Node::Scalar(crate::ir::Num::Text(_))) => {
-            !matches!(&**n, Node::Scalar(crate::ir::Num::Text(t)) if t.is_empty())
-        }
+        Unwrapped::One(Node::Scalar(crate::ir::Num::Text(t))) => !t.is_empty(),
         Unwrapped::One(_) | Unwrapped::Undefined => true,
     }
 }
 
-fn into_nodes(v: Unwrapped) -> Vec<Node> {
+/// Puts `v` before the existing instructions (upstream `pre.concat(draw)`).
+fn prepend(v: Unwrapped, instructions: &mut Vec<Node>) {
     match v {
-        Unwrapped::Array(a) => a,
-        Unwrapped::One(n) => alloc::vec![*n],
-        Unwrapped::Undefined => alloc::vec![Node::Missing],
+        Unwrapped::Array(mut a) => {
+            a.append(instructions);
+            *instructions = a;
+        }
+        Unwrapped::One(n) => instructions.insert(0, n),
+        Unwrapped::Undefined => instructions.insert(0, Node::Missing),
+    }
+}
+
+/// Puts `v` after the existing instructions (upstream `draw.concat(post)`).
+fn append(v: Unwrapped, instructions: &mut Vec<Node>) {
+    match v {
+        Unwrapped::Array(a) => instructions.extend(a),
+        Unwrapped::One(n) => instructions.push(n),
+        Unwrapped::Undefined => instructions.push(Node::Missing),
     }
 }
 
@@ -183,15 +197,13 @@ fn merge(
     if !out.pre.is_empty() {
         let pre = unwrap_value(out.pre, true)?;
         if nonzero_length(&pre) {
-            let mut v = into_nodes(pre);
-            v.append(instructions);
-            *instructions = v;
+            prepend(pre, instructions);
         }
     }
     if !out.post.is_empty() {
         let post = unwrap_value(out.post, false)?;
         if nonzero_length(&post) {
-            instructions.extend(into_nodes(post));
+            append(post, instructions);
         }
     }
     if not_empty {

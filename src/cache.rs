@@ -65,8 +65,10 @@ impl CachedRenderer {
         if self.capacity == 0 {
             return Ok(Arc::new(self.renderer.render(sidc, options.clone())?));
         }
-        let key = cache_key(sidc, options);
-        if let Some(hit) = self.entries.lock().ok().and_then(|e| e.get(&key).cloned()) {
+        let mut key = KeyBuf::default();
+        write_key(&mut key, sidc, options);
+        let key = key.as_slice();
+        if let Some(hit) = self.entries.lock().ok().and_then(|e| e.get(key).cloned()) {
             return Ok(hit);
         }
         // Rendering happens outside the lock so concurrent misses do not serialize.
@@ -78,7 +80,7 @@ impl CachedRenderer {
                 } else {
                     HashMap::new()
                 };
-                entries.insert(key, Arc::clone(&symbol));
+                entries.insert(key.to_vec(), Arc::clone(&symbol));
                 old
             }
             Err(_) => HashMap::new(),
@@ -89,17 +91,65 @@ impl CachedRenderer {
     }
 }
 
+/// Key bytes for a lookup: on the stack for typical requests, spilling to
+/// the heap for large text fields, so a cache hit does not allocate.
+struct KeyBuf {
+    stack: [u8; KeyBuf::INLINE],
+    len: usize,
+    heap: Vec<u8>,
+}
+
+impl Default for KeyBuf {
+    fn default() -> Self {
+        KeyBuf {
+            stack: [0; KeyBuf::INLINE],
+            len: 0,
+            heap: Vec::new(),
+        }
+    }
+}
+
+impl KeyBuf {
+    const INLINE: usize = 1024;
+
+    fn extend_from_slice(&mut self, b: &[u8]) {
+        if self.heap.is_empty() {
+            let end = self.len.saturating_add(b.len());
+            if let Some(dst) = self.stack.get_mut(self.len..end) {
+                dst.copy_from_slice(b);
+                self.len = end;
+                return;
+            }
+            self.heap
+                .extend_from_slice(self.stack.get(..self.len).unwrap_or(&[]));
+        }
+        self.heap.extend_from_slice(b);
+    }
+
+    fn push(&mut self, b: u8) {
+        self.extend_from_slice(&[b]);
+    }
+
+    fn as_slice(&self) -> &[u8] {
+        if self.heap.is_empty() {
+            self.stack.get(..self.len).unwrap_or(&[])
+        } else {
+            &self.heap
+        }
+    }
+}
+
 /// Appends length-prefixed bytes so adjacent fields cannot run together.
-fn put_bytes(out: &mut Vec<u8>, b: &[u8]) {
+fn put_bytes(out: &mut KeyBuf, b: &[u8]) {
     out.extend_from_slice(&(b.len() as u64).to_le_bytes());
     out.extend_from_slice(b);
 }
 
-fn put_f64(out: &mut Vec<u8>, v: f64) {
+fn put_f64(out: &mut KeyBuf, v: f64) {
     out.extend_from_slice(&v.to_bits().to_le_bytes());
 }
 
-fn put_opt_f64(out: &mut Vec<u8>, v: Option<f64>) {
+fn put_opt_f64(out: &mut KeyBuf, v: Option<f64>) {
     match v {
         None => out.push(0),
         Some(v) => {
@@ -109,7 +159,7 @@ fn put_opt_f64(out: &mut Vec<u8>, v: Option<f64>) {
     }
 }
 
-fn put_opt_str(out: &mut Vec<u8>, v: Option<&str>) {
+fn put_opt_str(out: &mut KeyBuf, v: Option<&str>) {
     match v {
         None => out.push(0),
         Some(s) => {
@@ -119,7 +169,7 @@ fn put_opt_str(out: &mut Vec<u8>, v: Option<&str>) {
     }
 }
 
-fn put_mode(out: &mut Vec<u8>, m: &ColorMode) {
+fn put_mode(out: &mut KeyBuf, m: &ColorMode) {
     for v in m.values() {
         match v {
             None => out.push(0),
@@ -132,7 +182,7 @@ fn put_mode(out: &mut Vec<u8>, m: &ColorMode) {
     }
 }
 
-fn put_style_color(out: &mut Vec<u8>, c: &StyleColor) {
+fn put_style_color(out: &mut KeyBuf, c: &StyleColor) {
     match c {
         StyleColor::Str(s) => {
             out.push(0);
@@ -145,20 +195,19 @@ fn put_style_color(out: &mut Vec<u8>, c: &StyleColor) {
     }
 }
 
-/// Canonical byte encoding of a render request.
-fn cache_key(sidc: &str, o: &SymbolOptions) -> Vec<u8> {
-    let mut k = Vec::with_capacity(256);
-    put_bytes(&mut k, sidc.as_bytes());
+/// Writes the canonical byte encoding of a render request.
+fn write_key(k: &mut KeyBuf, sidc: &str, o: &SymbolOptions) {
+    put_bytes(k, sidc.as_bytes());
     k.extend_from_slice(&(o.text.len() as u64).to_le_bytes());
     for (name, value) in &o.text {
-        put_bytes(&mut k, name.as_bytes());
-        put_bytes(&mut k, value.as_bytes());
+        put_bytes(k, name.as_bytes());
+        put_bytes(k, value.as_bytes());
     }
-    put_opt_f64(&mut k, o.direction);
-    put_f64(&mut k, o.speed_leader);
-    put_opt_f64(&mut k, o.stack);
-    put_opt_str(&mut k, o.country_flag.as_deref());
-    put_opt_str(&mut k, o.signature.as_deref());
+    put_opt_f64(k, o.direction);
+    put_f64(k, o.speed_leader);
+    put_opt_f64(k, o.stack);
+    put_opt_str(k, o.country_flag.as_deref());
+    put_opt_str(k, o.signature.as_deref());
     k.push(match o.full_frame_flag {
         None => 0,
         Some(false) => 1,
@@ -174,9 +223,9 @@ fn cache_key(sidc: &str, o: &SymbolOptions) -> Vec<u8> {
         st.size,
         st.stroke_width,
     ] {
-        put_f64(&mut k, v);
+        put_f64(k, v);
     }
-    put_opt_f64(&mut k, st.info_outline_width);
+    put_opt_f64(k, st.info_outline_width);
     let flags = [
         st.alternate_medal,
         st.civilian_color,
@@ -188,14 +237,14 @@ fn cache_key(sidc: &str, o: &SymbolOptions) -> Vec<u8> {
         st.square,
         st.style_fill,
     ];
-    k.extend(flags.map(u8::from));
+    k.extend_from_slice(&flags.map(u8::from));
     for s in [
         &st.fill_color,
         &st.font_family,
         &st.info_outline_color,
         &st.mono_color,
     ] {
-        put_bytes(&mut k, s.as_bytes());
+        put_bytes(k, s.as_bytes());
     }
     k.push(match st.standard {
         None => 0,
@@ -211,7 +260,6 @@ fn cache_key(sidc: &str, o: &SymbolOptions) -> Vec<u8> {
         &st.info_color,
         &st.outline_color,
     ] {
-        put_style_color(&mut k, c);
+        put_style_color(k, c);
     }
-    k
 }

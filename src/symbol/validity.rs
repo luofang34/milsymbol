@@ -43,34 +43,46 @@ pub struct Validity {
     pub issues: Vec<ValidityIssue>,
 }
 
+/// The reasons `s` is not valid, in declaration order. Allocates only when
+/// there is at least one.
+pub(super) fn issues(s: &Symbol) -> Vec<ValidityIssue> {
+    let md = &s.metadata;
+    [
+        (
+            md.affiliation.as_deref() == Some("undefined"),
+            ValidityIssue::UnknownAffiliation,
+        ),
+        (
+            md.dimension == "undefined" && !md.control_measure(),
+            ValidityIssue::UnknownDimension,
+        ),
+        (!s.valid_icon, ValidityIssue::UnknownIcon),
+        (md.mobility.is_none(), ValidityIssue::UnknownAmplifier),
+        (
+            crate::ir::contains_missing(&s.instructions),
+            ValidityIssue::MissingInstruction,
+        ),
+        (contains_null(&s.instructions), ValidityIssue::NullInDrawing),
+    ]
+    .into_iter()
+    .filter_map(|(present, issue)| present.then_some(issue))
+    .collect()
+}
+
 pub(super) fn of(s: &Symbol) -> Validity {
     let md = &s.metadata;
-    let missing = crate::ir::contains_missing(&s.instructions);
-    let null_value = contains_null(&s.instructions);
-    let mut issues = Vec::new();
-    if md.affiliation.as_deref() == Some("undefined") {
-        issues.push(ValidityIssue::UnknownAffiliation);
-    }
-    if md.dimension == "undefined" && !md.control_measure() {
-        issues.push(ValidityIssue::UnknownDimension);
-    }
-    if !s.valid_icon {
-        issues.push(ValidityIssue::UnknownIcon);
-    }
-    if md.mobility.is_none() {
-        issues.push(ValidityIssue::UnknownAmplifier);
-    }
-    if missing {
-        issues.push(ValidityIssue::MissingInstruction);
-    }
-    if null_value {
-        issues.push(ValidityIssue::NullInDrawing);
-    }
+    let issues = issues(s);
+    let drawing_ok = !issues.iter().any(|i| {
+        matches!(
+            i,
+            ValidityIssue::MissingInstruction | ValidityIssue::NullInDrawing
+        )
+    });
     Validity {
         affiliation: md.affiliation.clone(),
         dimension: md.dimension.clone(),
         dimension_unknown: md.dimension_unknown,
-        draw_instructions: !missing && !null_value,
+        draw_instructions: drawing_ok,
         icon: s.valid_icon,
         mobility: md.mobility.is_some(),
         issues,

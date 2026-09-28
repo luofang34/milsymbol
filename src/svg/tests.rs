@@ -69,3 +69,15 @@ fn whitespace_follows_javascript_not_unicode() {
     assert_eq!(sanitize_color("\u{FEFF} red\u{3000}"), Some("red"));
     assert_eq!(sanitize_dash_array("\u{85}4,4"), None);
 }
+
+#[test]
+fn keywords_compare_after_js_lowercasing() {
+    assert_eq!(sanitize_line_cap("ROUND"), Some("round"));
+    assert_eq!(sanitize_text_anchor("Middle"), Some("middle"));
+    assert_eq!(sanitize_baseline("Text-Top"), Some("text-top"));
+    assert_eq!(sanitize_font_weight("BOLD").as_deref(), Some("bold"));
+    // U+212A KELVIN SIGN lowercases to ASCII `k`, as in JavaScript.
+    assert_eq!(sanitize_color("\u{212A}"), Some("\u{212A}"));
+    assert_eq!(sanitize_color("JAVASCRIPT:x"), None);
+    assert_eq!(sanitize_color("UrL (x)"), None);
+}

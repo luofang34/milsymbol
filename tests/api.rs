@@ -263,6 +263,36 @@ fn cached_renderer_reuses_identical_requests_only() -> TestResult {
     Ok(())
 }
 
+#[cfg(feature = "std")]
+#[test]
+fn cached_renderer_keys_long_requests_exactly() -> TestResult {
+    use milsymbol::cache::CachedRenderer;
+    let c = CachedRenderer::new(Renderer::default(), 8);
+    // Text long enough that the lookup key no longer fits on the stack.
+    let long = "x".repeat(4096);
+    let mut a = SymbolOptions::default();
+    a.set_text(field::ADDITIONAL_INFORMATION, &long);
+    let mut b = SymbolOptions::default();
+    b.set_text(
+        field::ADDITIONAL_INFORMATION,
+        format!("{}y", "x".repeat(4095)),
+    );
+    let first = c.render(INFANTRY, &a)?;
+    assert!(std::sync::Arc::ptr_eq(&first, &c.render(INFANTRY, &a)?));
+    assert!(!std::sync::Arc::ptr_eq(&first, &c.render(INFANTRY, &b)?));
+    assert_eq!(c.len(), 2);
+    Ok(())
+}
+
+#[test]
+fn write_svg_appends_the_same_document() -> TestResult {
+    let symbol = Renderer::default().symbol(INFANTRY).render()?;
+    let mut buf = String::from("prefix");
+    symbol.write_svg(&mut buf);
+    assert_eq!(buf.strip_prefix("prefix"), Some(symbol.to_svg().as_str()));
+    Ok(())
+}
+
 /// Replaces the built-in infantry part, as `tests/data/override_oracle.txt`
 /// does in milsymbol.js via `ms.addIconParts`.
 struct InfantryCircle;

@@ -3,11 +3,12 @@
 use super::{ParseInput, STATUS, echelon_mobility};
 use crate::js::JsStr;
 use crate::metadata::Metadata;
+use alloc::borrow::Cow;
 use alloc::string::String;
 
-fn char_or_dash(s: &JsStr, i: usize) -> String {
+fn char_or_dash<'a>(s: &JsStr<'a>, i: usize) -> Cow<'a, str> {
     let c = s.char_at(i);
-    if c.is_empty() { String::from("-") } else { c }
+    if c.is_empty() { Cow::Borrowed("-") } else { c }
 }
 
 fn set(slot: &mut Option<String>, v: &str) {
@@ -39,14 +40,14 @@ const MINES: [&str; 49] = [
     "NBR---", "NBW---", "NM----", "NA----",
 ];
 
-struct Codes {
-    scheme: String,
-    aff: String,
-    dim: String,
-    status: String,
-    fid: String,
-    m11: String,
-    m12: String,
+struct Codes<'a> {
+    scheme: Cow<'a, str>,
+    aff: Cow<'a, str>,
+    dim: Cow<'a, str>,
+    status: Cow<'a, str>,
+    fid: Cow<'a, str>,
+    m11: Cow<'a, str>,
+    m12: Cow<'a, str>,
 }
 
 pub(super) fn interpret(sidc: &str, md: &mut Metadata, input: &ParseInput<'_>) {
@@ -58,14 +59,14 @@ pub(super) fn interpret(sidc: &str, md: &mut Metadata, input: &ParseInput<'_>) {
         dim: char_or_dash(&s, 2),
         status: char_or_dash(&s, 3),
         fid: if fid.is_empty() {
-            String::from("------")
+            Cow::Borrowed("------")
         } else {
             fid
         },
         m11: char_or_dash(&s, 10),
         m12: char_or_dash(&s, 11),
     };
-    md.function_id = c.fid.clone();
+    md.function_id = String::from(&*c.fid);
     identity_and_dimension(&c, md, input);
     md.base_dimension = md.dimension.clone();
     md.base_affiliation = md.affiliation.clone();
@@ -75,8 +76,8 @@ pub(super) fn interpret(sidc: &str, md: &mut Metadata, input: &ParseInput<'_>) {
     framing(&c, sidc, md);
 }
 
-fn identity_and_dimension(c: &Codes, md: &mut Metadata, input: &ParseInput<'_>) {
-    let a = c.aff.as_str();
+fn identity_and_dimension(c: &Codes<'_>, md: &mut Metadata, input: &ParseInput<'_>) {
+    let a = &*c.aff;
     match a {
         "H" | "S" | "J" | "K" => set(&mut md.affiliation, "Hostile"),
         "F" | "A" | "D" | "M" => set(&mut md.affiliation, "Friend"),
@@ -84,7 +85,7 @@ fn identity_and_dimension(c: &Codes, md: &mut Metadata, input: &ParseInput<'_>) 
         "P" | "U" | "G" | "W" | "O" => set(&mut md.affiliation, "Unknown"),
         _ => {}
     }
-    match c.dim.as_str() {
+    match &*c.dim {
         "P" | "A" => md.dimension = String::from("Air"),
         "G" | "Z" | "F" | "X" => md.dimension = String::from("Ground"),
         "S" => md.dimension = String::from("Sea"),
@@ -94,7 +95,7 @@ fn identity_and_dimension(c: &Codes, md: &mut Metadata, input: &ParseInput<'_>) 
     if c.dim == "P" && c.scheme != "O" {
         md.space = true;
     }
-    if c.scheme == "O" && matches!(c.dim.as_str(), "V" | "O" | "R") {
+    if c.scheme == "O" && matches!(&*c.dim, "V" | "O" | "R") {
         md.activity = true;
     }
     if c.scheme == "G" {
@@ -109,7 +110,7 @@ fn identity_and_dimension(c: &Codes, md: &mut Metadata, input: &ParseInput<'_>) 
     if input.style_frame && matches!(a, "P" | "A" | "S" | "G" | "M") {
         md.notpresent = String::from(input.dashes.pending);
     }
-    let condition = match c.status.as_str() {
+    let condition = match &*c.status {
         "C" => STATUS.get(2),
         "D" => STATUS.get(3),
         "X" => STATUS.get(4),
@@ -127,7 +128,7 @@ fn identity_and_dimension(c: &Codes, md: &mut Metadata, input: &ParseInput<'_>) 
     }
 }
 
-fn remap(c: &Codes, md: &mut Metadata) {
+fn remap(c: &Codes<'_>, md: &mut Metadata) {
     if c.aff == "J" {
         md.joker = true;
     }
@@ -137,7 +138,7 @@ fn remap(c: &Codes, md: &mut Metadata) {
     if md.joker || md.faker {
         set(&mut md.affiliation, "Friend");
     }
-    let fid = c.fid.as_str();
+    let fid = &*c.fid;
     let sea = (c.scheme == "S" && c.dim == "G" && fid.starts_with('E'))
         || (c.scheme == "I" && c.dim == "G")
         || (c.scheme == "E"
@@ -148,8 +149,8 @@ fn remap(c: &Codes, md: &mut Metadata) {
     }
 }
 
-fn amplifiers(c: &Codes, md: &mut Metadata) {
-    let (m11, m12) = (c.m11.as_str(), c.m12.as_str());
+fn amplifiers(c: &Codes<'_>, md: &mut Metadata) {
+    let (m11, m12) = (&*c.m11, &*c.m12);
     if matches!(m11, "F" | "G" | "C" | "D") || (m11 == "H" && m12 == "B") {
         md.flags.feint_dummy = Some(true);
     }
@@ -201,8 +202,8 @@ fn amplifiers(c: &Codes, md: &mut Metadata) {
     }
 }
 
-fn civilian_and_unknown(c: &Codes, md: &mut Metadata) {
-    let fid = c.fid.as_str();
+fn civilian_and_unknown(c: &Codes<'_>, md: &mut Metadata) {
+    let fid = &*c.fid;
     if (c.dim == "A" && fid.starts_with('C'))
         || (c.dim == "G" && fid.starts_with("EVC"))
         || (c.dim == "S" && fid.starts_with('X'))
@@ -210,7 +211,7 @@ fn civilian_and_unknown(c: &Codes, md: &mut Metadata) {
         md.civilian = true;
     }
     if c.dim == "Z" || c.dim == "X" {
-        let a = c.aff.as_str();
+        let a = &*c.aff;
         if matches!(a, "P" | "U" | "F" | "N" | "H" | "A" | "S" | "G" | "W") {
             md.dimension_unknown = true;
         }
@@ -223,8 +224,8 @@ fn civilian_and_unknown(c: &Codes, md: &mut Metadata) {
     }
 }
 
-fn framing(c: &Codes, sidc: &str, md: &mut Metadata) {
-    let fid = c.fid.as_str();
+fn framing(c: &Codes<'_>, sidc: &str, md: &mut Metadata) {
+    let fid = &*c.fid;
     if c.dim == "S" && UNFRAMED_SEA.contains(&fid) {
         md.frame = false;
     }

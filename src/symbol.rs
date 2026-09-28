@@ -132,20 +132,27 @@ impl Symbol {
     /// or a non-finite number as invalid. To check the SIDC itself, use
     /// [`Symbol::is_sidc_valid`] or [`crate::sidc::Sidc::parse`].
     pub fn is_valid(&self) -> bool {
-        self.validity().issues.is_empty()
+        validity::issues(self).is_empty()
     }
 
     /// Whether the SIDC was fully recognised: [`Symbol::is_valid`] without
     /// upstream's `null`-text heuristic.
     pub fn is_sidc_valid(&self) -> bool {
-        self.validity()
-            .issues
+        validity::issues(self)
             .iter()
             .all(|i| *i == ValidityIssue::NullInDrawing)
     }
 
     /// Renders the symbol as an SVG document identical to milsymbol.js `asSVG()`.
     pub fn to_svg(&self) -> String {
+        let mut out = String::with_capacity(1024);
+        self.write_svg(&mut out);
+        out
+    }
+
+    /// Appends the SVG document of [`Symbol::to_svg`] to `out`, so bulk
+    /// rendering can reuse one buffer.
+    pub fn write_svg(&self, out: &mut String) {
         let st = &self.options.style;
         let frame = SvgFrame {
             stroke_width: st.stroke_width,
@@ -158,7 +165,7 @@ impl Symbol {
             base_width: self.base_width,
             base_height: self.base_height,
         };
-        svg::render(&frame, &self.instructions)
+        svg::render_into(&frame, &self.instructions, out);
     }
 
     /// Canonical JSON of the symbol's observable state, in the same shape as

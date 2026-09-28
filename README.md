@@ -52,7 +52,7 @@ readme_images`, and `cargo test` checks they match the renderer.
   `wasm32` and bare-metal targets. The only dependency is `libm`.
 - No global state: a `Renderer` holds configuration and extensions, is
   `Send + Sync`, and renders deterministically.
-- About 310,000 symbols per second to SVG on one core
+- About 350,000 symbols per second to SVG on one core
   ([BENCHMARKS.md](BENCHMARKS.md)).
 
 ## Getting started

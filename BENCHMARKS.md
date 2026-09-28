@@ -14,14 +14,14 @@
 
 | Benchmark | What it measures | Rust | milsymbol.js |
 |---|---|---:|---:|
-| `single/compose_infantry` | SIDC → composed `Symbol` (no SVG), friendly infantry | 1.93 µs | — |
-| `single/compose_and_svg_infantry` | compose + `to_svg()` | 2.49 µs | 4.61 µs |
-| `single/compose_and_svg_with_fields` | HQ battalion + 2 text fields + direction arrow | 6.44 µs | — |
-| `single/compose_and_svg_letter` | letter SIDC `SFGPUCI----D` | 4.21 µs | — |
+| `single/compose_infantry` | SIDC → composed `Symbol` (no SVG), friendly infantry | 1.69 µs | — |
+| `single/compose_and_svg_infantry` | compose + `to_svg()` | 2.19 µs | 4.61 µs |
+| `single/compose_and_svg_with_fields` | HQ battalion + 2 text fields + direction arrow | 5.37 µs | — |
+| `single/compose_and_svg_letter` | letter SIDC `SFGPUCI----D` | 3.85 µs | — |
 | `repeated_cached_render` | `CachedRenderer` hit (returns the cached `Symbol`, no SVG) | 0.17 µs | — |
-| `bulk/all_number_icons_1431` | compose + SVG for every numeric main icon (1,431 SIDCs, 20 symbol sets) | 4.51 ms | 9.17 ms |
+| `bulk/all_number_icons_1431` | compose + SVG for every numeric main icon (1,431 SIDCs, 20 symbol sets) | 4.07 ms | 9.17 ms |
 
-Bulk throughput is ≈ 317,000 symbols/s on one core. A cache hit returns
+Bulk throughput is ≈ 351,000 symbols/s on one core. A cache hit returns
 an already composed symbol; it is not comparable with SVG output times.
 
 ## Memory
@@ -31,12 +31,21 @@ heap profiler, one profiling session per operation:
 
 | Operation | Peak heap | Allocated | Blocks | SVG size |
 |---|---:|---:|---:|---:|
-| compose: infantry | 3,562 B | 5,733 B | 57 | |
-| `to_svg`: infantry | 1,056 B | 1,079 B | 7 | 343 B |
-| compose: HQ battalion + text + direction | 7,936 B | 17,577 B | 96 | |
-| `to_svg`: HQ battalion + text + direction | 2,120 B | 4,087 B | 65 | 1,051 B |
-| compose: letter SIDC | 4,675 B | 9,155 B | 56 | |
-| `to_svg`: letter SIDC | 1,096 B | 1,380 B | 45 | 595 B |
+| compose: infantry | 3,540 B | 4,060 B | 28 | |
+| `to_svg`: infantry | 1,024 B | 1,024 B | 1 | 343 B |
+| compose: HQ battalion + text + direction | 7,936 B | 15,136 B | 65 | |
+| `to_svg`: HQ battalion + text + direction | 2,048 B | 3,072 B | 2 | 1,051 B |
+| compose: letter SIDC | 4,307 B | 6,744 B | 28 | |
+| `to_svg`: letter SIDC | 1,024 B | 1,024 B | 1 | 595 B |
+| compose: HQ + text + direction + outline + stack 3 | 26,765 B | 73,859 B | 126 | |
+| `to_svg`: same | 4,096 B | 7,168 B | 3 | 3,361 B |
+| `is_valid()`: infantry | 0 B | 0 B | 0 | |
+| `write_svg` into a reused `String` | 0 B | 0 B | 0 | |
+| `CachedRenderer` hit | 0 B | 0 B | 0 | |
+
+`to_svg` allocates only the growing output string; `write_svg` appends to a
+caller's buffer. Composition allocates mainly for the IR nodes the symbol
+owns.
 
 `size_of::<Symbol>()` is 2,848 B and `size_of::<ir::Node>()` 384 B (both
 excluding their heap data).
@@ -50,9 +59,13 @@ device's budget.
 
 ## Notes
 
-- Rendering is allocation-heavy by design: the IR owns its nodes so callers
-  can inspect and transform them. The largest remaining cost in the bulk case
-  is attribute escaping of path data during SVG serialization.
+- Composition allocates by design: the IR owns its nodes so callers can
+  inspect and transform them. Replacing `Vec<Node>` with inline small
+  vectors is not worthwhile: a `Node` is 384 B, so inline capacity costs
+  kilobytes of stack per level, and recursive children cannot be stored
+  inline. Arena storage with indices would be the next step if composition
+  allocations matter. The largest remaining cost in the bulk case is
+  attribute escaping of path data during SVG serialization.
 - The icon tables are static data; there is no per-process warm-up and no
   cache to invalidate. `CachedRenderer` (std only) additionally memoizes whole
   symbols keyed by SIDC and options.
