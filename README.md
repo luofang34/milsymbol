@@ -268,6 +268,11 @@ global calls map to renderer methods — `ms.addSymbolPart` →
 
 ## Development
 
+Requires Rust 1.85 or later for the library; use current stable Rust for the
+development tools and tests. Run the full differential corpus from a Git
+checkout: the crates.io package omits `tests/corpus.rs` and its large
+fixtures, while retaining the other tests and their reference data.
+
 ```sh
 cargo test                           # unit, API, property and oracle-corpus tests (no Node)
 cargo run --example readme_images    # regenerates docs/images (or pass an output dir)

@@ -1,35 +1,22 @@
 # Changelog
 
-## 0.1.0 — unreleased
+## 0.1.0 — 2026-09-28
 
 First release: a native Rust port of milsymbol.js 3.0.4.
-
-### Symbology
 
 - Numeric (MIL-STD-2525D/E, APP-6D/E) and letter (MIL-STD-2525B/C, APP-6B)
   SIDCs, with all symbol parts, text fields and style options of 3.0.4.
 - SVG output byte-identical to milsymbol.js on a 288,489-case corpus.
-  `RendererConfig::reference_platform` reproduces either V8's x64 or arm64
-  `Math.sin`/`Math.cos`, whose last bit differs between the two.
+  Configuration selects the x64 or arm64 V8 reference platform.
+- Typed drawing instructions, metadata, strict SIDC validation and layout
+  information for native, map and non-SVG renderers.
+- Explicit renderer configuration and extensions for icons, symbol parts,
+  labels and colour modes; no mutable global rendering state.
+- Reusable output buffers, streaming canonical JSON and an optional bounded
+  symbol cache (`std`).
+- `no_std + alloc` core, WASM and bare-metal builds, Rust 1.85 or later.
+  No JavaScript at build or run time; the only runtime dependency is `libm`.
 
-### API
-
-- `Renderer` holds configuration and extensions; no global state.
-  `CachedRenderer` (std) memoizes symbols, optionally with parsed paths.
-- Typed drawing IR (`ir::Node`, typed path segments) for non-SVG renderers;
-  `Symbol::write_svg` appends to a reused buffer, `SvgOptions::id_prefix`
-  keeps ids unique when several symbols share a page.
-- Typed metadata (`Symbol::metadata`, `domain`) and validity issues;
-  milsymbol.js representations (`compat::JsMetadata`, canonical JSON) in
-  `compat`.
-- Strict SIDC parsing (`sidc::Sidc`) and `Renderer::check_sidc`, which also
-  checks what the renderer and its extensions can draw.
-- Extensions: custom symbol parts (`SymbolPart`), icons, icon parts and label
-  overrides (`IconExtension`, queried by key), colour modes.
-
-### Platforms
-
-- No JavaScript at build or run time; the only dependency is `libm`.
-- `no_std + alloc` core; builds for `wasm32` and bare-metal targets.
-
-Deliberate differences from milsymbol.js are listed in `UPSTREAM.md`.
+See [UPSTREAM.md](UPSTREAM.md#known-differences) for deliberate compatibility
+differences. Large corpus fixtures remain in the Git repository; the
+published package includes the other tests and their reference data.

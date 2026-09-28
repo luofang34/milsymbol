@@ -12,14 +12,14 @@ keywords = ["milsymbol", "mil-std-2525", "app-6", "symbology", "svg"]
 categories = ["graphics", "rendering", "no-std"]
 documentation = "https://docs.rs/milsymbol"
 homepage = "https://github.com/luofang34/milsymbol"
-# The package ships the library, its tests (including the oracle corpus
-# fixtures), examples and benches. Dev tooling (tools/), CI and the README
-# images (referenced by absolute URL) stay in the repository only.
+# Large differential fixtures and their test target stay in the repository.
+# The package includes the other tests and their reference data, examples,
+# benches and documentation; README images use absolute URLs.
 include = [
     "/src/**/*.rs",
     "/src/lib.md",
     "/tests/**/*.rs",
-    "/tests/corpus/*.jsonl.gz",
+    "!/tests/corpus.rs",
     "/tests/data/*.txt",
     "/examples/*.rs",
     "/benches/*.rs",

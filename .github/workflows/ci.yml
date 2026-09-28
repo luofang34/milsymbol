@@ -68,23 +68,28 @@ jobs:
       - uses: Swatinem/rust-cache@v2
       - run: cargo publish --dry-run -p milsymbol
       - run: cargo package -p milsymbol
-      - name: Package size stays under the crates.io limit
+      - name: Package stays small and omits repository-only corpus
         run: |
           crate=target/package/milsymbol-$(cargo pkgid -p milsymbol | sed 's/.*[#@]//').crate
           test -f "$crate"
           size=$(stat -c %s "$crate")
           echo "$crate: $size bytes"
-          test "$size" -lt 10000000
+          test "$size" -lt 1000000
+          if tar -tzf "$crate" | grep -E '/tests/corpus([/.]|$)'; then
+            echo "::error::differential corpus must stay in the repository"
+            exit 1
+          fi
           echo "CRATE=$crate" >> "$GITHUB_ENV"
-      # `publish --dry-run` only builds the library; the tests must also build
-      # from the packaged files alone (fixtures included).
+      # The full corpus runs in the native and oracle jobs. Every test that
+      # ships must compile and run using the packaged files alone.
       - name: Tests build and run from the packaged crate
         run: |
           mkdir -p /tmp/pkg
           tar -xzf "$CRATE" -C /tmp/pkg
           cd /tmp/pkg/milsymbol-*
           CARGO_TARGET_DIR=/tmp/pkg/target cargo test --locked --all-targets --no-run
-          CARGO_TARGET_DIR=/tmp/pkg/target cargo test --locked --lib --test api --test extensions --test sidc
+          CARGO_TARGET_DIR=/tmp/pkg/target cargo test --locked --all-targets
+          CARGO_TARGET_DIR=/tmp/pkg/target cargo test --locked --doc
 
   js-guard:
     name: no JavaScript runtime in dependency tree
