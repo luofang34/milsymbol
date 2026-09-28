@@ -30,6 +30,9 @@ jobs:
       - run: cargo doc --no-deps -p milsymbol
         env:
           RUSTDOCFLAGS: -D warnings -D missing_docs -D rustdoc::broken_intra_doc_links
+      - run: cargo doc --no-deps -p milsymbol --no-default-features
+        env:
+          RUSTDOCFLAGS: -D warnings -D missing_docs -D rustdoc::broken_intra_doc_links
       - run: cargo build --release
       - run: tools/ci/file-size.sh
 
@@ -64,13 +67,24 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
       - run: cargo publish --dry-run -p milsymbol
+      - run: cargo package -p milsymbol
       - name: Package size stays under the crates.io limit
         run: |
-          crate=$(find target -name 'milsymbol-*.crate' -print -quit)
-          test -n "$crate"
+          crate=target/package/milsymbol-$(cargo pkgid -p milsymbol | sed 's/.*[#@]//').crate
+          test -f "$crate"
           size=$(stat -c %s "$crate")
           echo "$crate: $size bytes"
           test "$size" -lt 10000000
+          echo "CRATE=$crate" >> "$GITHUB_ENV"
+      # `publish --dry-run` only builds the library; the tests must also build
+      # from the packaged files alone (fixtures included).
+      - name: Tests build and run from the packaged crate
+        run: |
+          mkdir -p /tmp/pkg
+          tar -xzf "$CRATE" -C /tmp/pkg
+          cd /tmp/pkg/milsymbol-*
+          CARGO_TARGET_DIR=/tmp/pkg/target cargo test --locked --all-targets --no-run
+          CARGO_TARGET_DIR=/tmp/pkg/target cargo test --locked --lib --test api
 
   js-guard:
     name: no JavaScript runtime in dependency tree

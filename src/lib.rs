@@ -16,7 +16,7 @@
 //! ```
 //!
 //! The crate is `no_std + alloc`; the default `std` feature only adds
-//! [`cache::CachedRenderer`]. No JavaScript runs at build or run time: the
+//! `cache::CachedRenderer`. No JavaScript runs at build or run time: the
 //! upstream icon tables were converted to Rust data by `tools/codegen`, and
 //! every composition rule is ported to Rust. See the repository `README.md`
 //! for the compatibility baseline, extension model and known differences.

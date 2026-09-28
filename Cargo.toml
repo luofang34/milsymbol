@@ -19,6 +19,7 @@ include = [
     "/src/**/*.rs",
     "/tests/**/*.rs",
     "/tests/corpus/*.jsonl.gz",
+    "/tests/data/*.txt",
     "/examples/*.rs",
     "/benches/*.rs",
     "/Cargo.toml",
