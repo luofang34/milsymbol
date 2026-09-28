@@ -1,24 +1,36 @@
 name: Release
 
-# Publishes to crates.io when a version tag (v*) is pushed. The tagged
-# commit must be on main and have a successful CI run; the crates-io
-# environment only accepts v* tags (see RELEASING.md).
-#
-# Authentication, in order of preference:
-#   1. Trusted Publishing (OIDC), once the repository variable
-#      CRATES_IO_TRUSTED_PUBLISHING is "true" and the crate's trusted
-#      publisher is configured on crates.io (see RELEASING.md).
-#   2. The CARGO_REGISTRY_TOKEN secret (needed for the very first release:
-#      crates.io only accepts Trusted Publishing for existing crates).
+# Only tag pushes publish; manual runs verify OIDC authentication without
+# uploading a crate. The crates-io environment restricts allowed refs.
 on:
   push:
     tags: ["v*"]
+  workflow_dispatch:
 
 permissions:
   contents: read
 
 jobs:
+  verify-trusted-publishing:
+    name: Verify Trusted Publishing (no upload)
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    environment: crates-io
+    permissions:
+      id-token: write
+    steps:
+      - name: Authenticate with Trusted Publishing
+        id: trusted
+        uses: rust-lang/crates-io-auth-action@v1
+      - name: Verify token exchange
+        env:
+          CARGO_REGISTRY_TOKEN: ${{ steps.trusted.outputs.token }}
+        run: |
+          test -n "$CARGO_REGISTRY_TOKEN"
+          echo "OIDC token exchange succeeded; no crate was uploaded. The action revokes the token when this job ends." >> "$GITHUB_STEP_SUMMARY"
+
   publish:
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
     environment: crates-io
     permissions:
@@ -53,10 +65,9 @@ jobs:
           test "v$version" = "$GITHUB_REF_NAME"
       - run: cargo test --release -p milsymbol
       - name: Authenticate with Trusted Publishing
-        if: vars.CRATES_IO_TRUSTED_PUBLISHING == 'true'
         id: trusted
         uses: rust-lang/crates-io-auth-action@v1
       - name: Publish
         run: cargo publish -p milsymbol
         env:
-          CARGO_REGISTRY_TOKEN: ${{ steps.trusted.outputs.token || secrets.CARGO_REGISTRY_TOKEN }}
+          CARGO_REGISTRY_TOKEN: ${{ steps.trusted.outputs.token }}
