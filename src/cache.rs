@@ -53,7 +53,13 @@ impl CachedRenderer {
     /// them without parsing (a shared `Arc<Symbol>` cannot be prepared
     /// afterwards). A path that fails to parse is left as is; `segments()`
     /// then reports the error.
+    ///
+    /// Enabling this mode clears unprepared cache entries; symbols already
+    /// returned to callers remain usable. Repeated calls preserve the cache.
     pub fn with_prepared_paths(mut self) -> Self {
+        if !self.prepare_paths {
+            self.entries = Mutex::new(HashMap::new());
+        }
         self.prepare_paths = true;
         self
     }

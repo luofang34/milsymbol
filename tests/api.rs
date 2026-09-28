@@ -245,3 +245,33 @@ fn every_catalog_symbol_has_parseable_paths() -> TestResult {
     }
     Ok(())
 }
+
+#[cfg(feature = "std")]
+#[test]
+fn enabling_prepared_paths_invalidates_unprepared_cache() -> TestResult {
+    use milsymbol::cache::CachedRenderer;
+    use std::{borrow::Cow, sync::Arc};
+
+    let cache = CachedRenderer::new(Renderer::default(), 4);
+    let options = SymbolOptions::default();
+    let unprepared = cache.render(INFANTRY, &options)?;
+    let Some(Node::Path(original_frame)) = unprepared.instructions().first() else {
+        return Err("the frame is not the first instruction".into());
+    };
+    assert!(matches!(original_frame.d.segments()?, Cow::Owned(_)));
+
+    let cache = cache.with_prepared_paths();
+    let prepared = cache.render(INFANTRY, &options)?;
+    let Some(Node::Path(frame)) = prepared.instructions().first() else {
+        return Err("the frame is not the first instruction".into());
+    };
+    assert!(matches!(frame.d.segments()?, Cow::Borrowed(_)));
+    assert!(!Arc::ptr_eq(&unprepared, &prepared));
+    assert_eq!(unprepared.to_svg(), prepared.to_svg());
+    assert!(matches!(original_frame.d.segments()?, Cow::Owned(_)));
+    assert!(Arc::ptr_eq(&prepared, &cache.render(INFANTRY, &options)?));
+
+    let cache = cache.with_prepared_paths();
+    assert!(Arc::ptr_eq(&prepared, &cache.render(INFANTRY, &options)?));
+    Ok(())
+}
