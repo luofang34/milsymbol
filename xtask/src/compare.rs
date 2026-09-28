@@ -8,53 +8,61 @@ use crate::Error;
 use serde_json::Value;
 use std::collections::BTreeMap;
 use std::fs::File;
-use std::io::{BufRead, BufReader, Lines};
+use std::io::{BufRead, BufReader, Lines, Write};
 use std::path::Path;
 
-fn open(path: &Path) -> Result<Lines<BufReader<File>>, Error> {
+fn open(path: &Path) -> Result<BufReader<File>, Error> {
     let f = File::open(path).map_err(|e| format!("{}: {e}", path.display()))?;
-    Ok(BufReader::new(f).lines())
+    Ok(BufReader::new(f))
 }
 
-/// Next non-empty line, parsed (`{}` when the file ends early).
-fn next_record(lines: &mut Lines<BufReader<File>>) -> Result<Value, Error> {
+/// Next non-empty line, parsed; `None` at the end of the file.
+fn next_record<R: BufRead>(lines: &mut Lines<R>) -> Result<Option<Value>, Error> {
     for line in lines.by_ref() {
         let line = line?;
         if !line.trim().is_empty() {
-            return Ok(serde_json::from_str(&line)?);
+            return Ok(Some(serde_json::from_str(&line)?));
         }
     }
-    Ok(Value::Object(serde_json::Map::new()))
+    Ok(None)
 }
 
 fn clip(v: &Value) -> String {
-    v.to_string().chars().take(300).collect()
+    clip_str(&v.to_string())
 }
 
-/// First differing path between two JSON values, with both values.
+fn clip_str(s: &str) -> String {
+    s.chars().take(300).collect()
+}
+
+/// A member or element that exists on one side only.
+fn absent(path: &str, x: Option<&Value>, y: Option<&Value>) -> String {
+    let show = |v: Option<&Value>| v.map_or_else(|| String::from("<absent>"), clip);
+    format!("{path}: {} != {}", show(x), show(y))
+}
+
+/// First differing path between two JSON values, with both values. A
+/// member missing on one side differs from a member that is `null`, and
+/// arrays of different lengths differ.
 fn first_diff(x: &Value, y: &Value, path: &str) -> Option<String> {
     match (x, y) {
         (Value::Object(a), Value::Object(b)) => a
             .keys()
             .chain(b.keys().filter(|k| !a.contains_key(*k)))
             .find_map(|k| {
-                let null = Value::Null;
-                first_diff(
-                    a.get(k).unwrap_or(&null),
-                    b.get(k).unwrap_or(&null),
-                    &format!("{path}.{k}"),
-                )
+                let at = format!("{path}.{k}");
+                match (a.get(k), b.get(k)) {
+                    (Some(p), Some(q)) => first_diff(p, q, &at),
+                    (p, q) => Some(absent(&at, p, q)),
+                }
             }),
-        (Value::Array(a), Value::Array(b)) => {
-            let null = Value::Null;
-            (0..a.len().max(b.len())).find_map(|i| {
-                first_diff(
-                    a.get(i).unwrap_or(&null),
-                    b.get(i).unwrap_or(&null),
-                    &format!("{path}.{i}"),
-                )
-            })
-        }
+        (Value::Array(a), Value::Array(b)) => (0..a.len().max(b.len())).find_map(|i| {
+            let at = format!("{path}.{i}");
+            match (a.get(i), b.get(i)) {
+                (Some(p), Some(q)) => first_diff(p, q, &at),
+                (p, q) => Some(absent(&at, p, q)),
+            }
+        }),
         _ if x == y => None,
         _ => Some(format!("{path}: {} != {}", clip(x), clip(y))),
     }
@@ -126,11 +134,20 @@ impl Tally {
         let sem = if xs == ys {
             None
         } else {
+            // Equal parsed values with different text (e.g. `1` and `1.0`)
+            // are still a serialization difference.
             first_diff(
                 &serde_json::from_str(&xs)?,
                 &serde_json::from_str(&ys)?,
                 "sem",
             )
+            .or_else(|| {
+                Some(format!(
+                    "sem text differs: {} != {}",
+                    clip_str(&xs),
+                    clip_str(&ys)
+                ))
+            })
         };
         let (svg_x, svg_y) = (text(x, "svg"), text(y, "svg"));
         if sem.is_some() {
@@ -154,29 +171,51 @@ impl Tally {
 
 /// Compares the record files; returns whether they agree.
 pub fn run(cases: &Path, oracle: &Path, rust: &Path, max: usize) -> Result<bool, Error> {
-    let (mut a, mut b) = (open(oracle)?, open(rust)?);
+    let mut out = std::io::stdout().lock();
+    compare(open(cases)?, open(oracle)?, open(rust)?, max, &mut out)
+}
+
+/// Compares record streams, reporting to `out`. Every non-empty case line
+/// must have exactly one record in each stream.
+fn compare(
+    cases: impl BufRead,
+    oracle: impl BufRead,
+    rust: impl BufRead,
+    max: usize,
+    out: &mut impl Write,
+) -> Result<bool, Error> {
+    let (mut a, mut b) = (oracle.lines(), rust.lines());
     let mut tally = Tally::default();
-    for (i, line) in open(cases)?.enumerate() {
+    for (i, line) in cases.lines().enumerate() {
         let line = line?;
         if line.trim().is_empty() {
             continue;
         }
-        let (x, y) = (next_record(&mut a)?, next_record(&mut b)?);
+        let (Some(x), Some(y)) = (next_record(&mut a)?, next_record(&mut b)?) else {
+            return Err(format!("record files end before case #{i}").into());
+        };
         if let Some(problem) = tally.case(&x, &y)? {
             if tally.reported < max {
-                println!("#{i} {line}\n   {problem}");
+                writeln!(out, "#{i} {line}\n   {problem}")?;
             }
             tally.reported += 1;
         }
     }
-    println!(
+    if next_record(&mut a)?.is_some() || next_record(&mut b)?.is_some() {
+        return Err(format!("record files hold more than {} records", tally.cases).into());
+    }
+    writeln!(
+        out,
         "cases {}: svg mismatches {}, semantic mismatches {}, error mismatches {}",
         tally.cases, tally.svg, tally.sem, tally.errors
-    );
+    )?;
     let mut paths: Vec<(&String, &usize)> = tally.by_path.iter().collect();
     paths.sort_by(|p, q| q.1.cmp(p.1));
     for (path, n) in paths.into_iter().take(15) {
-        println!("  {n}\t{path}");
+        writeln!(out, "  {n}\t{path}")?;
     }
     Ok(tally.svg + tally.sem + tally.errors == 0)
 }
+
+#[cfg(test)]
+mod tests;
