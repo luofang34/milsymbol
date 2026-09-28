@@ -17,6 +17,7 @@ homepage = "https://github.com/luofang34/milsymbol"
 # images (referenced by absolute URL) stay in the repository only.
 include = [
     "/src/**/*.rs",
+    "/src/lib.md",
     "/tests/**/*.rs",
     "/tests/corpus/*.jsonl.gz",
     "/tests/data/*.txt",

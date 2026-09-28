@@ -122,6 +122,17 @@ impl SymbolOptions {
     /// keys such as `dtg1`) are set with [`SymbolOptions::set_text`]. `sidc`
     /// is not an option here; pass it to
     /// [`Renderer::symbol`](crate::Renderer::symbol).
+    ///
+    /// ```
+    /// use milsymbol::options::{OptionError, SymbolOptions};
+    ///
+    /// let mut o = SymbolOptions::default();
+    /// o.set("size", 50.0)?.set("uniqueDesignation", "1-66")?;
+    /// assert_eq!(o.style.size, 50.0);
+    /// assert!(matches!(o.set("size", "big"), Err(OptionError::Invalid { .. })));
+    /// assert!(matches!(o.set("sise", 50.0), Err(OptionError::Unknown { .. })));
+    /// # Ok::<(), OptionError>(())
+    /// ```
     pub fn set(
         &mut self,
         key: &str,

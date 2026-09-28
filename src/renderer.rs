@@ -18,6 +18,16 @@ use alloc::string::String;
 /// threads (`Renderer: Send + Sync`). Everything milsymbol.js keeps in
 /// process-global state — standard, dash arrays, HQ staff length, colour
 /// modes, symbol parts, icon and label extensions — lives here instead.
+///
+/// ```
+/// use milsymbol::{Renderer, Standard};
+///
+/// // Configuration that milsymbol.js keeps globally belongs to a renderer.
+/// let app6 = Renderer::default().with_standard(Standard::App6);
+/// let symbol = app6.symbol("SFGPUCI-----").size(60.0).render()?;
+/// assert!(!symbol.metadata().std2525);
+/// # Ok::<(), milsymbol::RenderError>(())
+/// ```
 pub struct Renderer {
     config: RendererConfig,
     registry: Registry,
@@ -126,6 +136,18 @@ impl Renderer {
 
     /// Checks that `sidc` is well formed ([`Sidc::parse`]) and that this
     /// renderer, with its extensions, recognises every part of it.
+    ///
+    /// ```
+    /// use milsymbol::{Renderer, sidc::SidcCheckError};
+    ///
+    /// let r = Renderer::default();
+    /// assert!(r.check_sidc("10031000161211000000").is_ok());
+    /// // Well formed, but no built-in icon has entity 999999.
+    /// assert!(matches!(
+    ///     r.check_sidc("10031000009999990000"),
+    ///     Err(SidcCheckError::Unsupported { .. })
+    /// ));
+    /// ```
     pub fn check_sidc(&self, sidc: &str) -> Result<Sidc, SidcCheckError> {
         let parsed = Sidc::parse(sidc)?;
         let symbol = self

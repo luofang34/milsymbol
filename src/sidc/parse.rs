@@ -180,6 +180,18 @@ impl<const N: usize> fmt::Debug for Code<N> {
 
 impl Sidc {
     /// Parses and validates `s`. Spaces are ignored, as in rendering.
+    ///
+    /// ```
+    /// use milsymbol::sidc::{Sidc, SidcError};
+    ///
+    /// let Sidc::Letter(l) = Sidc::parse("SFGPUCI----D")? else {
+    ///     return Ok(());
+    /// };
+    /// assert_eq!(l.function_id(), "UCI---");
+    /// let err = Sidc::parse("SFQPUCI-----").err();
+    /// assert!(matches!(err, Some(SidcError::InvalidField { position: 3, .. })));
+    /// # Ok::<(), SidcError>(())
+    /// ```
     pub fn parse(s: &str) -> Result<Sidc, SidcError> {
         let first = s.chars().find(|&c| c != ' ').ok_or(SidcError::Empty)?;
         if first.is_ascii_digit() {

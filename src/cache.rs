@@ -2,7 +2,8 @@
 //!
 //! Rendering is deterministic for a renderer, SIDC and options, so results
 //! can be shared. Entries are keyed by a canonical encoding of the SIDC and
-//! options (see `key.rs`).
+//! every option, with floats compared by bit pattern (`-0.0` and `0.0` are
+//! different requests).
 
 use crate::error::RenderError;
 use crate::options::SymbolOptions;
@@ -21,6 +22,18 @@ use key::{KeyBuf, write_key};
 /// since the eviction scan last passed it (the clock algorithm, an
 /// approximation of least-recently-used). A capacity of zero disables
 /// caching.
+///
+/// ```
+/// use milsymbol::{Renderer, cache::CachedRenderer, options::SymbolOptions};
+/// use std::sync::Arc;
+///
+/// let cache = CachedRenderer::new(Renderer::default(), 1024).with_prepared_paths();
+/// let options = SymbolOptions::default();
+/// let a = cache.render("10031000001211000000", &options)?;
+/// let b = cache.render("10031000001211000000", &options)?;
+/// assert!(Arc::ptr_eq(&a, &b)); // the second call is a cache hit
+/// # Ok::<(), milsymbol::RenderError>(())
+/// ```
 pub struct CachedRenderer {
     renderer: Renderer,
     capacity: usize,

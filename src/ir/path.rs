@@ -150,6 +150,16 @@ impl PathData {
 
     /// The path as absolute segments (`H`/`V` become lines, smooth curves get
     /// explicit control points). Borrowed when cached, parsed otherwise.
+    ///
+    /// ```
+    /// use milsymbol::ir::{PathData, Point, Segment};
+    ///
+    /// let d = PathData::new("M10,10 h20 v20 z");
+    /// let segments = d.segments()?;
+    /// assert_eq!(segments[1], Segment::LineTo(Point { x: 30.0, y: 10.0 }));
+    /// assert_eq!(segments.last(), Some(&Segment::Close));
+    /// # Ok::<(), milsymbol::ir::PathParseError>(())
+    /// ```
     pub fn segments(&self) -> Result<Cow<'_, [Segment]>, PathParseError> {
         match &self.parsed {
             Some(p) => Ok(Cow::Borrowed(p)),

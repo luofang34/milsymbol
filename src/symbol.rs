@@ -169,6 +169,19 @@ impl Symbol {
 
     /// Appends the SVG document of [`Symbol::to_svg`] to `out`, so bulk
     /// rendering can reuse one buffer.
+    ///
+    /// ```
+    /// use milsymbol::Renderer;
+    ///
+    /// let r = Renderer::default();
+    /// let mut svg = String::new();
+    /// for sidc in ["10031000001211000000", "10061000001211000000"] {
+    ///     svg.clear();
+    ///     r.symbol(sidc).render()?.write_svg(&mut svg);
+    ///     assert!(svg.ends_with("</svg>"));
+    /// }
+    /// # Ok::<(), milsymbol::RenderError>(())
+    /// ```
     pub fn write_svg(&self, out: &mut String) {
         self.write_svg_with(out, &svg::SvgOptions::default());
     }

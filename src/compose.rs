@@ -104,6 +104,25 @@ impl PartOutput {
 }
 
 /// A stage of symbol composition (upstream `ms.addSymbolPart`).
+///
+/// ```
+/// use milsymbol::ir::Node;
+/// use milsymbol::{PartError, PartOutput, PartialBBox, Renderer, SymbolPart, SymbolState};
+///
+/// /// Marks the symbol's anchor with a dot, drawn over everything else.
+/// struct AnchorDot;
+///
+/// impl SymbolPart for AnchorDot {
+///     fn draw(&self, _: &SymbolState<'_>) -> Result<PartOutput, PartError> {
+///         let dot = Node::circle(100.0, 100.0, 4.0);
+///         Ok(PartOutput::new(vec![], vec![dot], PartialBBox::default()))
+///     }
+/// }
+///
+/// let r = Renderer::default().with_symbol_part(AnchorDot);
+/// assert!(r.symbol("10031000001211000000").render()?.to_svg().contains("<circle"));
+/// # Ok::<(), milsymbol::RenderError>(())
+/// ```
 pub trait SymbolPart: Send + Sync {
     /// Draws this part for the symbol.
     ///

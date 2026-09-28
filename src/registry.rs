@@ -90,6 +90,32 @@ pub trait PartLookup {
 /// built per symbol for keys they do not define. All methods have empty
 /// defaults. Later registrations take precedence over earlier ones and over
 /// the built-in tables, as in upstream.
+///
+/// ```
+/// use milsymbol::ir::{Node, Paint};
+/// use milsymbol::{IconExtension, IconPartContext, PartLookup, Renderer};
+///
+/// /// Draws infantry as a circle, wherever the built-in part is used.
+/// struct RoundInfantry;
+///
+/// impl IconExtension for RoundInfantry {
+///     fn icon_part(&self, _: &IconPartContext<'_>, name: &str, _: &dyn PartLookup) -> Option<Node> {
+///         (name == "GR.IC.FF.INFANTRY").then(|| {
+///             let mut circle = Node::circle(100.0, 100.0, 25.0);
+///             if let Some(style) = circle.style_mut() {
+///                 style.fill = Some(Paint::None);
+///                 style.stroke = Some(Paint::color("black"));
+///             }
+///             circle
+///         })
+///     }
+/// }
+///
+/// let r = Renderer::default().with_icons(RoundInfantry);
+/// let svg = r.symbol("10031000001211000000").render()?.to_svg();
+/// assert!(svg.contains("<circle"));
+/// # Ok::<(), milsymbol::RenderError>(())
+/// ```
 pub trait IconExtension: Send + Sync {
     /// Adds or replaces the icon part `name`. `parts` resolves parts as
     /// defined before this extension (earlier extensions, then built-ins).

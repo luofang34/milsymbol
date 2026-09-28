@@ -2,8 +2,9 @@
 //! JavaScript library and for differential testing against it.
 //!
 //! [`JsMetadata`] is upstream's `symbol.metadata` with its string values and
-//! `"undefined"` sentinels; [`canonical_json`] is the record the oracle in
-//! `tools/oracle` writes for a symbol. Rendering does not need this module.
+//! `"undefined"` sentinels; [`canonical_json`] is the record the
+//! [differential oracle](https://github.com/luofang34/milsymbol/tree/main/tools/oracle)
+//! writes for a symbol. Rendering does not need this module.
 
 use crate::json::Value;
 use crate::symbol::Symbol;
@@ -26,6 +27,16 @@ pub fn canonical_json(symbol: &Symbol) -> Json {
 /// owned JSON tree. Reuse the buffer for bulk output. Object fields are
 /// ordered as in JavaScript: array-index keys first in numeric order, then
 /// other keys sorted by UTF-16 code units, exactly as in [`canonical_json`].
+///
+/// ```
+/// use milsymbol::{Renderer, compat};
+///
+/// let symbol = Renderer::default().symbol("10031000001211000000").render()?;
+/// let mut record = String::new();
+/// compat::write_canonical_json(&symbol, &mut record);
+/// assert!(record.contains(r#""affiliation":"Friend""#));
+/// # Ok::<(), milsymbol::RenderError>(())
+/// ```
 pub fn write_canonical_json(symbol: &Symbol, out: &mut String) {
     Value::Symbol(symbol).write(out);
 }
