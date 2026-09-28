@@ -413,3 +413,48 @@ impl IconExtension for SharedKeys {
         self.0.icon(ctx, key, parts)
     }
 }
+
+#[derive(Default)]
+struct CountPartLookups(std::sync::atomic::AtomicUsize);
+
+impl IconExtension for CountPartLookups {
+    fn icon_part(&self, _: &IconPartContext<'_>, name: &str, _: &dyn PartLookup) -> Option<Node> {
+        if name == "GR.IC.FF.INFANTRY" {
+            self.0.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+        }
+        None
+    }
+
+    fn icon(
+        &self,
+        _: &IconPartContext<'_>,
+        key: IconKey<'_>,
+        parts: &dyn PartLookup,
+    ) -> Option<Node> {
+        use std::sync::atomic::Ordering::Relaxed;
+        if !matches!(
+            key,
+            IconKey::Entity {
+                symbol_set: "10",
+                entity: "999900"
+            }
+        ) {
+            return None;
+        }
+        let before = self.0.load(Relaxed);
+        let node = parts.part("GR.IC.FF.INFANTRY");
+        assert_eq!(self.0.load(Relaxed).wrapping_sub(before), 1);
+        node
+    }
+}
+
+#[test]
+fn named_builtin_lookup_queries_each_extension_once() -> TestResult {
+    let symbol = Renderer::default()
+        .with_icons(CountPartLookups::default())
+        .symbol("10031000009999000000")
+        .render()?;
+    assert!(symbol.is_valid());
+    assert!(symbol.to_svg().contains("M25,50 L175,150"));
+    Ok(())
+}

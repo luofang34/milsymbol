@@ -8,7 +8,7 @@ use crate::compat::JsMetadata;
 use crate::compose::{BuiltinPart, SymbolPart};
 use crate::domain::Metadata;
 use crate::ir::Node;
-use crate::labels::LabelField;
+use crate::labels::{self, LabelField};
 use alloc::boxed::Box;
 use alloc::collections::BTreeMap;
 use alloc::string::String;
@@ -90,6 +90,8 @@ pub trait PartLookup {
 /// built per symbol for keys they do not define. All methods have empty
 /// defaults. Later registrations take precedence over earlier ones and over
 /// the built-in tables, as in upstream.
+/// Callbacks must return the same result for the same context and registry;
+/// deterministic rendering and caching depend on this contract.
 ///
 /// ```
 /// use milsymbol::ir::{Node, Paint};
@@ -145,12 +147,16 @@ pub trait IconExtension: Send + Sync {
         None
     }
 
-    /// Adds label overrides for numeric SIDCs, keyed by entity code. Called
-    /// once, when the extension is registered.
+    /// Adds label overrides for numeric control measures, keyed by the
+    /// six-digit entity code. Other numeric symbol sets use the standard
+    /// information-field layout, matching upstream. Called once when the
+    /// extension is registered; omitted placement values use [`Label`](crate::labels::Label)
+    /// defaults.
     fn number_labels(&self, _out: &mut BTreeMap<String, Vec<LabelField>>) {}
 
     /// Adds label overrides for letter SIDCs, keyed by generic SIDC. Called
-    /// once, when the extension is registered.
+    /// once when the extension is registered; omitted placement values use
+    /// [`Label`](crate::labels::Label) defaults.
     fn letter_labels(&self, _out: &mut BTreeMap<String, Vec<LabelField>>) {}
 }
 
@@ -180,6 +186,13 @@ impl Registry {
     pub(crate) fn add_icons(&mut self, ext: Box<dyn IconExtension>) {
         ext.number_labels(&mut self.number_labels);
         ext.letter_labels(&mut self.letter_labels);
+        for fields in self
+            .number_labels
+            .values_mut()
+            .chain(self.letter_labels.values_mut())
+        {
+            labels::resolve_defaults(fields);
+        }
         self.icons.push(ext);
     }
 }

@@ -152,6 +152,9 @@ such a case only if exactly that difference occurs, and fails it otherwise.
 - **Extension parts override built-in parts everywhere**, as in upstream,
   except for the in-place `_scale(…, true)` mutations some upstream mappings
   apply to built-in parts: those are not re-applied to a replacement part.
+- **Custom label defaults.** Omitted coordinates, font size and anchor in
+  registered label overrides use SVG defaults for both layout and output.
+  Built-in label data retains upstream's missing-property behaviour.
 - **Colour-slot truthiness is taken per slot, not per affiliation.** A custom
   colour object with an empty or `false` entry for only some affiliations can
   select a different icon variant than upstream would for those

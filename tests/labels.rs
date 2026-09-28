@@ -5,28 +5,42 @@ use milsymbol::options::field;
 use milsymbol::{IconExtension, Renderer};
 use std::collections::BTreeMap;
 
-struct OutsideFrame;
+struct Placements(Label);
 
-impl IconExtension for OutsideFrame {
+impl IconExtension for Placements {
     fn letter_labels(&self, out: &mut BTreeMap<String, Vec<LabelField>>) {
-        out.insert("S-G-UCI---".into(), placements());
+        out.insert("S-G-UCI---".into(), self.fields());
     }
 
     fn number_labels(&self, out: &mut BTreeMap<String, Vec<LabelField>>) {
-        out.insert("130100".into(), placements());
+        for entity in ["130100", "121100"] {
+            out.insert(entity.into(), self.fields());
+        }
     }
 }
 
-fn placements() -> Vec<LabelField> {
-    vec![LabelField::new(
-        field::UNIQUE_DESIGNATION,
-        vec![Label::at(300.0, -300.0)],
-    )]
+impl Placements {
+    fn fields(&self) -> Vec<LabelField> {
+        vec![LabelField::new(
+            field::UNIQUE_DESIGNATION,
+            vec![self.0.clone()],
+        )]
+    }
 }
 
 #[test]
 fn default_label_placement_includes_text_in_bounds() -> Result<(), Box<dyn std::error::Error>> {
-    let renderer = Renderer::default().with_icons(OutsideFrame);
+    let mut omitted = Label::default();
+    omitted.x = Some(300.0);
+    omitted.y = Some(-300.0);
+    for label in [Label::at(300.0, -300.0), omitted] {
+        check_bounds(label)?;
+    }
+    Ok(())
+}
+
+fn check_bounds(label: Label) -> Result<(), Box<dyn std::error::Error>> {
+    let renderer = Renderer::default().with_icons(Placements(label));
     for sidc in ["SFGPUCI-----", "10032500001301000000"] {
         let symbol = renderer
             .symbol(sidc)
@@ -39,5 +53,37 @@ fn default_label_placement_includes_text_in_bounds() -> Result<(), Box<dyn std::
         assert!(bbox.x2 > 300.0, "{sidc}: {bbox:?}");
         assert_eq!(bbox.y1, -312.0, "{sidc}: {bbox:?}");
     }
+    Ok(())
+}
+
+#[test]
+fn omitted_label_coordinates_use_the_origin() -> Result<(), Box<dyn std::error::Error>> {
+    let symbol = Renderer::default()
+        .with_icons(Placements(Label::default()))
+        .symbol("SFGPUCI-----")
+        .text(field::UNIQUE_DESIGNATION, "VISIBLE")
+        .render()?;
+    assert!(
+        symbol
+            .to_svg()
+            .contains("x=\"0\" y=\"0\" text-anchor=\"start\" font-size=\"12\"")
+    );
+    assert_eq!(symbol.bounding_box().x1, 0.0);
+    assert_eq!(symbol.bounding_box().y1, -12.0);
+    Ok(())
+}
+
+#[test]
+fn numeric_unit_labels_keep_the_standard_layout() -> Result<(), Box<dyn std::error::Error>> {
+    let renderer = Renderer::default().with_icons(Placements(Label::at(300.0, -300.0)));
+    let render = |r: &Renderer| {
+        r.symbol("10031000001211000000")
+            .text(field::UNIQUE_DESIGNATION, "VISIBLE")
+            .render()
+    };
+    let custom = render(&renderer)?;
+    let standard = render(&Renderer::default())?;
+    assert_eq!(custom.to_svg(), standard.to_svg());
+    assert_eq!(custom.bounding_box(), standard.bounding_box());
     Ok(())
 }

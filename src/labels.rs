@@ -5,16 +5,19 @@ use crate::generated::misc;
 use alloc::borrow::Cow;
 
 /// Placement of one text field.
+///
+/// When an extension is registered, omitted coordinates default to `(0, 0)`,
+/// font size to 12 and anchoring to `start`, matching SVG serialization.
 #[derive(Debug, Clone, PartialEq, Default)]
 #[non_exhaustive]
 pub struct Label {
-    /// Anchor x.
+    /// Anchor x; defaults to 0 when omitted.
     pub x: Option<f64>,
-    /// Baseline y.
+    /// Baseline y; defaults to 0 when omitted.
     pub y: Option<f64>,
-    /// Font size.
+    /// Font size; defaults to 12 when omitted.
     pub font_size: Option<f64>,
-    /// Text anchor (`start`, `middle`, `end`).
+    /// Text anchor (`start`, `middle`, `end`); defaults to `start` when omitted.
     pub anchor: Option<Cow<'static, str>>,
     /// Font weight.
     pub weight: Option<Cow<'static, str>>,
@@ -62,6 +65,27 @@ impl LabelField {
             field: field.into(),
             is_array: labels.len() > 1,
             labels,
+        }
+    }
+}
+
+/// Custom labels need the same defaults for layout and SVG output. Built-in
+/// label data retains upstream's missing properties for exact compatibility.
+pub(crate) fn resolve_defaults(fields: &mut [LabelField]) {
+    for field in fields {
+        let missing = field.labels.iter().any(|label| {
+            label.x.is_none()
+                || label.y.is_none()
+                || label.font_size.is_none()
+                || label.anchor.is_none()
+        });
+        if missing {
+            for label in field.labels.to_mut() {
+                label.x.get_or_insert(0.0);
+                label.y.get_or_insert(0.0);
+                label.font_size.get_or_insert(12.0);
+                label.anchor.get_or_insert(Cow::Borrowed("start"));
+            }
         }
     }
 }

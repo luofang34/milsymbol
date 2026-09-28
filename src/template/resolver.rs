@@ -231,13 +231,10 @@ impl Resolver<'_> {
 
     /// Instantiates a named icon part (extension parts first).
     pub(crate) fn part(&self, name: &str) -> Option<Node> {
-        if let Some(user) = self.user_part(name) {
-            return Some(user);
+        match tables::PARTS.binary_search_by(|(n, _)| n.as_bytes().cmp(name.as_bytes())) {
+            Ok(idx) => self.part_by_index(u16::try_from(idx).ok()?),
+            Err(_) => self.user_part(name),
         }
-        let idx = tables::PARTS
-            .binary_search_by(|(n, _)| n.as_bytes().cmp(name.as_bytes()))
-            .ok()?;
-        self.part_by_index(u16::try_from(idx).ok()?)
     }
 
     /// Special bounding box of `entry` in the current context.
