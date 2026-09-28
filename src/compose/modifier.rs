@@ -3,6 +3,7 @@
 
 use super::{PartOutput, SymbolState};
 use crate::bbox::{BBox, PartialBBox};
+use crate::domain::Affiliation;
 use crate::error::RenderError;
 use crate::ir::{Node, Num, Paint, PathData, PathNode, Style};
 use crate::js::{self, number_to_string as n};
@@ -86,7 +87,7 @@ fn modifier_color(s: &SymbolState<'_>) -> Option<Paint> {
     if fc.is_set() {
         // A string frameColor is indexed by affiliation like an object and
         // yields `undefined` upstream.
-        fc.as_mode().and_then(|m| m.get(s.aff()))
+        fc.as_mode().and_then(|m| s.color_of(m))
     } else {
         s.color_of(&s.colors.icon_color)
     }
@@ -102,44 +103,34 @@ pub(super) fn draw(s: &SymbolState<'_>) -> Result<PartOutput, RenderError> {
         color: modifier_color(s),
         stroke_width: st.stroke_width,
     };
-    let dim_aff = alloc::format!(
-        "{}{}",
-        md.dimension,
-        md.affiliation.as_deref().unwrap_or("undefined")
-    );
+    let dim_aff = crate::geometry::frame_name(md.dimension.known(), md.affiliation.known());
     let hq_len = if st.hq_staff_length != 0.0 && !st.hq_staff_length.is_nan() {
         st.hq_staff_length
     } else {
         s.config.hq_staff_length
     };
     if md.headquarters && hq_len > 0.0 {
-        headquarters(s, &mut acc, &bbox, &dim_aff, hq_len)?;
+        headquarters(s, &mut acc, &bbox, dim_aff.unwrap_or(""), hq_len)?;
     }
     if md.task_force {
         task_force(s, &mut acc, &bbox)?;
     }
     if md.installation {
-        installation(s, &mut acc, &bbox, &dim_aff)?;
+        installation(s, &mut acc, &bbox, dim_aff.unwrap_or(""))?;
     }
     if md.flags.feint_dummy == Some(true) {
         feint_dummy(s, &mut acc, &bbox)?;
     }
-    if md.echelon.as_deref().is_some_and(|e| !e.is_empty()) {
+    if md.echelon.known().is_some() {
         amplifiers::echelon(s, &mut acc, &bbox)?;
     }
-    if md.mobility.as_deref().is_some_and(|m| !m.is_empty()) {
+    if md.mobility.known().is_some() {
         if !st.frame {
             bbox.y2 = s.bbox.y2;
         }
         amplifiers::mobility(s, &mut acc, &mut bbox)?;
     }
-    if md
-        .flags
-        .leadership
-        .as_deref()
-        .is_some_and(|l| !l.is_empty())
-        && md.affiliation.as_deref() == Some("Friend")
-    {
+    if md.flags.leadership.is_some() && md.affiliation.known() == Some(Affiliation::Friend) {
         let style = acc.defaults(Style::default());
         acc.pre.push(Node::Path(PathNode {
             d: PathData::new("m 45,60 55,-25 55,25"),
@@ -234,11 +225,11 @@ fn headquarters(
 
 fn task_force(s: &SymbolState<'_>, acc: &mut Acc, bbox: &BBox) -> Result<(), RenderError> {
     let md = s.metadata;
-    let width = match md.echelon.as_deref() {
-        Some("Corps/MEF") => 110.0,
-        Some("Army") => 145.0,
-        Some("Army Group/front") => 180.0,
-        Some("Region/Theater") => 215.0,
+    let width = match md.echelon.known() {
+        Some(crate::domain::Echelon::CorpsMef) => 110.0,
+        Some(crate::domain::Echelon::Army) => 145.0,
+        Some(crate::domain::Echelon::ArmyGroupFront) => 180.0,
+        Some(crate::domain::Echelon::RegionTheater) => 215.0,
         _ => 90.0,
     };
     let (l, r) = (100.0 - width / 2.0, 100.0 + width / 2.0);

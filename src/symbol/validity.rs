@@ -62,15 +62,18 @@ pub(super) fn issues(s: &Symbol, icon: IconCheck) -> Vec<ValidityIssue> {
     };
     [
         (
-            md.affiliation.as_deref() == Some("undefined"),
+            md.affiliation == crate::metadata::Field::Undefined,
             ValidityIssue::UnknownAffiliation,
         ),
         (
-            md.dimension == "undefined" && !md.control_measure(),
+            md.dimension == crate::metadata::Field::Undefined && !md.control_measure(),
             ValidityIssue::UnknownDimension,
         ),
         (!icon_found, ValidityIssue::UnknownIcon),
-        (md.mobility.is_none(), ValidityIssue::UnknownAmplifier),
+        (
+            md.mobility == crate::metadata::Field::Missing,
+            ValidityIssue::UnknownAmplifier,
+        ),
         (
             crate::ir::contains_missing(&s.instructions),
             ValidityIssue::MissingInstruction,

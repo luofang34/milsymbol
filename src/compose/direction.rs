@@ -4,6 +4,7 @@
 use super::engagement::or_color;
 use super::{PartOutput, SymbolState};
 use crate::bbox::BBox;
+use crate::domain::Dimension;
 use crate::error::RenderError;
 use crate::ir::{Node, Num, Paint, PathData, PathNode, RotateNode, Style};
 use crate::js::{self, number_to_string as n};
@@ -54,7 +55,9 @@ fn movement(
     gbbox.y2 = js::max(100.0 - c * len, 100.0);
     gbbox.x1 = js::min(100.0 + sn * len, 100.0);
     gbbox.x2 = js::max(100.0 + sn * len, 100.0);
-    if md.base_dimension == "Ground" || md.base_dimension.is_empty() {
+    if md.base_dimension.known() == Some(Dimension::Ground)
+        || md.base_dimension == crate::metadata::Field::Empty
+    {
         if !md.headquarters {
             let stem = line(
                 String::from("M 100,") + &n(bbox.y2) + "l0," + &n(100.0),

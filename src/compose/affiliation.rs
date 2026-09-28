@@ -4,6 +4,7 @@
 use super::{PartOutput, SymbolState, s as lit};
 use crate::bbox::{BBox, PartialBBox};
 use crate::color::truthy;
+use crate::domain::{Affiliation, Context, Dimension};
 use crate::error::RenderError;
 use crate::ir::{Node, Num, Paint, Str};
 use alloc::vec::Vec;
@@ -37,13 +38,15 @@ pub(super) fn draw(s: &SymbolState<'_>) -> Result<PartOutput, RenderError> {
         post.push(letter(s, "?", 100.0, 127.0, 80.0, "middle", &frame_color));
     }
     if md.geometry().is_some() && has_color {
-        let aff = md.affiliation.as_deref();
-        let spacing =
-            if aff == Some("Unknown") || (aff == Some("Hostile") && md.dimension != "Subsurface") {
-                -10.0
-            } else {
-                10.0
-            };
+        let aff = md.affiliation.known();
+        let spacing = if aff == Some(Affiliation::Unknown)
+            || (aff == Some(Affiliation::Hostile)
+                && md.dimension.known() != Some(Dimension::Subsurface))
+        {
+            -10.0
+        } else {
+            10.0
+        };
         let x = base.x2 + spacing;
         let mut side = |text: &'static str, y: f64| {
             let mut n = letter(s, text, x, y, 35.0, "start", &frame_color);
@@ -52,8 +55,8 @@ pub(super) fn draw(s: &SymbolState<'_>) -> Result<PartOutput, RenderError> {
             }
             post.push(n);
         };
-        match md.context.as_deref() {
-            Some("Exercise") => {
+        match md.context {
+            Some(Context::Exercise) => {
                 if !(md.joker || md.faker) {
                     side("X", 50.0);
                 }
@@ -69,7 +72,7 @@ pub(super) fn draw(s: &SymbolState<'_>) -> Result<PartOutput, RenderError> {
                     ..PartialBBox::default()
                 };
             }
-            Some("Simulation") => {
+            Some(Context::Simulation) => {
                 side("S", 40.0);
                 let full = BBox {
                     x2: base.x2 + spacing + 22.0,

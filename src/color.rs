@@ -1,5 +1,6 @@
 //! Colour modes and per-symbol colour resolution (upstream `getColors`).
 
+use crate::domain::Affiliation;
 use crate::ir::Paint;
 use alloc::borrow::Cow;
 use alloc::string::String;
@@ -33,6 +34,19 @@ pub struct ColorMode {
 pub type SlotMode = ColorMode;
 
 impl ColorMode {
+    /// Borrows the paint for a frame affiliation, without allocating.
+    /// `None` is an unset slot; `Some(Paint::None)` explicitly disables paint.
+    /// Civilian, joker/faker and suspect substitutions are already applied
+    /// in the colour modes returned by [`crate::Symbol::colors`].
+    pub fn for_affiliation(&self, affiliation: Affiliation) -> Option<&Paint> {
+        match affiliation {
+            Affiliation::Friend => self.friend.as_ref(),
+            Affiliation::Hostile => self.hostile.as_ref(),
+            Affiliation::Neutral => self.neutral.as_ref(),
+            Affiliation::Unknown => self.unknown.as_ref(),
+        }
+    }
+
     /// Builds a mode from colour strings in [`COLOR_KEYS`] order.
     pub fn new(
         civilian: &str,
@@ -174,15 +188,6 @@ pub(crate) struct ColorFlags {
     pub fill: bool,
 }
 
-fn copy_to(mode: &mut ColorMode, from: &str, to: &[&str]) {
-    let v = mode.get(from);
-    for k in to {
-        if let Some(s) = mode.slot_mut(k) {
-            *s = v.clone();
-        }
-    }
-}
-
 /// Upstream mutates the style's colour objects in place; later symbol parts
 /// and `getOptions()` observe these values.
 pub(crate) struct MutatedStyle {
@@ -199,14 +204,30 @@ pub(crate) struct MutatedStyle {
 fn apply_identity(modes: [&mut ColorMode; 3], civilian: bool, f: &ColorFlags) {
     for m in modes {
         if civilian {
-            copy_to(m, "Civilian", &["Friend", "Neutral", "Unknown"]);
+            m.friend = m.civilian.clone();
+            m.neutral = m.civilian.clone();
+            m.unknown = m.civilian.clone();
         }
         if f.joker_or_faker {
-            copy_to(m, "Hostile", &["Friend"]);
+            m.friend = m.hostile.clone();
         }
         if f.suspect {
-            copy_to(m, "Suspect", &["Friend", "Hostile"]);
+            m.friend = m.suspect.clone();
+            m.hostile = m.suspect.clone();
         }
+    }
+}
+
+fn monochrome_frame(frame: &mut ColorMode, color: &str) {
+    let mono = Some(Paint::Color(Cow::Owned(String::from(color))));
+    for slot in [
+        &mut frame.friend,
+        &mut frame.neutral,
+        &mut frame.hostile,
+        &mut frame.unknown,
+        &mut frame.civilian,
+    ] {
+        *slot = mono.clone();
     }
 }
 
@@ -232,12 +253,7 @@ pub(crate) fn resolve_colors(mut i: ColorInputs<'_>, f: &ColorFlags) -> (ColorSe
     );
     let fill_object = fill.clone();
     if !i.mono_color.is_empty() {
-        let mono = Some(Paint::Color(Cow::Owned(String::from(i.mono_color))));
-        for k in ["Friend", "Neutral", "Hostile", "Unknown", "Civilian"] {
-            if let Some(s) = frame.slot_mut(k) {
-                *s = mono.clone();
-            }
-        }
+        monochrome_frame(&mut frame, i.mono_color);
         i.black = frame.clone();
         i.white = i.none.clone();
         fill = i.none.clone();
@@ -294,3 +310,6 @@ pub(crate) fn resolve_colors(mut i: ColorInputs<'_>, f: &ColorFlags) -> (ColorSe
     };
     (colors, mutated)
 }
+
+#[cfg(test)]
+mod tests;

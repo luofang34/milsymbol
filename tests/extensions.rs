@@ -52,11 +52,8 @@ impl IconExtension for Custom {
         }
         let mut n = Node::path("M80,80 L120,120");
         if let Some(st) = n.style_mut() {
-            let aff = ctx
-                .metadata
-                .affiliation
-                .map_or("Friend", Affiliation::as_str);
-            st.stroke = ctx.colors.icon_color.get(aff);
+            let aff = ctx.metadata.affiliation.unwrap_or(Affiliation::Friend);
+            st.stroke = ctx.colors.icon_color.for_affiliation(aff).cloned();
         }
         Some(n)
     }
@@ -124,12 +121,11 @@ impl IconExtension for InfantryCircle {
         let mut n = Node::circle(100.0, 100.0, 20.0);
         if let Some(st) = n.style_mut() {
             st.fill = Some(Paint::None);
-            st.stroke = ctx.colors.icon_color.get(
-                ctx.js_metadata
-                    .affiliation
-                    .as_deref()
-                    .unwrap_or("undefined"),
-            );
+            st.stroke = ctx
+                .metadata
+                .affiliation
+                .and_then(|a| ctx.colors.icon_color.for_affiliation(a))
+                .cloned();
             st.stroke_width = Some(milsymbol::ir::Num::Number(3.0));
         }
         Some(n)
@@ -284,5 +280,33 @@ fn clip_ids_are_unique_and_prefixable() -> TestResult {
     for id in &ids {
         assert!(prefixed.contains(&format!("url(#{id})")), "{id}");
     }
+    Ok(())
+}
+
+#[cfg(feature = "std")]
+#[test]
+fn cached_preparation_keeps_going_after_an_extension_path_error() -> TestResult {
+    struct MixedPaths;
+    impl SymbolPart for MixedPaths {
+        fn draw(&self, _: &SymbolState<'_>) -> Result<PartOutput, milsymbol::PartError> {
+            Ok(PartOutput::new(
+                vec![],
+                vec![Node::path("M,0,0"), Node::path("M101,101 L102,102")],
+                PartialBBox::default(),
+            ))
+        }
+    }
+    let cache =
+        milsymbol::cache::CachedRenderer::new(Renderer::default().with_symbol_part(MixedPaths), 4)
+            .with_prepared_paths();
+    let options = SymbolOptions::default();
+    let symbol = cache.render(INFANTRY, &options)?;
+    let hit = cache.render(INFANTRY, &options)?;
+    assert!(std::sync::Arc::ptr_eq(&symbol, &hit));
+    let Some(Node::Path(path)) = hit.instructions().last() else {
+        return Err("expected final extension path".into());
+    };
+    assert_eq!(path.d.source(), "M101,101 L102,102");
+    assert!(matches!(path.d.segments()?, Cow::Borrowed(_)));
     Ok(())
 }

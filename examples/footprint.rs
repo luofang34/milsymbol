@@ -3,8 +3,11 @@
 //!
 //! `cargo run --release --example footprint`
 
+use milsymbol::compat;
+use milsymbol::ir::Node;
 use milsymbol::options::{SymbolOptions, field};
 use milsymbol::{Renderer, Symbol};
+use std::io::{self, Write};
 
 #[global_allocator]
 static ALLOC: dhat::Alloc = dhat::Alloc;
@@ -47,9 +50,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         ("HQ + outline + stack 3", "10031002161211000000", outlined),
     ];
     for (name, sidc, options) in cases {
-        let symbol = measure(&format!("compose: {name}"), || r.render(sidc, options))?;
-        let svg = measure(&format!("to_svg:  {name}"), || symbol.to_svg());
-        println!("{:40} {} B of SVG", "", svg.len());
+        profile_symbol(&r, name, sidc, options)?;
     }
     let infantry = r.render("10031000001211000000", SymbolOptions::default())?;
     measure("is_valid: infantry", || infantry.is_valid());
@@ -64,4 +65,50 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         cache.render("10031000001211000000", &options)
     })?;
     Ok(())
+}
+
+fn profile_symbol(
+    r: &Renderer,
+    name: &str,
+    sidc: &str,
+    options: SymbolOptions,
+) -> Result<(), Box<dyn std::error::Error>> {
+    let symbol = measure(&format!("compose: {name}"), || r.render(sidc, options))?;
+    let svg = measure(&format!("to_svg:  {name}"), || symbol.to_svg());
+    let (nodes, lists) = ir_storage(symbol.instructions());
+    writeln!(
+        io::stdout(),
+        "{name}: {} SVG bytes, {nodes} IR nodes in {lists} nonempty lists",
+        svg.len()
+    )?;
+    let owned = measure("canonical JSON: owned tree + string", || {
+        compat::canonical_json(&symbol).to_canonical_string()
+    });
+    let streamed = measure("canonical JSON: stream to new string", || {
+        compat::canonical_json_string(&symbol)
+    });
+    let mut buffer = String::with_capacity(owned.len());
+    measure("canonical JSON: stream to reused buffer", || {
+        compat::write_canonical_json(&symbol, &mut buffer)
+    });
+    if buffer != owned || streamed != owned {
+        return Err("canonical JSON writers disagree".into());
+    }
+    measure("native + JS metadata views", || {
+        (symbol.metadata(), symbol.js_metadata())
+    });
+    Ok(())
+}
+
+fn ir_storage(nodes: &[Node]) -> (usize, usize) {
+    let mut count = nodes.len();
+    let mut lists = usize::from(!nodes.is_empty());
+    for node in nodes {
+        if let Some(children) = node.children() {
+            let (child_nodes, child_lists) = ir_storage(children);
+            count += child_nodes;
+            lists += child_lists;
+        }
+    }
+    (count, lists)
 }

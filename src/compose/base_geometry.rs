@@ -2,6 +2,7 @@
 //! the stack part.
 
 use super::{PartOutput, SymbolState};
+use crate::domain::Affiliation;
 use crate::geometry::GeomShape;
 use crate::ir::{CircleNode, Node, Num, Paint, PathData, PathNode, Style};
 use alloc::borrow::Cow;
@@ -9,17 +10,17 @@ use alloc::string::String;
 use alloc::vec::Vec;
 
 fn affiliation_modifier(
-    aff: &str,
+    aff: Option<Affiliation>,
     friend: &'static str,
     hostile: &'static str,
     neutral: &'static str,
     unknown: &'static str,
 ) -> Option<&'static str> {
     match aff {
-        "Friend" => Some(friend),
-        "Hostile" => Some(hostile),
-        "Neutral" => Some(neutral),
-        "Unknown" => Some(unknown),
+        Some(Affiliation::Friend) => Some(friend),
+        Some(Affiliation::Hostile) => Some(hostile),
+        Some(Affiliation::Neutral) => Some(neutral),
+        Some(Affiliation::Unknown) => Some(unknown),
         _ => None,
     }
 }
@@ -45,7 +46,11 @@ const CYBERSPACE: [&str; 4] = [
 
 /// Frame decoration for an affiliation, or [`Node::Missing`] when upstream
 /// indexes its table with an unknown affiliation.
-fn decoration(table: &[&'static str; 4], aff: &str, frame_color: &Option<Paint>) -> Node {
+fn decoration(
+    table: &[&'static str; 4],
+    aff: Option<Affiliation>,
+    frame_color: &Option<Paint>,
+) -> Node {
     let [f, h, n, u] = *table;
     match affiliation_modifier(aff, f, h, n, u) {
         Some(d) => {

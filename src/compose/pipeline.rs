@@ -5,7 +5,6 @@ use crate::bbox::BBox;
 use crate::color::{self, ColorFlags, ColorInputs, ColorMode, ColorSet};
 use crate::config::{RendererConfig, Standard};
 use crate::error::RenderError;
-use crate::geometry;
 use crate::ir::{Node, Point};
 use crate::js;
 use crate::metadata::Metadata;
@@ -55,14 +54,10 @@ pub(crate) fn metadata(
         },
     };
     let sidc = sidc::interpret(&normalized, &mut md, &input);
-    let name = alloc::format!(
-        "{}{}",
-        md.dimension,
-        md.affiliation.as_deref().unwrap_or("undefined")
-    );
-    md.base_geometry = geometry::static_name(&name);
+    let name = crate::geometry::frame_name(md.dimension.known(), md.affiliation.known());
+    md.base_geometry = name;
     if !st.frame && !st.icon {
-        md.base_geometry = geometry::static_name("PositionMarker");
+        md.base_geometry = Some("PositionMarker");
     }
     (sidc, md)
 }

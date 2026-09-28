@@ -147,21 +147,21 @@ pub(super) fn compute(s: &SymbolState<'_>) -> Strings {
     let o = Opts(s);
     let md = s.metadata;
     let letter = js::is_nan_str(s.sidc);
-    let dim = md.base_dimension.as_str();
+    let dim = md.base_dimension.known();
     let mut g = Strings::default();
-    if !letter && dim == "Air" {
+    if !letter && dim == Some(crate::domain::Dimension::Air) {
         air(&o, &mut g);
     }
-    if letter || dim == "Ground" {
+    if letter || dim == Some(crate::domain::Dimension::Ground) {
         ground(&o, &mut g, letter || md.unit, md.activity);
     }
     if md.dismounted() {
         dismounted(&o, &mut g);
     }
-    if !letter && dim == "Sea" {
+    if !letter && dim == Some(crate::domain::Dimension::Sea) {
         sea(&o, &mut g);
     }
-    if !letter && dim == "Subsurface" {
+    if !letter && dim == Some(crate::domain::Dimension::Subsurface) {
         subsurface(&o, &mut g);
     }
     g

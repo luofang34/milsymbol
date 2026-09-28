@@ -4,6 +4,7 @@ use super::{SymbolState, TextStyle, fields};
 use crate::bbox::BBox;
 use crate::color::truthy;
 use crate::compose::{s as lit, style_color_value};
+use crate::domain::{Affiliation, Dimension};
 use crate::ir::{Node, Num, Paint, PathData, PathNode, Str, Style};
 use crate::js::{self, number_to_string as n};
 use crate::labels::str_width;
@@ -44,8 +45,8 @@ fn offsets(s: &SymbolState<'_>) -> (f64, f64) {
         0.0
     };
     if opts.full_frame_flag == Some(true)
-        && md.affiliation.as_deref() == Some("Friend")
-        && md.dimension == "Ground"
+        && md.affiliation.known() == Some(Affiliation::Friend)
+        && md.dimension.known() == Some(Dimension::Ground)
     {
         flag = 0.0;
     }

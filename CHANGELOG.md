@@ -12,7 +12,7 @@ First release: native Rust port of milsymbol.js 3.0.4.
   colour modes).
 - `no_std + alloc`; `wasm32` and bare-metal builds.
 - Strict typed SIDC parsing (`sidc::Sidc`), typed symbol info
-  (`Symbol::info`, `domain`) and typed validity issues.
+  (`Symbol::metadata`, `domain`) and typed validity issues.
 - `ReferencePlatform`: reproduces V8's x64 or arm64 `Math.sin`/`Math.cos`
   bit for bit (upstream output differs between them).
 - Typed path construction (`PathData::from_segments`) and cached segments.
@@ -27,3 +27,10 @@ First release: native Rust port of milsymbol.js 3.0.4.
   `SvgOptions::id_prefix`; SVG path grammar enforced by the path parser.
 - `Symbol::write_svg` appends to a caller's buffer; SVG serialization,
   `is_valid()` and cache hits make no temporary allocations.
+- Enum-backed internal metadata and borrowed `JsMetadata` views;
+  `ColorMode::for_affiliation` borrows a paint using a typed affiliation.
+- Streaming `compat::write_canonical_json`, shared field definitions with
+  the owned JSON view, UTF-16 key ordering and any number of extension
+  option keys.
+- Oracle comparison rejects malformed records; path preparation caches all
+  valid paths even when another path or clip geometry fails to parse.

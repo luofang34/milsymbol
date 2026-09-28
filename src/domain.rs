@@ -3,7 +3,6 @@
 //! [`compat::JsMetadata`](crate::compat::JsMetadata).
 
 use crate::geometry::BaseGeometry;
-use crate::metadata::Metadata as JsMetadata;
 
 /// Standard identity (affiliation code of the SIDC).
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -138,45 +137,43 @@ pub enum Leadership {
 }
 
 impl Echelon {
-    pub(crate) fn from_name(s: &str) -> Option<Self> {
-        use Echelon::*;
-        Some(match s {
-            "Team/Crew" => TeamCrew,
-            "Squad" => Squad,
-            "Section" => Section,
-            "Platoon/detachment" => PlatoonDetachment,
-            "Company/battery/troop" => CompanyBatteryTroop,
-            "Battalion/squadron" => BattalionSquadron,
-            "Regiment/group" => RegimentGroup,
-            "Brigade" => Brigade,
-            "Division" => Division,
-            "Corps/MEF" => CorpsMef,
-            "Army" => Army,
-            "Army Group/front" => ArmyGroupFront,
-            "Region/Theater" => RegionTheater,
-            "Command" => Command,
+    pub(crate) fn from_code(code: &str) -> Option<Self> {
+        Some(match code {
+            "11" => Self::TeamCrew,
+            "12" => Self::Squad,
+            "13" => Self::Section,
+            "14" => Self::PlatoonDetachment,
+            "15" => Self::CompanyBatteryTroop,
+            "16" => Self::BattalionSquadron,
+            "17" => Self::RegimentGroup,
+            "18" => Self::Brigade,
+            "21" => Self::Division,
+            "22" => Self::CorpsMef,
+            "23" => Self::Army,
+            "24" => Self::ArmyGroupFront,
+            "25" => Self::RegionTheater,
+            "26" => Self::Command,
             _ => return None,
         })
     }
 }
 
 impl Mobility {
-    pub(crate) fn from_name(s: &str) -> Option<Self> {
-        use Mobility::*;
-        Some(match s {
-            "Wheeled limited cross country" => WheeledLimitedCrossCountry,
-            "Wheeled cross country" => WheeledCrossCountry,
-            "Tracked" => Tracked,
-            "Wheeled and tracked combination" => WheeledAndTracked,
-            "Towed" => Towed,
-            "Rail" => Rail,
-            "Pack animals" => PackAnimals,
-            "Over snow (prime mover)" => OverSnow,
-            "Sled" => Sled,
-            "Barge" => Barge,
-            "Amphibious" => Amphibious,
-            "Short towed array" => ShortTowedArray,
-            "Long towed Array" => LongTowedArray,
+    pub(crate) fn from_code(code: &str) -> Option<Self> {
+        Some(match code {
+            "31" => Self::WheeledLimitedCrossCountry,
+            "32" => Self::WheeledCrossCountry,
+            "33" => Self::Tracked,
+            "34" => Self::WheeledAndTracked,
+            "35" => Self::Towed,
+            "36" => Self::Rail,
+            "37" => Self::PackAnimals,
+            "41" => Self::OverSnow,
+            "42" => Self::Sled,
+            "51" => Self::Barge,
+            "52" => Self::Amphibious,
+            "61" => Self::ShortTowedArray,
+            "62" => Self::LongTowedArray,
             _ => return None,
         })
     }
@@ -266,99 +263,8 @@ pub struct Metadata {
 impl Affiliation {
     /// Upstream's name, as used for colour-mode keys (`"Friend"`, …).
     pub fn as_str(self) -> &'static str {
-        match self {
-            Affiliation::Friend => "Friend",
-            Affiliation::Hostile => "Hostile",
-            Affiliation::Neutral => "Neutral",
-            Affiliation::Unknown => "Unknown",
-        }
-    }
-
-    fn from_name(s: Option<&str>) -> Option<Self> {
-        Some(match s? {
-            "Friend" => Affiliation::Friend,
-            "Hostile" => Affiliation::Hostile,
-            "Neutral" => Affiliation::Neutral,
-            "Unknown" => Affiliation::Unknown,
-            _ => return None,
-        })
+        crate::metadata::Name::name(self)
     }
 }
 
-impl Dimension {
-    fn from_name(s: &str) -> Option<Self> {
-        Some(match s {
-            "Air" => Dimension::Air,
-            "Ground" => Dimension::Ground,
-            "Sea" => Dimension::Sea,
-            "Subsurface" => Dimension::Subsurface,
-            "LandDismountedIndividual" => Dimension::LandDismountedIndividual,
-            _ => return None,
-        })
-    }
-}
-
-impl Metadata {
-    /// Typed view of milsymbol.js-compatible metadata.
-    pub fn from_js(md: &JsMetadata) -> Self {
-        let context = match md.context.as_deref() {
-            Some("Reality") => Some(Context::Reality),
-            Some("Exercise") => Some(Context::Exercise),
-            Some("Simulation") => Some(Context::Simulation),
-            _ => None,
-        };
-        let condition = match md.condition.as_str() {
-            "FullyCapable" => Some(Status::FullyCapable),
-            "Damaged" => Some(Status::Damaged),
-            "Destroyed" => Some(Status::Destroyed),
-            "FullToCapacity" => Some(Status::FullToCapacity),
-            _ => None,
-        };
-        let leadership = match md.flags.leadership.as_deref() {
-            Some("Leader Individual") => Some(Leadership::Leader),
-            Some("Deputy Individual") => Some(Leadership::Deputy),
-            _ => None,
-        };
-        let edition = match md.edition() {
-            Some("D") => Some(Edition::D),
-            Some("E") => Some(Edition::E),
-            _ => None,
-        };
-        let flag = |f: Option<bool>| f == Some(true);
-        Metadata {
-            affiliation: Affiliation::from_name(md.affiliation.as_deref()),
-            base_affiliation: Affiliation::from_name(md.base_affiliation.as_deref()),
-            dimension: Dimension::from_name(&md.dimension),
-            base_dimension: Dimension::from_name(&md.base_dimension),
-            dimension_unknown: md.dimension_unknown,
-            context,
-            condition,
-            not_present: !md.notpresent.is_empty(),
-            echelon: md.echelon.as_deref().and_then(Echelon::from_name),
-            mobility: md.mobility.as_deref().and_then(Mobility::from_name),
-            amplifier_unknown: md.mobility.is_none(),
-            leadership,
-            edition,
-            geometry: md.geometry(),
-            headquarters: md.headquarters,
-            task_force: md.task_force,
-            feint_dummy: flag(md.flags.feint_dummy),
-            installation: md.installation,
-            activity: md.activity,
-            space: md.space,
-            unit: md.unit,
-            land_equipment: flag(md.flags.landequipment),
-            dismounted: flag(md.flags.dismounted),
-            cyberspace: flag(md.flags.cyberspace),
-            control_measure: flag(md.flags.control_measure),
-            civilian: md.civilian,
-            suspect: flag(md.flags.suspect),
-            joker: md.joker,
-            faker: md.faker,
-            frame: md.frame,
-            fill: md.fill,
-            std2525: md.std2525,
-            numeric_sidc: md.number_sidc,
-        }
-    }
-}
+mod metadata;

@@ -392,22 +392,22 @@ impl TextNode {
 
 /// Parses every path in `nodes` (recursively) and caches its segments, so
 /// renderers that walk the tree repeatedly do not re-parse path data.
+/// All valid paths are prepared even if others fail. Returns the first
+/// error in tree order; failing paths keep their original source.
 pub fn parse_paths(nodes: &mut [Node]) -> Result<(), PathParseError> {
+    let mut result = Ok(());
     for n in nodes {
-        match n {
-            Node::Path(p) => p.d.cache_segments()?,
-            Node::Clip(c) => {
-                c.d.cache_segments()?;
-                parse_paths(&mut c.draw)?;
-            }
-            Node::Translate(t) => parse_paths(&mut t.draw)?,
-            Node::Rotate(r) => parse_paths(&mut r.draw)?,
-            Node::Scale(s) => parse_paths(&mut s.draw)?,
-            Node::Group(g) => parse_paths(g)?,
-            _ => {}
+        let parsed = match n {
+            Node::Path(p) => p.d.cache_segments(),
+            Node::Clip(c) => c.d.cache_segments(),
+            _ => Ok(()),
+        };
+        result = result.and(parsed);
+        if let Some(children) = n.children_mut() {
+            result = result.and(parse_paths(children));
         }
     }
-    Ok(())
+    result
 }
 
 /// Whether any instruction in `nodes` is [`Node::Missing`], directly or nested.

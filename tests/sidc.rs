@@ -166,3 +166,29 @@ fn sidc_validity_requires_a_well_formed_code() -> TestResult {
     }
     Ok(())
 }
+
+#[test]
+fn native_metadata_preserves_compatibility_sentinels() -> TestResult {
+    let r = Renderer::default();
+    for (sidc, affiliation, dimension) in [
+        ("SZGPUCI-----", Some("undefined"), "Ground"),
+        ("10091000001211000000", None, "Ground"),
+        ("10130000000000000000", Some(""), "Sea"),
+        ("SDZPUCI-----", Some("none"), "Ground"),
+        ("SFQPUCI-----", Some("Friend"), "undefined"),
+        ("10034400000000000000", Some("Friend"), ""),
+    ] {
+        let s = r.symbol(sidc).render()?;
+        let js = s.js_metadata();
+        assert_eq!(js.affiliation, affiliation, "{sidc}");
+        assert_eq!(js.dimension, dimension, "{sidc}");
+        // The typed view names a known affiliation exactly as the JS view.
+        let typed = s.metadata().affiliation.map(|a| a.as_str());
+        assert_eq!(
+            typed,
+            affiliation.filter(|a| !["", "undefined", "none"].contains(a)),
+            "{sidc}"
+        );
+    }
+    Ok(())
+}

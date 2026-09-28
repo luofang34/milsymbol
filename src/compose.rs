@@ -52,12 +52,12 @@ impl<'a> SymbolState<'a> {
 
     /// Typed metadata.
     pub fn metadata(&self) -> crate::domain::Metadata {
-        crate::domain::Metadata::from_js(self.metadata)
+        crate::domain::Metadata::from_internal(self.metadata)
     }
 
-    /// Metadata in milsymbol.js's representation.
-    pub fn js_metadata(&self) -> &'a Metadata {
-        self.metadata
+    /// A borrowed, allocation-free view of milsymbol.js metadata.
+    pub fn js_metadata(&self) -> crate::compat::JsMetadata<'_> {
+        self.metadata.into()
     }
 
     /// Resolved colours.
@@ -194,13 +194,13 @@ fn octagon() -> PartOutput {
 
 impl SymbolState<'_> {
     /// Affiliation key for colour lookups (upstream `this.metadata.affiliation`).
-    pub(crate) fn aff(&self) -> &str {
-        self.metadata.affiliation.as_deref().unwrap_or("undefined")
+    pub(crate) fn aff(&self) -> Option<crate::domain::Affiliation> {
+        self.metadata.affiliation.known()
     }
 
     /// `colors.<mode>[metadata.affiliation]`.
     pub(crate) fn color_of(&self, mode: &crate::color::ColorMode) -> Option<Paint> {
-        mode.get(self.aff())
+        self.aff().and_then(|a| mode.for_affiliation(a)).cloned()
     }
 
     /// Upstream's outline colour argument.
@@ -233,10 +233,13 @@ impl SymbolState<'_> {
 
 /// Value of a style colour for an affiliation: the string itself, or the
 /// per-affiliation entry.
-pub(crate) fn style_color_value(c: &StyleColor, aff: &str) -> Option<Paint> {
+pub(crate) fn style_color_value(
+    c: &StyleColor,
+    aff: Option<crate::domain::Affiliation>,
+) -> Option<Paint> {
     match c {
         StyleColor::Str(s) => Some(Paint::Color(s.clone())),
-        StyleColor::PerAffiliation(m) => m.get(aff),
+        StyleColor::PerAffiliation(m) => aff.and_then(|a| m.for_affiliation(a)).cloned(),
     }
 }
 

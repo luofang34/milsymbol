@@ -108,55 +108,91 @@ struct Tally {
     by_path: BTreeMap<String, usize>,
 }
 
+enum Record<'a> {
+    Rendered {
+        svg: &'a str,
+        sem: &'a str,
+        value: Value,
+    },
+    Error(&'a str),
+}
+
+impl<'a> Record<'a> {
+    fn read(v: &'a Value) -> Result<Self, Error> {
+        let object = v.as_object().ok_or("record must be an object")?;
+        let text = |key: &str| {
+            object
+                .get(key)
+                .and_then(Value::as_str)
+                .ok_or_else(|| format!("record field {key:?} must be a string"))
+        };
+        if object.contains_key("error") {
+            if object.contains_key("svg") || object.contains_key("sem") {
+                return Err("record cannot contain both error and rendered output".into());
+            }
+            return Ok(Self::Error(text("error")?));
+        }
+        let (svg, sem) = (text("svg")?, text("sem")?);
+        let value = serde_json::from_str(sem)
+            .map_err(|e| format!("record field \"sem\" is not valid JSON: {e}"))?;
+        Ok(Self::Rendered { svg, sem, value })
+    }
+}
+
 impl Tally {
     /// Records one case and returns the problem to report, if any.
-    fn case(&mut self, x: &Value, y: &Value) -> Result<Option<String>, Error> {
+    fn case(&mut self, x: Record<'_>, y: Record<'_>) -> Option<String> {
         self.cases += 1;
-        let (xe, ye) = (x.get("error"), y.get("error"));
-        if xe.is_some() != ye.is_some() {
-            self.errors += 1;
-            return Ok(Some(format!(
-                "error mismatch: oracle={} rust={}",
-                clip(xe.unwrap_or(&Value::Null)),
-                clip(ye.unwrap_or(&Value::Null))
-            )));
-        }
-        if xe.is_some() {
-            return Ok(None);
-        }
-        let text = |v: &Value, k: &str| {
-            v.get(k)
-                .and_then(Value::as_str)
-                .unwrap_or_default()
-                .to_string()
+        let (svg_x, xs, xv, svg_y, ys, yv) = match (x, y) {
+            (
+                Record::Rendered {
+                    svg: a,
+                    sem: b,
+                    value: c,
+                },
+                Record::Rendered {
+                    svg: d,
+                    sem: e,
+                    value: f,
+                },
+            ) => (a, b, c, d, e, f),
+            // Oracle and Rust error messages need not use the same wording.
+            (Record::Error(_), Record::Error(_)) => return None,
+            (Record::Error(e), _) => {
+                self.errors += 1;
+                return Some(format!(
+                    "error mismatch: oracle={} rust renders",
+                    clip_str(e)
+                ));
+            }
+            (_, Record::Error(e)) => {
+                self.errors += 1;
+                return Some(format!(
+                    "error mismatch: oracle renders rust={}",
+                    clip_str(e)
+                ));
+            }
         };
-        let (xs, ys) = (text(x, "sem"), text(y, "sem"));
         let sem = if xs == ys {
             None
         } else {
             // Equal parsed values with different text (e.g. `1` and `1.0`)
             // are still a serialization difference.
-            first_diff(
-                &serde_json::from_str(&xs)?,
-                &serde_json::from_str(&ys)?,
-                "sem",
-            )
-            .or_else(|| {
+            first_diff(&xv, &yv, "sem").or_else(|| {
                 Some(format!(
                     "sem text differs: {} != {}",
-                    clip_str(&xs),
-                    clip_str(&ys)
+                    clip_str(xs),
+                    clip_str(ys)
                 ))
             })
         };
-        let (svg_x, svg_y) = (text(x, "svg"), text(y, "svg"));
         if sem.is_some() {
             self.sem += 1;
         }
         if svg_x != svg_y {
             self.svg += 1;
         }
-        let problem = sem.or_else(|| (svg_x != svg_y).then(|| svg_diff(&svg_x, &svg_y)));
+        let problem = sem.or_else(|| (svg_x != svg_y).then(|| svg_diff(svg_x, svg_y)));
         if let Some(p) = &problem {
             let key = if p.starts_with("svg differs") {
                 String::from("svg")
@@ -165,7 +201,7 @@ impl Tally {
             };
             *self.by_path.entry(key).or_default() += 1;
         }
-        Ok(problem)
+        problem
     }
 }
 
@@ -194,7 +230,9 @@ fn compare(
         let (Some(x), Some(y)) = (next_record(&mut a)?, next_record(&mut b)?) else {
             return Err(format!("record files end before case #{i}").into());
         };
-        if let Some(problem) = tally.case(&x, &y)? {
+        let x = Record::read(&x).map_err(|e| format!("oracle record for case #{i}: {e}"))?;
+        let y = Record::read(&y).map_err(|e| format!("rust record for case #{i}: {e}"))?;
+        if let Some(problem) = tally.case(x, y) {
             if tally.reported < max {
                 writeln!(out, "#{i} {line}\n   {problem}")?;
             }

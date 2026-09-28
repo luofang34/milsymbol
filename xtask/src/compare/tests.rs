@@ -26,6 +26,36 @@ fn identical_records_agree() -> TestResult {
 }
 
 #[test]
+fn malformed_records_are_rejected_on_either_side() {
+    let good = record("{}");
+    for bad in [
+        "null",
+        "[]",
+        "{}",
+        r#"{"svg":123,"sem":null}"#,
+        r#"{"svg":"<svg/>"}"#,
+        r#"{"sem":"{}"}"#,
+        r#"{"svg":"<svg/>","sem":"not JSON"}"#,
+        r#"{"error":null}"#,
+        r#"{"error":17}"#,
+        r#"{"error":"bad","svg":"<svg/>","sem":"{}"}"#,
+    ] {
+        assert!(one(bad, bad).is_err(), "{bad}");
+        assert!(one(bad, &good).is_err(), "{bad}");
+        assert!(one(&good, bad).is_err(), "{bad}");
+    }
+}
+
+#[test]
+fn valid_error_records_compare_by_outcome() -> TestResult {
+    let err = r#"{"error":"oracle exception"}"#;
+    assert!(one(err, r#"{"error":"typed Rust error"}"#)?);
+    assert!(!one(err, &record("{}"))?);
+    assert!(!one(&record("{}"), err)?);
+    Ok(())
+}
+
+#[test]
 fn missing_member_differs_from_null() -> TestResult {
     assert!(!one(&record("{}"), &record(r#"{"x":null}"#))?);
     assert!(!one(&record(r#"{"x":null}"#), &record("{}"))?);

@@ -135,6 +135,33 @@ fn caching_keeps_failing_paths_intact() {
 }
 
 #[test]
+fn caching_continues_after_bad_paths_and_clip_geometry() -> Result<(), PathParseError> {
+    let mut nodes = vec![
+        Node::path("M0,0 Lx"),
+        Node::clip(PathData::new("M,0,0"), None, vec![Node::path("M1,1")]),
+        Node::translate(1.0, 2.0, vec![Node::path("M2,2")]),
+        Node::path("M3,3"),
+    ];
+    let expected = PathData::new("M0,0 Lx").segments().err();
+    assert_eq!(parse_paths(&mut nodes).err(), expected);
+    fn check(nodes: &[Node]) -> Result<usize, PathParseError> {
+        let mut good = 0;
+        for n in nodes {
+            if let Node::Path(p) = n {
+                if p.d.source() != "M0,0 Lx" {
+                    assert!(matches!(p.d.segments()?, Cow::Borrowed(_)));
+                    good += 1;
+                }
+            }
+            good += check(n.children().unwrap_or(&[]))?;
+        }
+        Ok(good)
+    }
+    assert_eq!(check(&nodes)?, 3);
+    Ok(())
+}
+
+#[test]
 fn comma_is_a_separator_between_arguments_only() {
     let err = |d: &'static str| PathData::new(d).segments().err();
     let e = err("M,0,0 L10,10");

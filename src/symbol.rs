@@ -4,7 +4,7 @@ use crate::bbox::BBox;
 use crate::color::ColorSet;
 use crate::compose::Composition;
 use crate::ir::{Node, Point};
-use crate::metadata::Metadata as JsMetadata;
+use crate::metadata::Metadata;
 use crate::options::SymbolOptions;
 use crate::svg::{self, SvgFrame};
 use alloc::string::String;
@@ -28,7 +28,7 @@ pub struct Size {
 pub struct Symbol {
     pub(crate) sidc: String,
     pub(crate) options: SymbolOptions,
-    pub(crate) metadata: JsMetadata,
+    pub(crate) metadata: Metadata,
     pub(crate) colors: ColorSet,
     pub(crate) instructions: Vec<Node>,
     pub(crate) bbox: BBox,
@@ -76,19 +76,21 @@ impl Symbol {
 
     /// Typed description: affiliation, dimension, status, amplifiers.
     pub fn metadata(&self) -> crate::domain::Metadata {
-        crate::domain::Metadata::from_js(&self.metadata)
+        crate::domain::Metadata::from_internal(&self.metadata)
     }
 
-    /// Parses every path once and caches the segments, for renderers that
-    /// read [`PathData::segments`](crate::ir::PathData::segments) repeatedly.
+    /// Parses and caches the segments of every valid path, for renderers
+    /// that read [`PathData::segments`](crate::ir::PathData::segments)
+    /// repeatedly. Returns the first parse error; a path that fails keeps
+    /// only its source, which SVG output uses unchanged.
     pub fn cache_path_segments(&mut self) -> Result<(), crate::ir::PathParseError> {
         crate::ir::parse_paths(&mut self.instructions)
     }
 
-    /// Metadata in milsymbol.js's representation (string values, including
+    /// A borrowed, allocation-free view of milsymbol.js metadata (including
     /// its `"undefined"` sentinels); see [`Symbol::metadata`] for typed values.
-    pub fn js_metadata(&self) -> &JsMetadata {
-        &self.metadata
+    pub fn js_metadata(&self) -> crate::compat::JsMetadata<'_> {
+        (&self.metadata).into()
     }
 
     /// Resolved colours.

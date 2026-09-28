@@ -1,18 +1,19 @@
-//! Symbol metadata (upstream `symbol.metadata`).
-//!
-//! Field values mirror upstream exactly, including its string sentinels:
-//! `affiliation` is `Some("undefined")` for an unrecognised letter-SIDC
-//! affiliation but `None` (JavaScript `undefined`) for an unmapped numeric one.
+//! Typed metadata used by SIDC interpretation and composition.
+//! Compatibility sentinels retain the distinctions observed by milsymbol.js.
 
+use crate::domain::{
+    Affiliation, Context, Dimension, Echelon, Edition, Leadership, Mobility, Status,
+};
 use crate::geometry::{self, BaseGeometry};
+mod field;
 use alloc::string::String;
+pub(crate) use field::{Field, Name};
 
 /// Flags upstream only sets for some SIDCs; `None` means "not present".
 #[derive(Debug, Clone, PartialEq, Default)]
-#[non_exhaustive]
-pub struct OptionalFlags {
-    /// Standard edition for numeric SIDCs (`"D"` or `"E"`).
-    pub edition: Option<String>,
+pub(crate) struct OptionalFlags {
+    /// Standard edition for numeric SIDCs.
+    pub edition: Option<Edition>,
     /// Suspect standard identity (2525E).
     pub suspect: Option<bool>,
     /// Land equipment symbol set.
@@ -26,7 +27,7 @@ pub struct OptionalFlags {
     /// Feint/dummy indicator.
     pub feint_dummy: Option<bool>,
     /// Leadership indicator (dismounted individuals).
-    pub leadership: Option<String>,
+    pub leadership: Option<Leadership>,
     /// Sector 1 modifier code (`_modifier1`, numeric SIDCs).
     pub modifier1: Option<String>,
     /// Sector 2 modifier code (`_modifier2`, numeric SIDCs).
@@ -35,30 +36,29 @@ pub struct OptionalFlags {
 
 /// Parsed and derived properties of a symbol.
 #[derive(Debug, Clone, PartialEq)]
-#[non_exhaustive]
-pub struct Metadata {
+pub(crate) struct Metadata {
     /// Activity/event symbol.
     pub activity: bool,
     /// Affiliation the frame is drawn as (`Friend`, `Hostile`, …).
-    pub affiliation: Option<String>,
+    pub affiliation: Field<Affiliation>,
     /// Affiliation before joker/faker remapping (upstream `baseAffilation`).
-    pub base_affiliation: Option<String>,
+    pub base_affiliation: Field<Affiliation>,
     /// Dimension before equipment/dismounted remapping.
-    pub base_dimension: String,
+    pub base_dimension: Field<Dimension>,
     /// Base frame geometry name, if the dimension/affiliation has one.
     pub base_geometry: Option<&'static str>,
     /// Civilian symbol.
     pub civilian: bool,
-    /// Operational condition (`FullyCapable`, `Damaged`, …) or empty.
-    pub condition: String,
+    /// Operational condition, if specified.
+    pub condition: Option<Status>,
     /// Context (`Reality`, `Exercise`, `Simulation`).
-    pub context: Option<String>,
+    pub context: Option<Context>,
     /// Dimension the frame is drawn as (`Air`, `Ground`, `Sea`, …).
-    pub dimension: String,
+    pub dimension: Field<Dimension>,
     /// Unknown battle dimension (question-mark icon).
     pub dimension_unknown: bool,
-    /// Echelon name, empty when none.
-    pub echelon: Option<String>,
+    /// Echelon, with absent and invalid codes kept distinct.
+    pub echelon: Field<Echelon>,
     /// Faker.
     pub faker: bool,
     /// Always `false`; kept for output compatibility (upstream typo field).
@@ -75,8 +75,8 @@ pub struct Metadata {
     pub installation: bool,
     /// Joker.
     pub joker: bool,
-    /// Mobility indicator name, empty when none; `None` for an invalid code.
-    pub mobility: Option<String>,
+    /// Mobility, with absent and invalid codes kept distinct.
+    pub mobility: Field<Mobility>,
     /// Dash array of the planned/pending frame, empty when present.
     pub notpresent: String,
     /// The SIDC is numeric.
@@ -97,16 +97,16 @@ impl Metadata {
     pub(crate) fn new(fill: bool, frame: bool, std2525: bool) -> Self {
         Metadata {
             activity: false,
-            affiliation: Some(String::from("undefined")),
-            base_affiliation: Some(String::new()),
-            base_dimension: String::new(),
+            affiliation: Field::Undefined,
+            base_affiliation: Field::Empty,
+            base_dimension: Field::Empty,
             base_geometry: None,
             civilian: false,
-            condition: String::new(),
-            context: Some(String::from("Reality")),
-            dimension: String::from("undefined"),
+            condition: None,
+            context: Some(Context::Reality),
+            dimension: Field::Undefined,
             dimension_unknown: false,
-            echelon: Some(String::new()),
+            echelon: Field::Empty,
             faker: false,
             fenint_dummy: false,
             fill,
@@ -115,7 +115,7 @@ impl Metadata {
             headquarters: false,
             installation: false,
             joker: false,
-            mobility: Some(String::new()),
+            mobility: Field::Empty,
             notpresent: String::new(),
             number_sidc: false,
             space: false,
@@ -124,11 +124,6 @@ impl Metadata {
             unit: false,
             flags: OptionalFlags::default(),
         }
-    }
-
-    /// Affiliation as a string slice (`""` for JavaScript `undefined`).
-    pub fn affiliation_str(&self) -> &str {
-        self.affiliation.as_deref().unwrap_or("")
     }
 
     /// The base frame geometry, if any.
@@ -153,7 +148,7 @@ impl Metadata {
     }
 
     /// Standard edition of a numeric SIDC.
-    pub fn edition(&self) -> Option<&str> {
-        self.flags.edition.as_deref()
+    pub fn edition(&self) -> Option<Edition> {
+        self.flags.edition
     }
 }

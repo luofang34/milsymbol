@@ -226,12 +226,19 @@ replaces or adds a named part, `icon(IconKey)` an icon for an entity,
 modifier or generic letter SIDC, and nothing is built per symbol for keys it
 does not define. Extensions can compose new icons from the 2,108 built-in
 parts by name (`PartLookup::part("GR.IC.FF.INFANTRY")`, listed by
-`catalog::icon_parts()`). `tests/api.rs` has complete examples of a custom
-symbol part, a new SIDC icon and a label override.
+`catalog::icon_parts()`). `tests/extensions.rs` has complete examples of a
+custom symbol part, a new SIDC icon and a label override.
 
-`milsymbol::compat` holds milsymbol.js's representations: `JsMetadata` (its
-string-valued `symbol.metadata`) and `canonical_json`, the record the
-differential oracle compares.
+Use `ctx.colors.icon_color.for_affiliation(affiliation).cloned()` to set an
+extension node's paint. The lookup accepts `domain::Affiliation` and returns
+`Option<&Paint>`; an unset slot and `Some(Paint::None)` remain distinct.
+
+`Symbol::metadata()` and extension metadata use enums. `js_metadata()`
+returns a borrowed `compat::JsMetadata<'_>` view preserving the upstream
+string sentinels without allocating. `compat::write_canonical_json(&symbol,
+&mut buffer)` appends the oracle record directly to a reusable `String`;
+`canonical_json_string` returns a fresh string, and `canonical_json` builds
+an owned JSON tree when inspection is needed.
 
 ## Compatibility
 

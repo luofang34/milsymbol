@@ -1,28 +1,32 @@
 //! Numeric SIDC interpretation (upstream `numbersidc/metadata.js`).
 
-use super::{CONTEXT, ParseInput, STATUS, echelon_mobility};
+use super::ParseInput;
+use crate::domain::{
+    Affiliation, Context, Dimension, Echelon, Edition, Leadership, Mobility, Status,
+};
 use crate::js::{self, JsStr};
+use crate::metadata::Field;
 use crate::metadata::Metadata;
 use alloc::borrow::Cow;
 use alloc::string::String;
 
-fn affiliation(si2: &str) -> Option<&'static str> {
+fn affiliation(si2: &str) -> Option<Affiliation> {
     Some(match si2 {
-        "0" | "1" => "Unknown",
-        "2" | "3" => "Friend",
-        "4" => "Neutral",
-        "5" | "6" => "Hostile",
+        "0" | "1" => Affiliation::Unknown,
+        "2" | "3" => Affiliation::Friend,
+        "4" => Affiliation::Neutral,
+        "5" | "6" => Affiliation::Hostile,
         _ => return None,
     })
 }
 
-fn dimension(symbol_set: &str) -> &'static str {
+fn dimension(symbol_set: &str) -> Field<Dimension> {
     match symbol_set {
-        "00" | "30" | "53" => "Sea",
-        "01" | "02" | "05" | "06" | "50" | "51" => "Air",
-        "10" | "11" | "12" | "15" | "20" | "40" | "52" | "60" => "Ground",
-        "35" | "36" | "39" | "54" => "Subsurface",
-        _ => "",
+        "00" | "30" | "53" => Field::Known(Dimension::Sea),
+        "01" | "02" | "05" | "06" | "50" | "51" => Field::Known(Dimension::Air),
+        "10" | "11" | "12" | "15" | "20" | "40" | "52" | "60" => Field::Known(Dimension::Ground),
+        "35" | "36" | "39" | "54" => Field::Known(Dimension::Subsurface),
+        _ => Field::Empty,
     }
 }
 
@@ -43,10 +47,10 @@ pub(super) fn interpret(sidc: &str, md: &mut Metadata, input: &ParseInput<'_>) {
     let frameshape = non_empty_or(s.substr(22, 1), "0");
 
     if matches!(&*version, "10" | "11" | "12") {
-        md.flags.edition = Some(String::from("D"));
+        md.flags.edition = Some(Edition::D);
     }
     if matches!(&*version, "13" | "14") {
-        md.flags.edition = Some(String::from("E"));
+        md.flags.edition = Some(Edition::E);
     }
     if eq_num(&version, 13.0) && eq_num(&si2, 5.0) {
         md.flags.suspect = Some(true);
@@ -65,10 +69,13 @@ pub(super) fn interpret(sidc: &str, md: &mut Metadata, input: &ParseInput<'_>) {
 
     md.context = js::parse_int(&si1)
         .and_then(|i| usize::try_from(i).ok())
-        .and_then(|i| CONTEXT.get(i))
-        .map(|c| String::from(*c));
-    md.affiliation = affiliation(&si2).map(String::from);
-    md.dimension = String::from(dimension(&symbol_set));
+        .and_then(|i| {
+            [Context::Reality, Context::Exercise, Context::Simulation]
+                .get(i)
+                .copied()
+        });
+    md.affiliation = affiliation(&si2).into();
+    md.dimension = dimension(&symbol_set);
 
     classify_symbol_set(&symbol_set, &fid, md, input);
 
@@ -88,11 +95,20 @@ pub(super) fn interpret(sidc: &str, md: &mut Metadata, input: &ParseInput<'_>) {
         let i = js::parse_int(&status)
             .and_then(|i| usize::try_from(i).ok())
             .unwrap_or(0);
-        md.condition = STATUS.get(i).map(|s| String::from(*s)).unwrap_or_default();
+        md.condition = [
+            Status::Present,
+            Status::Planned,
+            Status::FullyCapable,
+            Status::Damaged,
+            Status::Destroyed,
+            Status::FullToCapacity,
+        ]
+        .get(i)
+        .copied();
     }
 
-    md.base_dimension = md.dimension.clone();
-    md.base_affiliation = md.affiliation.clone();
+    md.base_dimension = md.dimension;
+    md.base_affiliation = md.affiliation;
     identity(&si1, &si2, &symbol_set, md);
     civilian(&symbol_set, &fid, md);
     frame_shape(&frameshape, md);
@@ -145,20 +161,20 @@ fn identity(si1: &str, si2: &str, ss: &str, md: &mut Metadata) {
         md.faker = true;
     }
     if md.joker || md.faker {
-        md.affiliation = Some(String::from("Friend"));
+        md.affiliation = Field::Known(Affiliation::Friend);
     }
     if ss == "00" {
         md.dimension_unknown = true;
     }
-    if ss == "00" && si1 == "1" && md.affiliation.as_deref() != Some("Unknown") {
-        md.affiliation = Some(String::new());
+    if ss == "00" && si1 == "1" && md.affiliation.known() != Some(Affiliation::Unknown) {
+        md.affiliation = Field::Empty;
     }
     if ss == "27" {
-        md.dimension = String::from("LandDismountedIndividual");
+        md.dimension = Field::Known(Dimension::LandDismountedIndividual);
         md.flags.dismounted = Some(true);
     }
     if ss == "15" || ss == "52" {
-        md.dimension = String::from("Sea");
+        md.dimension = Field::Known(Dimension::Sea);
     }
 }
 
@@ -177,7 +193,7 @@ fn civilian(ss: &str, fid: &JsStr, md: &mut Metadata) {
 }
 
 fn frame_shape(frameshape: &str, md: &mut Metadata) {
-    if frameshape != "0" && md.flags.edition.as_deref() == Some("E") {
+    if frameshape != "0" && md.flags.edition == Some(Edition::E) {
         md.civilian = false;
         md.flags.cyberspace = Some(false);
         md.installation = false;
@@ -185,37 +201,37 @@ fn frame_shape(frameshape: &str, md: &mut Metadata) {
         md.activity = false;
         md.space = false;
         md.unit = false;
-        let set = |md: &mut Metadata, dim: &str| md.dimension = String::from(dim);
+        let set = |md: &mut Metadata, dim| md.dimension = Field::Known(dim);
         match frameshape {
             "1" => {
-                set(md, "Air");
+                set(md, Dimension::Air);
                 md.space = true;
             }
-            "2" => set(md, "Air"),
+            "2" => set(md, Dimension::Air),
             "3" => {
-                set(md, "Ground");
+                set(md, Dimension::Ground);
                 md.unit = true;
             }
             "4" => {
-                set(md, "Sea");
+                set(md, Dimension::Sea);
                 md.flags.landequipment = Some(true);
             }
             "5" => {
-                set(md, "Ground");
+                set(md, Dimension::Ground);
                 md.installation = true;
             }
             "6" => {
-                set(md, "LandDismountedIndividual");
+                set(md, Dimension::LandDismountedIndividual);
                 md.flags.dismounted = Some(true);
             }
-            "7" => set(md, "Subsurface"),
+            "7" => set(md, Dimension::Subsurface),
             "8" => {
-                set(md, "Ground");
+                set(md, Dimension::Ground);
                 md.activity = true;
                 md.unit = true;
             }
             "9" => {
-                set(md, "Ground");
+                set(md, Dimension::Ground);
                 md.flags.cyberspace = Some(false);
                 md.unit = true;
             }
@@ -238,14 +254,17 @@ fn amplifiers(hq_tf_dummy: &str, echelon_mob: &str, md: &mut Metadata) {
         md.task_force = true;
     }
     let n = js::string_to_number(echelon_mob);
-    let lookup = || echelon_mobility(echelon_mob).map(String::from);
     if n <= 30.0 {
-        md.echelon = lookup();
+        md.echelon = Echelon::from_code(echelon_mob).into();
     }
     if (30.0..70.0).contains(&n) {
-        md.mobility = lookup();
+        md.mobility = Mobility::from_code(echelon_mob).into();
     }
     if (70.0..80.0).contains(&n) {
-        md.flags.leadership = lookup();
+        md.flags.leadership = match echelon_mob {
+            "71" => Some(Leadership::Leader),
+            "72" => Some(Leadership::Deputy),
+            _ => None,
+        };
     }
 }

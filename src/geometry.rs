@@ -45,10 +45,32 @@ pub fn by_name(name: &str) -> Option<&'static BaseGeometry> {
         .map(|(_, g)| g)
 }
 
-/// Canonical `'static` name for a geometry name.
-pub(crate) fn static_name(name: &str) -> Option<&'static str> {
-    misc::GEOMETRIES
-        .iter()
-        .find(|(n, _)| *n == name)
-        .map(|(n, _)| *n)
+/// Frame name selected by typed dimension and affiliation.
+pub(crate) fn frame_name(
+    dimension: Option<crate::domain::Dimension>,
+    affiliation: Option<crate::domain::Affiliation>,
+) -> Option<&'static str> {
+    use crate::domain::{Affiliation::*, Dimension::*};
+    Some(match (dimension?, affiliation?) {
+        (Air, Friend) => "AirFriend",
+        (Air, Hostile) => "AirHostile",
+        (Air, Neutral) => "AirNeutral",
+        (Air, Unknown) => "AirUnknown",
+        (Ground, Friend) => "GroundFriend",
+        (Ground, Hostile) => "GroundHostile",
+        (Ground, Neutral) => "GroundNeutral",
+        (Ground, Unknown) => "GroundUnknown",
+        (Sea, Friend) => "SeaFriend",
+        (Sea, Hostile) => "SeaHostile",
+        (Sea, Neutral) => "SeaNeutral",
+        (Sea, Unknown) => "SeaUnknown",
+        (Subsurface, Friend) => "SubsurfaceFriend",
+        (Subsurface, Hostile) => "SubsurfaceHostile",
+        (Subsurface, Neutral) => "SubsurfaceNeutral",
+        (Subsurface, Unknown) => "SubsurfaceUnknown",
+        (LandDismountedIndividual, Friend) => "LandDismountedIndividualFriend",
+        (LandDismountedIndividual, Hostile) => "LandDismountedIndividualHostile",
+        (LandDismountedIndividual, Neutral) => "LandDismountedIndividualNeutral",
+        (LandDismountedIndividual, Unknown) => "LandDismountedIndividualUnknown",
+    })
 }

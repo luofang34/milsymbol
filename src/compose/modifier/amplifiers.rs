@@ -2,6 +2,7 @@
 
 use super::{Acc, SymbolState};
 use crate::bbox::{BBox, PartialBBox};
+use crate::domain::{Affiliation, Echelon as Level, Mobility};
 use crate::error::RenderError;
 use crate::ir::{CircleNode, Node, Paint, PathData, PathNode, Style};
 use crate::js::number_to_string as n;
@@ -60,30 +61,30 @@ enum Top {
     Wide(f64, f64),
 }
 
-fn echelon_spec(name: &str) -> Option<(Echelon, Top)> {
+fn echelon_spec(name: Option<Level>) -> Option<(Echelon, Top)> {
     use Echelon::*;
-    Some(match name {
-        "Team/Crew" => (TeamCrew, Top::Tall),
-        "Squad" => (Dots(&[100.0]), Top::Dot),
-        "Section" => (Dots(&[115.0, 85.0]), Top::Dot),
-        "Platoon/detachment" => (Dots(&[100.0, 70.0, 130.0]), Top::Dot),
-        "Company/battery/troop" => (Bars(&["100"]), Top::Tall),
-        "Battalion/squadron" => (Bars(&["90", "110"]), Top::Tall),
-        "Regiment/group" => (Bars(&["100", "120", "80"]), Top::Tall),
-        "Brigade" => (Crosses(&[("", "87.5")]), Top::Cross),
-        "Division" => (
+    Some(match name? {
+        Level::TeamCrew => (TeamCrew, Top::Tall),
+        Level::Squad => (Dots(&[100.0]), Top::Dot),
+        Level::Section => (Dots(&[115.0, 85.0]), Top::Dot),
+        Level::PlatoonDetachment => (Dots(&[100.0, 70.0, 130.0]), Top::Dot),
+        Level::CompanyBatteryTroop => (Bars(&["100"]), Top::Tall),
+        Level::BattalionSquadron => (Bars(&["90", "110"]), Top::Tall),
+        Level::RegimentGroup => (Bars(&["100", "120", "80"]), Top::Tall),
+        Level::Brigade => (Crosses(&[("", "87.5")]), Top::Cross),
+        Level::Division => (
             Crosses(&[("", "70"), ("   ", "105")]),
             Top::Wide(70.0, 130.0),
         ),
-        "Corps/MEF" => (
+        Level::CorpsMef => (
             Crosses(&[("", "52.5"), ("    ", "87.5"), ("    ", "122.5")]),
             Top::Wide(52.5, 147.5),
         ),
-        "Army" => (
+        Level::Army => (
             Crosses(&[("", "35"), ("   ", "70"), ("   ", "105"), ("    ", "140")]),
             Top::Wide(35.0, 165.0),
         ),
-        "Army Group/front" => (
+        Level::ArmyGroupFront => (
             Crosses(&[
                 ("", "17.5"),
                 ("    ", "52.5"),
@@ -93,7 +94,7 @@ fn echelon_spec(name: &str) -> Option<(Echelon, Top)> {
             ]),
             Top::Wide(17.5, 182.5),
         ),
-        "Region/Theater" => (
+        Level::RegionTheater => (
             Crosses(&[
                 ("", "0"),
                 ("   ", "35"),
@@ -104,13 +105,12 @@ fn echelon_spec(name: &str) -> Option<(Echelon, Top)> {
             ]),
             Top::Wide(0.0, 200.0),
         ),
-        "Command" => (Command, Top::Wide(70.0, 130.0)),
-        _ => return None,
+        Level::Command => (Command, Top::Wide(70.0, 130.0)),
     })
 }
 
 pub(super) fn echelon(s: &SymbolState<'_>, acc: &mut Acc, bbox: &BBox) -> Result<(), RenderError> {
-    let Some((shape, top)) = echelon_spec(s.metadata.echelon.as_deref().unwrap_or("")) else {
+    let Some((shape, top)) = echelon_spec(s.metadata.echelon.known()) else {
         return Ok(());
     };
     let pad = if s.metadata.installation { 15.0 } else { 0.0 };
@@ -181,9 +181,9 @@ type MobilitySpec = (&'static [Mob], f64, Option<f64>, Option<f64>);
 /// Mobility indicators by name.
 use Mob::{C, F, P};
 
-const MOBILITIES: [(&str, MobilitySpec); 13] = [
+const MOBILITIES: [(Mobility, MobilitySpec); 13] = [
     (
-        "Wheeled limited cross country",
+        Mobility::WheeledLimitedCrossCountry,
         (
             &[P("M 53,1 l 94,0"), C(58.0, 8.0), C(142.0, 8.0)],
             8.0 * 2.0,
@@ -192,7 +192,7 @@ const MOBILITIES: [(&str, MobilitySpec); 13] = [
         ),
     ),
     (
-        "Wheeled cross country",
+        Mobility::WheeledCrossCountry,
         (
             &[
                 P("M 53,1 l 94,0"),
@@ -206,7 +206,7 @@ const MOBILITIES: [(&str, MobilitySpec); 13] = [
         ),
     ),
     (
-        "Tracked",
+        Mobility::Tracked,
         (
             &[P(
                 "M 53,1 l 100,0 c15,0 15,15 0,15 l -100,0 c-15,0 -15,-15 0,-15",
@@ -217,7 +217,7 @@ const MOBILITIES: [(&str, MobilitySpec); 13] = [
         ),
     ),
     (
-        "Wheeled and tracked combination",
+        Mobility::WheeledAndTracked,
         (
             &[
                 C(58.0, 8.0),
@@ -229,7 +229,7 @@ const MOBILITIES: [(&str, MobilitySpec); 13] = [
         ),
     ),
     (
-        "Towed",
+        Mobility::Towed,
         (
             &[P("M 63,1 l 74,0"), C(58.0, 3.0), C(142.0, 3.0)],
             10.0,
@@ -238,7 +238,7 @@ const MOBILITIES: [(&str, MobilitySpec); 13] = [
         ),
     ),
     (
-        "Rail",
+        Mobility::Rail,
         (
             &[
                 P("M 53,1 l 96,0"),
@@ -253,11 +253,11 @@ const MOBILITIES: [(&str, MobilitySpec); 13] = [
         ),
     ),
     (
-        "Over snow (prime mover)",
+        Mobility::OverSnow,
         (&[P("M 50,-9 l10,10 90,0")], 9.0, None, None),
     ),
     (
-        "Sled",
+        Mobility::Sled,
         (
             &[P(
                 "M 145,-12  c15,0 15,15 0,15 l -90,0 c-15,0 -15,-15 0,-15",
@@ -268,7 +268,7 @@ const MOBILITIES: [(&str, MobilitySpec); 13] = [
         ),
     ),
     (
-        "Pack animals",
+        Mobility::PackAnimals,
         (
             &[P("M 80,20 l 10,-20 10,20 10,-20 10,20")],
             20.0,
@@ -277,7 +277,7 @@ const MOBILITIES: [(&str, MobilitySpec); 13] = [
         ),
     ),
     (
-        "Barge",
+        Mobility::Barge,
         (
             &[P("M 50,1 l 100,0 c0,10 -100,10 -100,0")],
             10.0,
@@ -285,9 +285,9 @@ const MOBILITIES: [(&str, MobilitySpec); 13] = [
             None,
         ),
     ),
-    ("Amphibious", (&[P(AMPHIBIOUS)], 20.0, None, None)),
+    (Mobility::Amphibious, (&[P(AMPHIBIOUS)], 20.0, None, None)),
     (
-        "Short towed array",
+        Mobility::ShortTowedArray,
         (
             &[F(
                 "M 50,5 l 100,0 M50,0 l10,0 0,10 -10,0 z M150,0 l-10,0 0,10 10,0 z M100,0 l5,5 -5,5 -5,-5 z",
@@ -298,7 +298,7 @@ const MOBILITIES: [(&str, MobilitySpec); 13] = [
         ),
     ),
     (
-        "Long towed Array",
+        Mobility::LongTowedArray,
         (
             &[F(
                 "M 50,5 l 100,0 M50,0 l10,0 0,10 -10,0 z M150,0 l-10,0 0,10 10,0 z M105,0 l-10,0 0,10 10,0 z M75,0 l5,5 -5,5 -5,-5 z  M125,0 l5,5 -5,5 -5,-5 z",
@@ -310,7 +310,7 @@ const MOBILITIES: [(&str, MobilitySpec); 13] = [
     ),
 ];
 
-fn mobility_spec(name: &str) -> Option<MobilitySpec> {
+fn mobility_spec(name: Mobility) -> Option<MobilitySpec> {
     MOBILITIES
         .iter()
         .find(|(n, _)| *n == name)
@@ -323,12 +323,16 @@ pub(super) fn mobility(
     bbox: &mut BBox,
 ) -> Result<(), RenderError> {
     let md = s.metadata;
-    let mobility = md.mobility.as_deref().unwrap_or("");
-    if md.affiliation.as_deref() == Some("Neutral") {
+    let Some(mobility) = md.mobility.known() else {
+        return Ok(());
+    };
+    if md.affiliation.known() == Some(Affiliation::Neutral) {
         match mobility {
-            "Towed" | "Short towed array" | "Long towed Array" => bbox.y2 += 8.0,
-            "Over snow (prime mover)" | "Sled" => bbox.y2 += 18.0,
-            "Barge" => bbox.y2 += 5.0,
+            Mobility::Towed | Mobility::ShortTowedArray | Mobility::LongTowedArray => {
+                bbox.y2 += 8.0
+            }
+            Mobility::OverSnow | Mobility::Sled => bbox.y2 += 18.0,
+            Mobility::Barge => bbox.y2 += 5.0,
             _ => {}
         }
     }

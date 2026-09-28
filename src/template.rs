@@ -256,7 +256,7 @@ pub(crate) struct UserParts<'a> {
 pub(crate) struct Resolver<'a> {
     pub colors: &'a ColorSet,
     /// Affiliation the icon parts were built for (after `|| "Friend"`).
-    pub part_affiliation: &'a str,
+    pub part_affiliation: Option<crate::domain::Affiliation>,
     pub mono_color: &'a str,
     pub dash_pending: &'a str,
     pub dash_anticipated: &'a str,
@@ -296,16 +296,19 @@ impl Resolver<'_> {
             TPaint::Mono => Some(Paint::Color(Cow::Owned(String::from(self.mono_color)))),
             TPaint::Slot(slot, aff) => {
                 let mode = self.slot_mode(slot);
-                let key = match aff {
-                    TAff::SelfAff => self.part_affiliation,
-                    TAff::Civilian => "Civilian",
-                    TAff::Friend => "Friend",
-                    TAff::Hostile => "Hostile",
-                    TAff::Neutral => "Neutral",
-                    TAff::Unknown => "Unknown",
-                    TAff::Suspect => "Suspect",
-                };
-                mode.get(key)
+                use crate::domain::Affiliation;
+                match aff {
+                    TAff::SelfAff => self
+                        .part_affiliation
+                        .and_then(|a| mode.for_affiliation(a))
+                        .cloned(),
+                    TAff::Civilian => mode.civilian.clone(),
+                    TAff::Friend => mode.for_affiliation(Affiliation::Friend).cloned(),
+                    TAff::Hostile => mode.for_affiliation(Affiliation::Hostile).cloned(),
+                    TAff::Neutral => mode.for_affiliation(Affiliation::Neutral).cloned(),
+                    TAff::Unknown => mode.for_affiliation(Affiliation::Unknown).cloned(),
+                    TAff::Suspect => mode.suspect.clone(),
+                }
             }
         }
     }

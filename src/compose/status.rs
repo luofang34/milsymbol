@@ -2,18 +2,19 @@
 
 use super::{PartOutput, SymbolState};
 use crate::bbox::PartialBBox;
+use crate::domain::Status;
 use crate::error::RenderError;
 use crate::ir::{Node, Num, Paint, PathData, PathNode, Style};
 use crate::js::number_to_string as n;
 use alloc::string::String;
 use alloc::vec::Vec;
 
-fn condition_color(condition: &str) -> Option<Paint> {
+fn condition_color(condition: Option<Status>) -> Option<Paint> {
     Some(Paint::color(match condition {
-        "FullyCapable" => "rgb(0,255,0)",
-        "Damaged" => "rgb(255,255,0)",
-        "Destroyed" => "rgb(255,0,0)",
-        "FullToCapacity" => "rgb(0, 180, 240)",
+        Some(Status::FullyCapable) => "rgb(0,255,0)",
+        Some(Status::Damaged) => "rgb(255,255,0)",
+        Some(Status::Destroyed) => "rgb(255,0,0)",
+        Some(Status::FullToCapacity) => "rgb(0, 180, 240)",
         _ => return None,
     }))
 }
@@ -36,7 +37,7 @@ pub(super) fn draw(s: &SymbolState<'_>) -> Result<PartOutput, RenderError> {
     let (mut y1, mut y2) = (bbox.y1, bbox.y2);
     let mut pre = Vec::new();
     let mut post = Vec::new();
-    if !md.condition.is_empty() {
+    if !md.condition.is_none() {
         if md.fill && st.mono_color.is_empty() && !st.simple_status_modifier {
             if !s
                 .options
@@ -45,7 +46,7 @@ pub(super) fn draw(s: &SymbolState<'_>) -> Result<PartOutput, RenderError> {
             {
                 y2 += 35.0;
             }
-            y2 += if md.mobility.as_deref().is_some_and(|m| !m.is_empty()) {
+            y2 += if md.mobility.known().is_some() {
                 25.0
             } else {
                 5.0
@@ -62,7 +63,7 @@ pub(super) fn draw(s: &SymbolState<'_>) -> Result<PartOutput, RenderError> {
                 + ",0 z";
             let style = Style {
                 stroke_width: Some(Num::Number(st.stroke_width)),
-                fill: condition_color(&md.condition),
+                fill: condition_color(md.condition),
                 stroke: s.color_of(&s.colors.frame_color),
                 ..Style::default()
             };
@@ -72,12 +73,12 @@ pub(super) fn draw(s: &SymbolState<'_>) -> Result<PartOutput, RenderError> {
             }));
             y2 += 25.0;
         } else {
-            if md.condition == "Damaged" || md.condition == "Destroyed" {
+            if md.condition == Some(Status::Damaged) || md.condition == Some(Status::Destroyed) {
                 post.push(slash("M150,20 L50,180", s));
                 y1 = 20.0;
                 y2 = 180.0;
             }
-            if md.condition == "Destroyed" {
+            if md.condition == Some(Status::Destroyed) {
                 post.push(slash("M50,20 L150,180", s));
             }
         }

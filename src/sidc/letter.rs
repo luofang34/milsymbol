@@ -1,7 +1,9 @@
 //! Letter SIDC interpretation (upstream `lettersidc/metadata.js`).
 
-use super::{ParseInput, STATUS, echelon_mobility};
+use super::ParseInput;
+use crate::domain::{Affiliation, Context, Dimension, Echelon, Mobility, Status};
 use crate::js::JsStr;
+use crate::metadata::Field;
 use crate::metadata::Metadata;
 use alloc::borrow::Cow;
 use alloc::string::String;
@@ -9,10 +11,6 @@ use alloc::string::String;
 fn char_or_dash<'a>(s: &JsStr<'a>, i: usize) -> Cow<'a, str> {
     let c = s.char_at(i);
     if c.is_empty() { Cow::Borrowed("-") } else { c }
-}
-
-fn set(slot: &mut Option<String>, v: &str) {
-    *slot = Some(String::from(v));
 }
 
 const EMS_SEA_FRAMED_O: [&str; 22] = [
@@ -68,8 +66,8 @@ pub(super) fn interpret(sidc: &str, md: &mut Metadata, input: &ParseInput<'_>) {
     };
     md.function_id = String::from(&*c.fid);
     identity_and_dimension(&c, md, input);
-    md.base_dimension = md.dimension.clone();
-    md.base_affiliation = md.affiliation.clone();
+    md.base_dimension = md.dimension;
+    md.base_affiliation = md.affiliation;
     remap(&c, md);
     amplifiers(&c, md);
     civilian_and_unknown(&c, md);
@@ -79,17 +77,17 @@ pub(super) fn interpret(sidc: &str, md: &mut Metadata, input: &ParseInput<'_>) {
 fn identity_and_dimension(c: &Codes<'_>, md: &mut Metadata, input: &ParseInput<'_>) {
     let a = &*c.aff;
     match a {
-        "H" | "S" | "J" | "K" => set(&mut md.affiliation, "Hostile"),
-        "F" | "A" | "D" | "M" => set(&mut md.affiliation, "Friend"),
-        "N" | "L" => set(&mut md.affiliation, "Neutral"),
-        "P" | "U" | "G" | "W" | "O" => set(&mut md.affiliation, "Unknown"),
+        "H" | "S" | "J" | "K" => md.affiliation = Field::Known(Affiliation::Hostile),
+        "F" | "A" | "D" | "M" => md.affiliation = Field::Known(Affiliation::Friend),
+        "N" | "L" => md.affiliation = Field::Known(Affiliation::Neutral),
+        "P" | "U" | "G" | "W" | "O" => md.affiliation = Field::Known(Affiliation::Unknown),
         _ => {}
     }
     match &*c.dim {
-        "P" | "A" => md.dimension = String::from("Air"),
-        "G" | "Z" | "F" | "X" => md.dimension = String::from("Ground"),
-        "S" => md.dimension = String::from("Sea"),
-        "U" => md.dimension = String::from("Subsurface"),
+        "P" | "A" => md.dimension = Field::Known(Dimension::Air),
+        "G" | "Z" | "F" | "X" => md.dimension = Field::Known(Dimension::Ground),
+        "S" => md.dimension = Field::Known(Dimension::Sea),
+        "U" => md.dimension = Field::Known(Dimension::Subsurface),
         _ => {}
     }
     if c.dim == "P" && c.scheme != "O" {
@@ -111,20 +109,20 @@ fn identity_and_dimension(c: &Codes<'_>, md: &mut Metadata, input: &ParseInput<'
         md.notpresent = String::from(input.dashes.pending);
     }
     let condition = match &*c.status {
-        "C" => STATUS.get(2),
-        "D" => STATUS.get(3),
-        "X" => STATUS.get(4),
-        "F" => STATUS.get(5),
+        "C" => Some(Status::FullyCapable),
+        "D" => Some(Status::Damaged),
+        "X" => Some(Status::Destroyed),
+        "F" => Some(Status::FullToCapacity),
         _ => None,
     };
     if let Some(cond) = condition {
-        md.condition = String::from(*cond);
+        md.condition = Some(cond);
     }
     if matches!(a, "G" | "W" | "D" | "L" | "M" | "J" | "K") {
-        set(&mut md.context, "Exercise");
+        md.context = Some(Context::Exercise);
     }
     if c.scheme == "O" || c.scheme == "E" {
-        md.dimension = String::from("Ground");
+        md.dimension = Field::Known(Dimension::Ground);
     }
 }
 
@@ -136,7 +134,7 @@ fn remap(c: &Codes<'_>, md: &mut Metadata) {
         md.faker = true;
     }
     if md.joker || md.faker {
-        set(&mut md.affiliation, "Friend");
+        md.affiliation = Field::Known(Affiliation::Friend);
     }
     let fid = &*c.fid;
     let sea = (c.scheme == "S" && c.dim == "G" && fid.starts_with('E'))
@@ -145,7 +143,7 @@ fn remap(c: &Codes<'_>, md: &mut Metadata) {
             && ((c.dim == "O" && EMS_SEA_FRAMED_O.contains(&fid))
                 || (c.dim == "F" && ["BA----", "MA----", "MC----"].contains(&fid))));
     if sea {
-        md.dimension = String::from("Sea");
+        md.dimension = Field::Known(Dimension::Sea);
     }
 }
 
@@ -178,7 +176,7 @@ fn amplifiers(c: &Codes<'_>, md: &mut Metadata) {
         _ => None,
     };
     if let Some(code) = echelon {
-        md.echelon = echelon_mobility(code).map(String::from);
+        md.echelon = Echelon::from_code(code).into();
     }
     let mobility = match (m11, m12) {
         ("M", "O") => Some(Some("31")),
@@ -198,7 +196,7 @@ fn amplifiers(c: &Codes<'_>, md: &mut Metadata) {
         _ => None,
     };
     if let Some(code) = mobility {
-        md.mobility = code.and_then(echelon_mobility).map(String::from);
+        md.mobility = code.and_then(Mobility::from_code).into();
     }
 }
 
@@ -216,10 +214,10 @@ fn civilian_and_unknown(c: &Codes<'_>, md: &mut Metadata) {
             md.dimension_unknown = true;
         }
         if matches!(a, "F" | "A") {
-            md.dimension = String::from("Sea");
+            md.dimension = Field::Known(Dimension::Sea);
         }
         if matches!(a, "D" | "L" | "M" | "J" | "K") {
-            set(&mut md.affiliation, "none");
+            md.affiliation = Field::None;
         }
     }
 }
@@ -244,7 +242,7 @@ fn framing(c: &Codes<'_>, sidc: &str, md: &mut Metadata) {
     }
     if c.scheme == "G" && c.dim == "O" && (fid.starts_with(['V', 'L', 'P', 'I'])) {
         md.frame = true;
-        md.dimension = String::from("Ground");
+        md.dimension = Field::Known(Dimension::Ground);
     }
 }
 

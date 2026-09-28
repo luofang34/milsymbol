@@ -2,15 +2,15 @@
 
 use super::{PartOutput, SymbolState};
 use crate::bbox::{BBox, PartialBBox};
-use crate::color::truthy;
+use crate::domain::{Affiliation, Edition};
 use crate::error::RenderError;
 use crate::generated::{tables, vars};
 use crate::ir::{Node, Paint, PathData, PathNode, Style};
 use crate::js;
+use crate::metadata::Field;
 use crate::registry::{IconKey, IconPartContext};
 use crate::template::{self, IconContext, Resolver, UserParts, Var};
 use alloc::borrow::Cow;
-use alloc::string::String;
 use alloc::vec::Vec;
 
 const UNDEFINED_ICON: &str = "m 94.8206,78.1372 c -0.4542,6.8983 0.6532,14.323 5.3424,19.6985 4.509,5.6933 11.309,9.3573 14.98,15.7283 3.164,6.353 -0.09,14.245 -5.903,17.822 -7.268,4.817 -18.6219,2.785 -22.7328,-5.249 -1.5511,-2.796 -2.3828,-5.931 -2.8815,-9.071 -3.5048,0.416 -7.0093,0.835 -10.5142,1.252 0.8239,8.555 5.2263,17.287 13.2544,21.111 7.8232,3.736 17.1891,3.783 25.3291,1.052 8.846,-3.103 15.737,-11.958 15.171,-21.537 0.05,-6.951 -4.272,-12.85 -9.134,-17.403 -4.526,-4.6949 -11.048,-8.3862 -12.401,-15.2748 -1.215,-2.3639 -0.889,-8.129 -0.889,-8.129 z m -0.6253,-20.5177 0,11.6509 11.6527,0 0,-11.6509 z";
@@ -59,14 +59,14 @@ impl Parts<'_> {
 }
 
 /// Affiliation the icon parts are built for (`metadata.affiliation || "Friend"`).
-fn part_affiliation(s: &SymbolState<'_>) -> String {
-    match s.metadata.affiliation.as_deref() {
-        None | Some("") => String::from("Friend"),
-        Some(a) => String::from(a),
+fn part_affiliation(s: &SymbolState<'_>) -> Field<Affiliation> {
+    match s.metadata.affiliation {
+        Field::Missing | Field::Empty => Field::Known(Affiliation::Friend),
+        a => a,
     }
 }
 
-fn context(s: &SymbolState<'_>, part_aff: &str) -> IconContext {
+fn context(s: &SymbolState<'_>, part_aff: Field<Affiliation>) -> IconContext {
     let (md, st) = (s.metadata, &s.options.style);
     let mut c = IconContext::new();
     c.set_bool(Var::Std2525, md.std2525);
@@ -77,8 +77,8 @@ fn context(s: &SymbolState<'_>, part_aff: &str) -> IconContext {
     c.set(
         Var::Edition,
         match md.edition() {
-            Some("D") => 1,
-            Some("E") => 2,
+            Some(Edition::D) => 1,
+            Some(Edition::E) => 2,
             _ => 0,
         },
     );
@@ -98,7 +98,7 @@ fn context(s: &SymbolState<'_>, part_aff: &str) -> IconContext {
     );
     let aff_index = vars::AFFILIATIONS
         .iter()
-        .position(|&a| a == part_aff)
+        .position(|&a| Some(a) == part_aff.as_str())
         .unwrap_or(0);
     c.set(Var::Affiliation, u8::try_from(aff_index).unwrap_or(0));
     let geom = md.base_geometry.unwrap_or("none");
@@ -107,12 +107,8 @@ fn context(s: &SymbolState<'_>, part_aff: &str) -> IconContext {
         .position(|&g| g == geom)
         .unwrap_or(vars::GEOMETRIES.len() - 1);
     c.set(Var::Geometry, u8::try_from(geom_index).unwrap_or(0));
-    let key = if s.colors.icon_color.slot(part_aff).is_some() {
-        part_aff
-    } else {
-        "Friend"
-    };
-    let slot = |m: &crate::color::ColorMode| truthy(&m.get(key));
+    let key = part_aff.known().unwrap_or(Affiliation::Friend);
+    let slot = |m: &crate::color::ColorMode| matches!(m.for_affiliation(key), Some(Paint::Color(c)) if !c.is_empty());
     let cs = s.colors;
     for (var, mode) in [
         (Var::SlotFill, &cs.fill_color),
@@ -194,23 +190,27 @@ fn icon(s: &SymbolState<'_>) -> Result<(Vec<Node>, BBox, bool), RenderError> {
     let dashes = &s.config.dash_arrays;
     // Extensions get typed metadata; without any, none is computed.
     let typed =
-        (!s.registry.icons.is_empty()).then(|| crate::domain::Metadata::from_js(s.metadata));
-    let ctx = typed.as_ref().map(|typed| IconPartContext {
-        metadata: typed,
-        js_metadata: s.metadata,
-        colors: s.colors,
-        mono_color: &s.options.style.mono_color,
-        alternate_medal: s.options.style.alternate_medal,
-    });
+        (!s.registry.icons.is_empty()).then(|| crate::domain::Metadata::from_internal(s.metadata));
+    let js_metadata = typed.as_ref().map(|_| s.js_metadata());
+    let ctx = typed
+        .as_ref()
+        .zip(js_metadata.as_ref())
+        .map(|(typed, js_metadata)| IconPartContext {
+            metadata: typed,
+            js_metadata,
+            colors: s.colors,
+            mono_color: &s.options.style.mono_color,
+            alternate_medal: s.options.style.alternate_medal,
+        });
     let parts = Parts {
         resolver: Resolver {
             colors: s.colors,
-            part_affiliation: &part_aff,
+            part_affiliation: part_aff.known(),
             mono_color: &s.options.style.mono_color,
             dash_pending: &dashes.pending,
             dash_anticipated: &dashes.anticipated,
             mapping,
-            ctx: context(s, &part_aff),
+            ctx: context(s, part_aff),
             user: UserParts {
                 extensions: &s.registry.icons,
                 ctx: ctx.as_ref(),
@@ -365,7 +365,7 @@ fn letter_icon(
     let mut invalid = false;
     if SEA_MINE_EXERCISE.contains(&md.function_id.as_str()) {
         gbbox.y1 = 10.0;
-        if md.affiliation.as_deref() != Some("Unknown") {
+        if md.affiliation.known() != Some(Affiliation::Unknown) {
             gbbox.x2 = md.geometry_bbox().x2 + 20.0;
         }
     }

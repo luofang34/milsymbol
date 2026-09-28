@@ -4,11 +4,11 @@
 
 use crate::bbox::PartialBBox;
 use crate::color::ColorSet;
+use crate::compat::JsMetadata;
 use crate::compose::{BuiltinPart, SymbolPart};
 use crate::domain::Metadata;
 use crate::ir::Node;
 use crate::labels::LabelField;
-use crate::metadata::Metadata as JsMetadata;
 use alloc::boxed::Box;
 use alloc::collections::BTreeMap;
 use alloc::string::String;
@@ -28,7 +28,7 @@ pub struct IconPartContext<'a> {
     /// Typed metadata of the symbol being drawn.
     pub metadata: &'a Metadata,
     /// Metadata in milsymbol.js's representation.
-    pub js_metadata: &'a JsMetadata,
+    pub js_metadata: &'a JsMetadata<'a>,
     /// Resolved colours of the symbol.
     pub colors: &'a ColorSet,
     /// Monochrome colour, empty for full colour.
