@@ -91,41 +91,66 @@ pub enum Dimension {
 /// Echelon indicator.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 #[non_exhaustive]
-#[allow(missing_docs)]
 pub enum Echelon {
+    /// Team/crew (numeric amplifier `11`, letter position 12 `A`).
     TeamCrew,
+    /// Squad (numeric amplifier `12`, letter position 12 `B`).
     Squad,
+    /// Section (numeric amplifier `13`, letter position 12 `C`).
     Section,
+    /// Platoon/detachment (numeric amplifier `14`, letter position 12 `D`).
     PlatoonDetachment,
+    /// Company/battery/troop (numeric amplifier `15`, letter position 12 `E`).
     CompanyBatteryTroop,
+    /// Battalion/squadron (numeric amplifier `16`, letter position 12 `F`).
     BattalionSquadron,
+    /// Regiment/group (numeric amplifier `17`, letter position 12 `G`).
     RegimentGroup,
+    /// Brigade (numeric amplifier `18`, letter position 12 `H`).
     Brigade,
+    /// Division (numeric amplifier `21`, letter position 12 `I`).
     Division,
+    /// Corps/MEF (numeric amplifier `22`, letter position 12 `J`).
     CorpsMef,
+    /// Army (numeric amplifier `23`, letter position 12 `K`).
     Army,
+    /// Army group/front (numeric amplifier `24`, letter position 12 `L`).
     ArmyGroupFront,
+    /// Region/theater (numeric amplifier `25`, letter position 12 `M`).
     RegionTheater,
+    /// Command (numeric amplifier `26`, letter position 12 `N`).
     Command,
 }
 
 /// Mobility indicator.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 #[non_exhaustive]
-#[allow(missing_docs)]
 pub enum Mobility {
+    /// Wheeled, limited cross country (numeric amplifier `31`, letter positions 11–12 `MO`).
     WheeledLimitedCrossCountry,
+    /// Wheeled, cross country (numeric amplifier `32`, letter positions 11–12 `MP`).
     WheeledCrossCountry,
+    /// Tracked (numeric amplifier `33`, letter positions 11–12 `MQ`).
     Tracked,
+    /// Wheeled and tracked combination (numeric amplifier `34`, letter positions 11–12 `MR`).
     WheeledAndTracked,
+    /// Towed (numeric amplifier `35`, letter positions 11–12 `MS`).
     Towed,
+    /// Rail (numeric amplifier `36`, letter positions 11–12 `MT`).
     Rail,
+    /// Pack animals (numeric amplifier `37`, letter positions 11–12 `MW`).
     PackAnimals,
+    /// Over snow (prime mover) (numeric amplifier `41`, letter positions 11–12 `MU`).
     OverSnow,
+    /// Sled (numeric amplifier `42`, letter positions 11–12 `MV`).
     Sled,
+    /// Barge (numeric amplifier `51`, letter positions 11–12 `MX`).
     Barge,
+    /// Amphibious (numeric amplifier `52`, letter positions 11–12 `MY`).
     Amphibious,
+    /// Short towed array (numeric amplifier `61`, letter positions 11–12 `NS`).
     ShortTowedArray,
+    /// Long towed array (numeric amplifier `62`, letter positions 11–12 `NL`).
     LongTowedArray,
 }
 

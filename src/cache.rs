@@ -2,29 +2,30 @@
 //!
 //! Rendering is deterministic for a renderer, SIDC and options, so results
 //! can be shared. Entries are keyed by a canonical encoding of the SIDC and
-//! options in which every float is its exact bit pattern: `-0.0` and `0.0`
-//! (which can render differently) are distinct keys, and a NaN matches the
-//! same NaN, so key equality and hashing always agree.
+//! options (see `key.rs`).
 
-use crate::color::ColorMode;
 use crate::error::RenderError;
-use crate::ir::Paint;
-use crate::options::{StyleColor, SymbolOptions};
+use crate::options::SymbolOptions;
 use crate::renderer::Renderer;
 use crate::symbol::Symbol;
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 use std::vec::Vec;
 
+mod key;
+use key::{KeyBuf, write_key};
+
 /// A renderer with a bounded cache of rendered symbols.
 ///
-/// When the cache holds `capacity` entries it is emptied before inserting a new key;
-/// a capacity of zero disables caching.
+/// When the cache is full, a new entry replaces one that has not been used
+/// since the eviction scan last passed it (the clock algorithm, an
+/// approximation of least-recently-used). A capacity of zero disables
+/// caching.
 pub struct CachedRenderer {
     renderer: Renderer,
     capacity: usize,
     prepare_paths: bool,
-    entries: Mutex<HashMap<Vec<u8>, Arc<Symbol>>>,
+    entries: Mutex<Clock>,
 }
 
 impl core::fmt::Debug for CachedRenderer {
@@ -37,6 +38,80 @@ impl core::fmt::Debug for CachedRenderer {
     }
 }
 
+/// One cached symbol.
+struct Slot {
+    key: Arc<[u8]>,
+    symbol: Arc<Symbol>,
+    /// Used since the clock hand last passed.
+    referenced: bool,
+}
+
+/// Cached symbols in a ring, with an index by key.
+#[derive(Default)]
+struct Clock {
+    slots: Vec<Slot>,
+    index: HashMap<Arc<[u8]>, usize>,
+    hand: usize,
+}
+
+impl Clock {
+    fn get(&mut self, key: &[u8]) -> Option<Arc<Symbol>> {
+        let slot = self.slots.get_mut(*self.index.get(key)?)?;
+        slot.referenced = true;
+        Some(Arc::clone(&slot.symbol))
+    }
+
+    /// Inserts `symbol` (unless `key` is already present, whose symbol is
+    /// returned instead) and returns the evicted symbol, if any, so it can be
+    /// dropped outside the lock.
+    fn insert(
+        &mut self,
+        key: &[u8],
+        symbol: &Arc<Symbol>,
+        capacity: usize,
+    ) -> Result<Option<Arc<Symbol>>, Arc<Symbol>> {
+        if let Some(existing) = self.get(key) {
+            return Err(existing);
+        }
+        let key: Arc<[u8]> = Arc::from(key);
+        let slot = Slot {
+            key: Arc::clone(&key),
+            symbol: Arc::clone(symbol),
+            referenced: false,
+        };
+        if self.slots.len() < capacity {
+            self.index.insert(key, self.slots.len());
+            self.slots.push(slot);
+            return Ok(None);
+        }
+        let victim = self.advance_to_victim();
+        let Some(old) = self.slots.get_mut(victim) else {
+            return Ok(None);
+        };
+        let old = core::mem::replace(old, slot);
+        self.index.remove(&old.key);
+        self.index.insert(key, victim);
+        self.hand = (victim + 1) % self.slots.len().max(1);
+        Ok(Some(old.symbol))
+    }
+
+    /// Moves the hand to the first slot not used since it last passed,
+    /// clearing the reference bits it passes over.
+    fn advance_to_victim(&mut self) -> usize {
+        let n = self.slots.len().max(1);
+        loop {
+            let hand = self.hand % n;
+            match self.slots.get_mut(hand) {
+                Some(slot) if slot.referenced => {
+                    slot.referenced = false;
+                    self.hand = (hand + 1) % n;
+                }
+                _ => return hand,
+            }
+        }
+    }
+}
+
 impl CachedRenderer {
     /// Wraps `renderer` with room for `capacity` symbols.
     pub fn new(renderer: Renderer, capacity: usize) -> Self {
@@ -44,7 +119,7 @@ impl CachedRenderer {
             renderer,
             capacity,
             prepare_paths: false,
-            entries: Mutex::new(HashMap::new()),
+            entries: Mutex::new(Clock::default()),
         }
     }
 
@@ -58,7 +133,7 @@ impl CachedRenderer {
     /// returned to callers remain usable. Repeated calls preserve the cache.
     pub fn with_prepared_paths(mut self) -> Self {
         if !self.prepare_paths {
-            self.entries = Mutex::new(HashMap::new());
+            self.entries = Mutex::new(Clock::default());
         }
         self.prepare_paths = true;
         self
@@ -71,7 +146,7 @@ impl CachedRenderer {
 
     /// Number of cached symbols.
     pub fn len(&self) -> usize {
-        self.entries.lock().map_or(0, |e| e.len())
+        self.entries.lock().map_or(0, |e| e.slots.len())
     }
 
     /// Whether the cache is empty.
@@ -87,83 +162,26 @@ impl CachedRenderer {
         let mut key = KeyBuf::default();
         write_key(&mut key, sidc, options);
         let key = key.as_slice();
-        if let Some(hit) = self.entries.lock().ok().and_then(|e| e.get(key).cloned()) {
+        if let Some(hit) = self.entries.lock().ok().and_then(|mut e| e.get(key)) {
             return Ok(hit);
         }
         // Rendering happens outside the lock so concurrent misses do not serialize.
         let symbol = Arc::new(self.render_uncached(sidc, options)?);
-        let evicted = match self.entries.lock() {
-            Ok(mut entries) => {
-                // Another render may have populated this key while the lock was released.
-                if let Some(hit) = entries.get(key).cloned() {
-                    drop(entries);
-                    return Ok(hit);
-                }
-                let old = if entries.len() >= self.capacity {
-                    core::mem::take(&mut *entries)
-                } else {
-                    HashMap::new()
-                };
-                entries.insert(key.to_vec(), Arc::clone(&symbol));
-                old
-            }
-            Err(_) => HashMap::new(),
+        let inserted = match self.entries.lock() {
+            Ok(mut entries) => entries.insert(key, &symbol, self.capacity),
+            Err(_) => Ok(None),
         };
-        // Dropping the evicted symbols happens after the lock is released.
-        drop(evicted);
-        Ok(symbol)
-    }
-}
-
-/// Key bytes for a lookup: on the stack for typical requests, spilling to
-/// the heap for large text fields, so a cache hit does not allocate.
-struct KeyBuf {
-    stack: [u8; KeyBuf::INLINE],
-    len: usize,
-    heap: Vec<u8>,
-}
-
-impl Default for KeyBuf {
-    fn default() -> Self {
-        KeyBuf {
-            stack: [0; KeyBuf::INLINE],
-            len: 0,
-            heap: Vec::new(),
-        }
-    }
-}
-
-impl KeyBuf {
-    const INLINE: usize = 1024;
-
-    fn extend_from_slice(&mut self, b: &[u8]) {
-        if self.heap.is_empty() {
-            let end = self.len.saturating_add(b.len());
-            if let Some(dst) = self.stack.get_mut(self.len..end) {
-                dst.copy_from_slice(b);
-                self.len = end;
-                return;
+        match inserted {
+            // Dropping the evicted symbol happens after the lock is released.
+            Ok(evicted) => {
+                drop(evicted);
+                Ok(symbol)
             }
-            self.heap
-                .extend_from_slice(self.stack.get(..self.len).unwrap_or(&[]));
-        }
-        self.heap.extend_from_slice(b);
-    }
-
-    fn push(&mut self, b: u8) {
-        self.extend_from_slice(&[b]);
-    }
-
-    fn as_slice(&self) -> &[u8] {
-        if self.heap.is_empty() {
-            self.stack.get(..self.len).unwrap_or(&[])
-        } else {
-            &self.heap
+            // Another render populated this key while the lock was released.
+            Err(existing) => Ok(existing),
         }
     }
-}
 
-impl CachedRenderer {
     fn render_uncached(&self, sidc: &str, options: &SymbolOptions) -> Result<Symbol, RenderError> {
         let mut symbol = self.renderer.render(sidc, options.clone())?;
         if self.prepare_paths {
@@ -173,127 +191,5 @@ impl CachedRenderer {
     }
 }
 
-/// Appends length-prefixed bytes so adjacent fields cannot run together.
-fn put_bytes(out: &mut KeyBuf, b: &[u8]) {
-    out.extend_from_slice(&(b.len() as u64).to_le_bytes());
-    out.extend_from_slice(b);
-}
-
-fn put_f64(out: &mut KeyBuf, v: f64) {
-    out.extend_from_slice(&v.to_bits().to_le_bytes());
-}
-
-fn put_opt_f64(out: &mut KeyBuf, v: Option<f64>) {
-    match v {
-        None => out.push(0),
-        Some(v) => {
-            out.push(1);
-            put_f64(out, v);
-        }
-    }
-}
-
-fn put_opt_str(out: &mut KeyBuf, v: Option<&str>) {
-    match v {
-        None => out.push(0),
-        Some(s) => {
-            out.push(1);
-            put_bytes(out, s.as_bytes());
-        }
-    }
-}
-
-fn put_mode(out: &mut KeyBuf, m: &ColorMode) {
-    for v in m.values() {
-        match v {
-            None => out.push(0),
-            Some(Paint::None) => out.push(1),
-            Some(Paint::Color(c)) => {
-                out.push(2);
-                put_bytes(out, c.as_bytes());
-            }
-        }
-    }
-}
-
-fn put_style_color(out: &mut KeyBuf, c: &StyleColor) {
-    match c {
-        StyleColor::Str(s) => {
-            out.push(0);
-            put_bytes(out, s.as_bytes());
-        }
-        StyleColor::PerAffiliation(m) => {
-            out.push(1);
-            put_mode(out, m);
-        }
-    }
-}
-
-/// Writes the canonical byte encoding of a render request.
-fn write_key(k: &mut KeyBuf, sidc: &str, o: &SymbolOptions) {
-    put_bytes(k, sidc.as_bytes());
-    k.extend_from_slice(&(o.text.len() as u64).to_le_bytes());
-    for (name, value) in &o.text {
-        put_bytes(k, name.as_bytes());
-        put_bytes(k, value.as_bytes());
-    }
-    put_opt_f64(k, o.direction);
-    put_f64(k, o.speed_leader);
-    put_opt_f64(k, o.stack);
-    put_opt_str(k, o.country_flag.as_deref());
-    put_opt_str(k, o.signature.as_deref());
-    k.push(match o.full_frame_flag {
-        None => 0,
-        Some(false) => 1,
-        Some(true) => 2,
-    });
-    let st = &o.style;
-    for v in [
-        st.fill_opacity,
-        st.hq_staff_length,
-        st.info_size,
-        st.outline_width,
-        st.padding,
-        st.size,
-        st.stroke_width,
-    ] {
-        put_f64(k, v);
-    }
-    put_opt_f64(k, st.info_outline_width);
-    let flags = [
-        st.alternate_medal,
-        st.civilian_color,
-        st.fill,
-        st.frame,
-        st.icon,
-        st.info_fields,
-        st.simple_status_modifier,
-        st.square,
-        st.style_fill,
-    ];
-    k.extend_from_slice(&flags.map(u8::from));
-    for s in [
-        &st.fill_color,
-        &st.font_family,
-        &st.info_outline_color,
-        &st.mono_color,
-    ] {
-        put_bytes(k, s.as_bytes());
-    }
-    k.push(match st.standard {
-        None => 0,
-        Some(crate::Standard::Mil2525) => 1,
-        Some(crate::Standard::App6) => 2,
-    });
-    for c in [
-        &st.color_mode,
-        &st.frame_color,
-        &st.icon_color,
-        &st.info_background,
-        &st.info_background_frame,
-        &st.info_color,
-        &st.outline_color,
-    ] {
-        put_style_color(k, c);
-    }
-}
+#[cfg(test)]
+mod tests;

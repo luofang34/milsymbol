@@ -153,7 +153,7 @@ fn cached_renderer_reuses_identical_requests_only() -> TestResult {
     assert!(!std::sync::Arc::ptr_eq(&a, &d));
     assert_eq!(c.len(), 2);
     c.render("SFGPUCI-----", &o)?;
-    assert_eq!(c.len(), 1, "cleared when full");
+    assert_eq!(c.len(), 2, "one entry replaced when full");
     Ok(())
 }
 

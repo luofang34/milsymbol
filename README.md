@@ -52,7 +52,7 @@ readme_images`, and `cargo test` checks they match the renderer.
   `wasm32` and bare-metal targets. The only dependency is `libm`.
 - No global state: a `Renderer` holds configuration and extensions, is
   `Send + Sync`, and renders deterministically.
-- About 400,000 symbols per second to SVG on one core
+- About 450,000 symbols per second to SVG on one core
   ([BENCHMARKS.md](BENCHMARKS.md)).
 
 ## Getting started
@@ -247,10 +247,10 @@ JavaScript order: integer indices first, then UTF-16-sorted names.
 The baseline is milsymbol.js 3.0.4 (commit `b05f2d7`), with each symbol
 rendered as by a freshly initialised milsymbol. [UPSTREAM.md](UPSTREAM.md)
 describes how the icon tables were extracted from upstream, the differential
-corpus, and the few deliberate differences (upstream's cross-render cache
-pollution is not reproduced; inputs on which upstream throws return
-`RenderError`; options are typed; `stack` is bounded; clip-path ids are
-unique).
+corpus, and every deliberate difference. None occurs in the corpus: they
+cover upstream's cross-render cache pollution, inputs on which it throws or
+never finishes, loosely typed options, extension edge cases (clip ids,
+colour objects, JavaScript object keys) and SIDCs with non-BMP characters.
 
 Upstream's own output depends on the platform in one place. Direction
 arrows and speed leaders use `Math.sin`/`Math.cos`, whose last bit differs
