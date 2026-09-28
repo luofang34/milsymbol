@@ -50,12 +50,7 @@ heap profiler, one profiling session per operation:
 
 `to_svg` allocates only the growing output string; `write_svg` appends to a
 caller's buffer. Composition allocates mainly for the IR nodes the symbol
-owns. Canonical streaming buffers only the current object's borrowed fields;
-large extension option maps can spill this scratch buffer to the heap. The
-zero-allocation figures use default fields plus the text shown above, with
-output capacity reserved before profiling. `tests/allocations.rs` guards
-buffer reuse, borrowed metadata/paint access, prepared cache hits, direction
-rendering budgets and borrowing unused extension label definitions.
+owns.
 
 `size_of::<Symbol>()` is 2,616 B and `size_of::<ir::Node>()` 384 B (both
 excluding their heap data).
@@ -70,16 +65,7 @@ device's budget.
 ## Notes
 
 - Composition allocates by design: the IR owns its nodes so callers can
-  inspect and transform them. Replacing `Vec<Node>` with inline small
-  vectors is not worthwhile: a `Node` is 384 B, so inline capacity costs
-  kilobytes of stack per level, and recursive children cannot be stored
-  inline. An arena could reduce child-list allocations, but cannot shrink
-  the largest leaf variant by itself. To avoid allocating both
-  representations, composition would have to write directly into it, and
-  extension constructors and mutable child access would need an arena
-  context or node handles. The public IR keeps owned trees; an arena needs
-  its own measurement of composition, traversal and outline generation
-  before that API cost is justified.
+  inspect and transform them.
 - The icon tables are static data; there is no per-process warm-up and no
   cache to invalidate. `CachedRenderer` (std only) additionally memoizes whole
   symbols keyed by SIDC and options.

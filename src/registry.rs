@@ -90,8 +90,9 @@ pub trait PartLookup {
 /// built per symbol for keys they do not define. All methods have empty
 /// defaults. Later registrations take precedence over earlier ones and over
 /// the built-in tables, as in upstream.
+///
 /// Callbacks must return the same result for the same context and registry;
-/// deterministic rendering and caching depend on this contract.
+/// deterministic rendering and caching depend on this.
 ///
 /// ```
 /// use milsymbol::ir::{Node, Paint};
@@ -150,8 +151,8 @@ pub trait IconExtension: Send + Sync {
     /// Adds label overrides for numeric control measures, keyed by the
     /// six-digit entity code. Other numeric symbol sets use the standard
     /// information-field layout, matching upstream. Called once when the
-    /// extension is registered; omitted placement values use [`Label`](crate::labels::Label)
-    /// defaults.
+    /// extension is registered; omitted placement values use
+    /// [`Label`](crate::labels::Label) defaults.
     fn number_labels(&self, _out: &mut BTreeMap<String, Vec<LabelField>>) {}
 
     /// Adds label overrides for letter SIDCs, keyed by generic SIDC. Called

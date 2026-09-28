@@ -109,15 +109,12 @@ groups differ in the last bit of 66 of those 14,272 values. Over the `direction`
 suite this changes 215 of 36,000 SVGs.
 
 `src/js/math.rs` ports V8's fdlibm exactly, including argument reduction
-(with the Sun and V8 notices; see `NOTICE` and `LICENSE-BSD-V8`). No
-existing implementation reproduces it: the `libm` crate (musl) differs on
-110 of the 7,136 reference arguments, including arguments below π/4, because
-its polynomial evaluation differs. An independent, correctly rounded
-Payne–Hanek reduction for large arguments also differs, because fdlibm's
-reduced value is not always correctly rounded: over 4.2 million arguments
-above 2^20·π/2 it changes the final sine or cosine in 4,907 cases.
-Plain evaluation reproduces the x64 group bit for bit, and fused evaluation
-reproduces the arm64 group bit for bit. `tests/data/v8_trig_*.txt` holds both
+(with the Sun and V8 notices; see `NOTICE` and `LICENSE-BSD-V8`). Plain
+evaluation reproduces the x64 group bit for bit, and fused evaluation
+reproduces the arm64 group bit for bit. Other implementations do not: the
+`libm` crate differs on 110 of the 7,136 reference arguments, and a
+correctly rounded reduction of large arguments differs because fdlibm's
+reduced value is not always correctly rounded. `tests/data/v8_trig_*.txt` holds both
 reference sets, and `RendererConfig::reference_platform` selects the one to
 match (default x64, which is also what WebAssembly engines compute). The
 committed fixtures are generated with x64 Node; on arm64 hosts run
@@ -133,12 +130,7 @@ formatter does not (`tests/data/v8_numbers.txt`).
 ## Known differences
 
 These are deliberate and do not occur in the corpus. The `known` oracle
-suite (`tools/oracle/cases.mjs`) covers non-BMP SIDCs and JavaScript option
-keys, labelled with their kind. `cargo xtask compare` accepts only the exact
-documented difference: lone surrogates become U+FFFD without changing any
-other JSON bytes or SVG; option-key cases match a safe upstream control
-render with the input key and value restored. Upstream exceptions must also
-match their expected message.
+suite checks that the observable ones occur exactly as described.
 
 - **Cross-render cache pollution** is not reproduced (see determinism policy).
 - **JavaScript exceptions become typed errors.** Inputs on which upstream

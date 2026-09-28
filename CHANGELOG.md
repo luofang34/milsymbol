@@ -18,5 +18,4 @@ First release: a native Rust port of milsymbol.js 3.0.4.
   No JavaScript at build or run time; the only runtime dependency is `libm`.
 
 See [UPSTREAM.md](UPSTREAM.md#known-differences) for deliberate compatibility
-differences. Large corpus fixtures remain in the Git repository; the
-published package includes the other tests and their reference data.
+differences.
