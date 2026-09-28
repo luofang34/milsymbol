@@ -7,6 +7,7 @@ use crate::config::{DashArrays, RendererConfig, Standard};
 use crate::error::RenderError;
 use crate::options::SymbolOptions;
 use crate::registry::{IconExtension, PartSlot, Registry};
+use crate::sidc::{Sidc, SidcCheckError};
 use crate::symbol::Symbol;
 use alloc::boxed::Box;
 use alloc::string::String;
@@ -120,6 +121,21 @@ impl Renderer {
             renderer: self,
             sidc: String::from(sidc),
             options: SymbolOptions::default(),
+        }
+    }
+
+    /// Checks that `sidc` is well formed ([`Sidc::parse`]) and that this
+    /// renderer, with its extensions, recognises every part of it.
+    pub fn check_sidc(&self, sidc: &str) -> Result<Sidc, SidcCheckError> {
+        let parsed = Sidc::parse(sidc)?;
+        let symbol = self
+            .render(parsed.as_str(), SymbolOptions::default())
+            .map_err(SidcCheckError::Render)?;
+        let issues = symbol.sidc_issues();
+        if issues.is_empty() {
+            Ok(parsed)
+        } else {
+            Err(SidcCheckError::Unsupported { issues })
         }
     }
 

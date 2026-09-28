@@ -402,7 +402,7 @@ fn sidc_parse_validates_fields_and_exposes_typed_values() -> TestResult {
     for (bad, field) in [
         ("99031000001211000000", "version"),
         ("10091000001211000000", "standard identity"),
-        ("10034500001211000000", "symbol set"),
+        ("10034400001211000000", "symbol set"),
         ("10031000901211000000", "echelon/mobility"),
         ("10031090001211000000", "status"),
     ] {
@@ -451,5 +451,110 @@ fn typed_info_and_validity_issues() -> TestResult {
         .render()?;
     assert_eq!(s.validity().issues, vec![ValidityIssue::UnknownIcon]);
     assert!(!s.is_sidc_valid());
+    Ok(())
+}
+
+#[test]
+fn strict_parse_checks_the_standard_code_tables() -> TestResult {
+    use milsymbol::sidc::{Sidc, SidcError};
+    let field_of = |s: &str| match Sidc::parse(s) {
+        Err(SidcError::InvalidField { field, .. }) => Some(field),
+        _ => None,
+    };
+    assert_eq!(field_of("SFQPUCI-----"), Some("battle dimension"));
+    assert_eq!(field_of("SFGPUCI---MZ"), Some("symbol modifier"));
+    assert_eq!(field_of("GFQPUCI-----"), Some("battle dimension"));
+    for ok in [
+        "SFGPUCI---MO",
+        "SFGPUCI----D",
+        "SFGPUCI---AF",
+        "SFSPUCI---NS",
+        "GFGPGLB----K",
+        "WAS-PC----P----",
+        "10030000000000000000",
+        "10034500000000000000",
+    ] {
+        Sidc::parse(ok).map_err(|e| format!("{ok}: {e}"))?;
+    }
+    let a = Sidc::parse(INFANTRY)?;
+    let b = a;
+    assert_eq!(a, b, "Sidc is Copy");
+    Ok(())
+}
+
+#[test]
+fn sidc_validity_does_not_depend_on_icon_visibility() -> TestResult {
+    for icon in [true, false] {
+        let s = Renderer::default()
+            .symbol("10031000009999990000")
+            .with(|o| o.style.icon = icon)
+            .render()?;
+        assert!(!s.is_sidc_valid(), "icon={icon}");
+    }
+    let hidden = Renderer::default()
+        .symbol("10031000009999990000")
+        .with(|o| o.style.icon = false)
+        .render()?;
+    assert!(hidden.is_valid(), "upstream treats hidden icons as found");
+    Ok(())
+}
+
+#[test]
+fn renderer_checks_support_including_extensions() -> TestResult {
+    use milsymbol::sidc::SidcCheckError;
+    let r = Renderer::default();
+    r.check_sidc(INFANTRY)?;
+    assert!(matches!(
+        r.check_sidc("10031000009999000000"),
+        Err(SidcCheckError::Unsupported { issues }) if issues == [ValidityIssue::UnknownIcon]
+    ));
+    assert!(matches!(
+        r.check_sidc("SFQPUCI-----"),
+        Err(SidcCheckError::Malformed(_))
+    ));
+    Renderer::default()
+        .with_icons(Custom)
+        .check_sidc("10031000009999000000")?;
+    Ok(())
+}
+
+#[test]
+fn strict_parse_accepts_every_icon_the_tables_define() -> TestResult {
+    use milsymbol::sidc::Sidc;
+    let mut checked = 0;
+    for ss in catalog::number_symbol_sets() {
+        for e in catalog::number_entities(ss) {
+            let sidc = format!("1003{ss}0000{e}0000");
+            Sidc::parse(&sidc).map_err(|err| format!("{sidc}: {err}"))?;
+            checked += 1;
+        }
+    }
+    for generic in catalog::letter_icons() {
+        let sidc: String = generic
+            .chars()
+            .enumerate()
+            .map(|(i, c)| match i {
+                1 => 'F',
+                3 => 'P',
+                _ => c,
+            })
+            .collect();
+        let sidc = format!("{sidc}-----");
+        Sidc::parse(&sidc).map_err(|err| format!("{sidc}: {err}"))?;
+        checked += 1;
+    }
+    assert!(checked > 3000, "{checked}");
+    Ok(())
+}
+
+#[test]
+fn sidc_validity_requires_a_well_formed_code() -> TestResult {
+    use milsymbol::sidc::Sidc;
+    // milsymbol.js accepts identity 7 and context 3; the strict parser does not.
+    for sidc in ["10070100001100000000", "10300100001100000000"] {
+        let s = Renderer::default().symbol(sidc).render()?;
+        assert!(Sidc::parse(sidc).is_err());
+        assert!(!s.is_sidc_valid(), "{sidc}");
+    }
     Ok(())
 }

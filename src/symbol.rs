@@ -140,13 +140,22 @@ impl Symbol {
         validity::issues(self, IconCheck::Drawn).is_empty()
     }
 
-    /// Whether the SIDC was fully recognised: every code is known and the
-    /// icon exists, whether or not icons are drawn, and without upstream's
-    /// `null`-text heuristic.
+    /// Whether the SIDC is well formed ([`Sidc::parse`](crate::sidc::Sidc::parse))
+    /// and fully recognised: every code is known and the icon exists,
+    /// whether or not icons are drawn, and without upstream's `null`-text
+    /// heuristic.
     pub fn is_sidc_valid(&self) -> bool {
-        validity::issues(self, IconCheck::Sidc)
-            .iter()
-            .all(|i| *i == ValidityIssue::NullInDrawing)
+        self.sidc_issues().is_empty()
+    }
+
+    /// The issues [`Symbol::is_sidc_valid`] checks.
+    pub(crate) fn sidc_issues(&self) -> Vec<ValidityIssue> {
+        let mut issues = validity::issues(self, IconCheck::Sidc);
+        issues.retain(|i| *i != ValidityIssue::NullInDrawing);
+        if crate::sidc::Sidc::parse(&self.sidc).is_err() {
+            issues.push(ValidityIssue::MalformedSidc);
+        }
+        issues
     }
 
     /// Renders the symbol as an SVG document identical to milsymbol.js `asSVG()`.

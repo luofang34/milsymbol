@@ -90,7 +90,10 @@ let ok = symbol.is_sidc_valid(); // false for unknown codes, which still render 
 affiliation, dimension, icon or amplifier code, …). `is_valid()` is
 milsymbol.js's `isValid()`, which also rejects any text containing `null`.
 
-To check a SIDC without rendering it, parse it strictly:
+To check a SIDC without rendering it, parse it strictly. `Sidc::parse`
+checks the code against the standards' tables; `Renderer::check_sidc` also
+checks that the renderer, with its extensions, has everything the code
+names (such as the icon):
 
 ```rust
 use milsymbol::sidc::Sidc;

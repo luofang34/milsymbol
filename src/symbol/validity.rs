@@ -21,6 +21,10 @@ pub enum ValidityIssue {
     /// A text or attribute contains `null`, or a coordinate is not finite.
     /// milsymbol.js counts this as invalid even when the SIDC is fine.
     NullInDrawing,
+    /// The SIDC fails [`Sidc::parse`](crate::sidc::Sidc::parse). Reported by
+    /// [`Symbol::is_sidc_valid`](crate::Symbol::is_sidc_valid) only;
+    /// milsymbol.js renders such codes and may count them as valid.
+    MalformedSidc,
 }
 
 /// Why a symbol is or is not valid.

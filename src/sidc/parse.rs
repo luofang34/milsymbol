@@ -1,17 +1,24 @@
 //! Strict, typed SIDC parsing.
 //!
 //! Rendering accepts any string, as milsymbol.js does. [`Sidc::parse`]
-//! instead checks every field against the code tables and reports the first
-//! problem with its position, for validating input before rendering.
+//! instead checks that every field holds a code the standards define and
+//! reports the first problem with its position. Whether a renderer can draw
+//! the symbol (it has the icon, including icons added by extensions) is a
+//! separate question, answered by
+//! [`Renderer::check_sidc`](crate::Renderer::check_sidc).
 
-use crate::catalog;
-use crate::domain::{Context, StandardIdentity, Status};
 use alloc::string::String;
 use core::fmt;
 use core::str::FromStr;
 
-/// A SIDC whose fields are all well formed.
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+mod letter;
+mod numeric;
+
+pub use letter::LetterSidc;
+pub use numeric::NumericSidc;
+
+/// A SIDC whose fields are all well formed. Stored inline, so it is `Copy`.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum Sidc {
     /// Numeric SIDC (MIL-STD-2525D/E, APP-6D/E).
     Numeric(NumericSidc),
@@ -59,6 +66,50 @@ impl fmt::Display for SidcError {
 
 impl core::error::Error for SidcError {}
 
+/// Why a renderer cannot draw a SIDC as a fully recognised symbol.
+#[derive(Debug)]
+#[non_exhaustive]
+pub enum SidcCheckError {
+    /// The SIDC is malformed.
+    Malformed(SidcError),
+    /// Rendering the SIDC failed (milsymbol.js throws for it).
+    Render(crate::RenderError),
+    /// The SIDC is well formed, but the renderer does not recognise all of
+    /// it (for example, it has no icon for the entity).
+    Unsupported {
+        /// Every reason, as [`Symbol::is_sidc_valid`](crate::Symbol::is_sidc_valid) judges it.
+        issues: alloc::vec::Vec<crate::ValidityIssue>,
+    },
+}
+
+impl fmt::Display for SidcCheckError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            SidcCheckError::Malformed(e) => write!(f, "malformed SIDC: {e}"),
+            SidcCheckError::Render(e) => write!(f, "SIDC cannot be rendered: {e}"),
+            SidcCheckError::Unsupported { issues } => {
+                write!(f, "SIDC not supported by this renderer: {issues:?}")
+            }
+        }
+    }
+}
+
+impl core::error::Error for SidcCheckError {
+    fn source(&self) -> Option<&(dyn core::error::Error + 'static)> {
+        match self {
+            SidcCheckError::Malformed(e) => Some(e),
+            SidcCheckError::Render(e) => Some(e),
+            SidcCheckError::Unsupported { .. } => None,
+        }
+    }
+}
+
+impl From<SidcError> for SidcCheckError {
+    fn from(e: SidcError) -> Self {
+        SidcCheckError::Malformed(e)
+    }
+}
+
 fn invalid(field: &'static str, position: usize, value: &str) -> SidcError {
     SidcError::InvalidField {
         field,
@@ -67,31 +118,82 @@ fn invalid(field: &'static str, position: usize, value: &str) -> SidcError {
     }
 }
 
-/// A numeric SIDC of 20 or 30 digits.
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct NumericSidc(String);
+/// Up to `N` ASCII characters stored inline.
+#[derive(Clone, Copy, PartialEq, Eq, Hash)]
+struct Code<const N: usize> {
+    bytes: [u8; N],
+    len: u8,
+}
 
-/// A letter SIDC of 10 to 15 characters (upper-cased, `*` read as `-`).
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct LetterSidc(String);
+impl<const N: usize> Code<N> {
+    /// Collects the non-space characters of `s`, mapped by `map`; rejects
+    /// non-ASCII characters and inputs longer than `N`.
+    fn collect(s: &str, map: impl Fn(char) -> char) -> Result<Self, SidcError> {
+        let mut code = Code {
+            bytes: [0; N],
+            len: 0,
+        };
+        let mut len = 0usize;
+        for c in s.chars().filter(|&c| c != ' ') {
+            let c = map(c);
+            len = len.saturating_add(1);
+            if !c.is_ascii() {
+                return Err(invalid("character", len, c.encode_utf8(&mut [0; 4])));
+            }
+            if let Some(slot) = code.bytes.get_mut(len - 1) {
+                *slot = c as u8;
+            }
+        }
+        if len > N {
+            return Err(SidcError::Length { len });
+        }
+        code.len = u8::try_from(len).map_err(|_| SidcError::Length { len })?;
+        Ok(code)
+    }
+
+    fn as_str(&self) -> &str {
+        self.bytes
+            .get(..usize::from(self.len))
+            .and_then(|b| core::str::from_utf8(b).ok())
+            .unwrap_or("")
+    }
+
+    /// Characters `from..from + len` (1-based), or `""` past the end.
+    fn field(&self, from: usize, len: usize) -> &str {
+        let start = from.saturating_sub(1);
+        self.as_str()
+            .get(start..start.saturating_add(len))
+            .unwrap_or("")
+    }
+
+    /// The character at `position` (1-based), or `'\0'` past the end.
+    fn at(&self, position: usize) -> char {
+        self.field(position, 1).chars().next().unwrap_or('\0')
+    }
+}
+
+impl<const N: usize> fmt::Debug for Code<N> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        fmt::Debug::fmt(self.as_str(), f)
+    }
+}
 
 impl Sidc {
     /// Parses and validates `s`. Spaces are ignored, as in rendering.
     pub fn parse(s: &str) -> Result<Sidc, SidcError> {
-        let s: String = s.chars().filter(|&c| c != ' ').collect();
-        let first = s.chars().next().ok_or(SidcError::Empty)?;
+        let first = s.chars().find(|&c| c != ' ').ok_or(SidcError::Empty)?;
         if first.is_ascii_digit() {
-            NumericSidc::parse(&s).map(Sidc::Numeric)
+            NumericSidc::parse(s).map(Sidc::Numeric)
         } else {
-            LetterSidc::parse(&s).map(Sidc::Letter)
+            LetterSidc::parse(s).map(Sidc::Letter)
         }
     }
 
     /// The SIDC text (normalized).
     pub fn as_str(&self) -> &str {
         match self {
-            Sidc::Numeric(n) => &n.0,
-            Sidc::Letter(l) => &l.0,
+            Sidc::Numeric(n) => n.as_str(),
+            Sidc::Letter(l) => l.as_str(),
         }
     }
 }
@@ -106,269 +208,5 @@ impl FromStr for Sidc {
 impl fmt::Display for Sidc {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.write_str(self.as_str())
-    }
-}
-
-fn digits(s: &str, from: usize, len: usize) -> &str {
-    s.get(from - 1..from - 1 + len).unwrap_or("")
-}
-
-fn char_at(s: &str, position: usize) -> char {
-    s.as_bytes()
-        .get(position - 1)
-        .map_or('\0', |&b| char::from(b))
-}
-
-const AMPLIFIERS: [&str; 30] = [
-    "00", "11", "12", "13", "14", "15", "16", "17", "18", "21", "22", "23", "24", "25", "26", "31",
-    "32", "33", "34", "35", "36", "37", "41", "42", "51", "52", "61", "62", "71", "72",
-];
-
-impl NumericSidc {
-    fn parse(s: &str) -> Result<Self, SidcError> {
-        let len = s.chars().count();
-        if len != 20 && len != 30 {
-            return Err(SidcError::Length { len });
-        }
-        for (i, c) in s.chars().enumerate() {
-            if !(c.is_ascii_digit() || (i == 22 && c == 'A')) {
-                return Err(invalid("character", i + 1, c.encode_utf8(&mut [0; 4])));
-            }
-        }
-        let check = |ok: bool, field, pos, n| {
-            if ok {
-                Ok(())
-            } else {
-                Err(invalid(field, pos, digits(s, pos, n)))
-            }
-        };
-        check(
-            matches!(digits(s, 1, 2), "10" | "11" | "12" | "13" | "14"),
-            "version",
-            1,
-            2,
-        )?;
-        check(matches!(char_at(s, 3), '0'..='2'), "context", 3, 1)?;
-        check(
-            matches!(char_at(s, 4), '0'..='6'),
-            "standard identity",
-            4,
-            1,
-        )?;
-        check(
-            catalog::number_symbol_sets().any(|ss| ss == digits(s, 5, 2)),
-            "symbol set",
-            5,
-            2,
-        )?;
-        check(matches!(char_at(s, 7), '0'..='5'), "status", 7, 1)?;
-        check(
-            matches!(char_at(s, 8), '0'..='7'),
-            "headquarters/task force/dummy",
-            8,
-            1,
-        )?;
-        check(
-            AMPLIFIERS.contains(&digits(s, 9, 2)),
-            "echelon/mobility",
-            9,
-            2,
-        )?;
-        Ok(NumericSidc(String::from(s)))
-    }
-
-    /// Version (`10`–`12`: 2525D/APP-6D, `13`–`14`: 2525E/APP-6E).
-    pub fn version(&self) -> u8 {
-        digits(&self.0, 1, 2).parse().unwrap_or(0)
-    }
-
-    /// Context.
-    pub fn context(&self) -> Context {
-        match char_at(&self.0, 3) {
-            '1' => Context::Exercise,
-            '2' => Context::Simulation,
-            _ => Context::Reality,
-        }
-    }
-
-    /// Standard identity (joker and faker in exercise context).
-    pub fn standard_identity(&self) -> StandardIdentity {
-        let exercise = self.context() == Context::Exercise;
-        match char_at(&self.0, 4) {
-            '0' => StandardIdentity::Pending,
-            '1' => StandardIdentity::Unknown,
-            '2' => StandardIdentity::AssumedFriend,
-            '3' => StandardIdentity::Friend,
-            '4' => StandardIdentity::Neutral,
-            '5' if exercise => StandardIdentity::Joker,
-            '5' => StandardIdentity::Suspect,
-            _ if exercise => StandardIdentity::Faker,
-            _ => StandardIdentity::Hostile,
-        }
-    }
-
-    /// Two-digit symbol set.
-    pub fn symbol_set(&self) -> &str {
-        digits(&self.0, 5, 2)
-    }
-
-    /// Status.
-    pub fn status(&self) -> Status {
-        match char_at(&self.0, 7) {
-            '1' => Status::Planned,
-            '2' => Status::FullyCapable,
-            '3' => Status::Damaged,
-            '4' => Status::Destroyed,
-            '5' => Status::FullToCapacity,
-            _ => Status::Present,
-        }
-    }
-
-    /// Headquarters, task force and feint/dummy flags.
-    pub fn hq_task_force_dummy(&self) -> (bool, bool, bool) {
-        let d = u8::try_from(char_at(&self.0, 8))
-            .unwrap_or(b'0')
-            .wrapping_sub(b'0');
-        (d & 2 != 0, d & 4 != 0, d & 1 != 0)
-    }
-
-    /// Two-digit echelon/mobility/leadership amplifier code.
-    pub fn amplifier(&self) -> &str {
-        digits(&self.0, 9, 2)
-    }
-
-    /// Six-digit entity code.
-    pub fn entity(&self) -> &str {
-        digits(&self.0, 11, 6)
-    }
-
-    /// Sector 1 and sector 2 modifier codes.
-    pub fn modifiers(&self) -> (&str, &str) {
-        (digits(&self.0, 17, 2), digits(&self.0, 19, 2))
-    }
-
-    /// Whether the built-in tables have an icon for the entity (entity
-    /// `000000` means "no icon" and counts as present).
-    pub fn has_builtin_icon(&self) -> bool {
-        let e = self.entity();
-        let base = alloc::format!("{}00", digits(e, 1, 4));
-        e == "000000"
-            || catalog::number_entities(self.symbol_set())
-                .any(|c| c == e || (e.get(4..).is_some_and(|t| t >= "95") && c == base))
-    }
-
-    /// The SIDC text.
-    pub fn as_str(&self) -> &str {
-        &self.0
-    }
-}
-
-impl LetterSidc {
-    fn parse(s: &str) -> Result<Self, SidcError> {
-        let s: String = s
-            .chars()
-            .map(|c| {
-                if c == '*' {
-                    '-'
-                } else {
-                    c.to_ascii_uppercase()
-                }
-            })
-            .collect();
-        let len = s.chars().count();
-        if !(10..=15).contains(&len) {
-            return Err(SidcError::Length { len });
-        }
-        for (i, c) in s.chars().enumerate() {
-            if !(c.is_ascii_uppercase() || c.is_ascii_digit() || c == '-') {
-                return Err(invalid("character", i + 1, c.encode_utf8(&mut [0; 4])));
-            }
-        }
-        let field = |pos: usize| digits(&s, pos, 1);
-        if !matches!(char_at(&s, 1), 'S' | 'G' | 'W' | 'I' | 'O' | 'E') {
-            return Err(invalid("coding scheme", 1, field(1)));
-        }
-        if !"PUAFNSHGWMDLJKO".contains(char_at(&s, 2)) {
-            return Err(invalid("standard identity", 2, field(2)));
-        }
-        if !"PACDXF-".contains(char_at(&s, 4)) {
-            return Err(invalid("status", 4, field(4)));
-        }
-        Ok(LetterSidc(s))
-    }
-
-    /// Coding scheme (`S` warfighting, `G` tactical graphics, `W` METOC,
-    /// `I` intelligence, `O` stability operations, `E` emergency management).
-    pub fn coding_scheme(&self) -> char {
-        char_at(&self.0, 1)
-    }
-
-    /// Standard identity.
-    pub fn standard_identity(&self) -> StandardIdentity {
-        match char_at(&self.0, 2) {
-            'P' | 'G' => StandardIdentity::Pending,
-            'U' | 'W' => StandardIdentity::Unknown,
-            'A' | 'M' => StandardIdentity::AssumedFriend,
-            'F' | 'D' => StandardIdentity::Friend,
-            'N' | 'L' => StandardIdentity::Neutral,
-            'S' => StandardIdentity::Suspect,
-            'H' => StandardIdentity::Hostile,
-            'J' => StandardIdentity::Joker,
-            'K' => StandardIdentity::Faker,
-            _ => StandardIdentity::NoneSpecified,
-        }
-    }
-
-    /// Context (exercise identities `G W M D L J K`).
-    pub fn context(&self) -> Context {
-        if "GWMDLJK".contains(char_at(&self.0, 2)) {
-            Context::Exercise
-        } else {
-            Context::Reality
-        }
-    }
-
-    /// Battle dimension code.
-    pub fn battle_dimension(&self) -> char {
-        char_at(&self.0, 3)
-    }
-
-    /// Status.
-    pub fn status(&self) -> Status {
-        match char_at(&self.0, 4) {
-            'A' => Status::Planned,
-            'C' => Status::FullyCapable,
-            'D' => Status::Damaged,
-            'X' => Status::Destroyed,
-            'F' => Status::FullToCapacity,
-            _ => Status::Present,
-        }
-    }
-
-    /// Six-character function identifier.
-    pub fn function_id(&self) -> &str {
-        self.0.get(4..10).unwrap_or("")
-    }
-
-    /// Symbol modifier characters (positions 11 and 12).
-    pub fn modifier(&self) -> (char, char) {
-        (char_at(&self.0, 11), char_at(&self.0, 12))
-    }
-
-    /// Whether the built-in tables have an icon for this SIDC.
-    pub fn has_builtin_icon(&self) -> bool {
-        let s = &self.0;
-        let generic = alloc::format!(
-            "{}-{}-{}",
-            digits(s, 1, 1),
-            digits(s, 3, 1),
-            self.function_id()
-        );
-        self.function_id() == "------" || catalog::letter_icons().any(|c| c == generic)
-    }
-
-    /// The SIDC text.
-    pub fn as_str(&self) -> &str {
-        &self.0
     }
 }

@@ -13,7 +13,7 @@ mod letter;
 mod number;
 mod parse;
 
-pub use parse::{LetterSidc, NumericSidc, Sidc, SidcError};
+pub use parse::{LetterSidc, NumericSidc, Sidc, SidcCheckError, SidcError};
 
 /// Upstream `mapping.echelonMobility`.
 pub(crate) fn echelon_mobility(code: &str) -> Option<&'static str> {
