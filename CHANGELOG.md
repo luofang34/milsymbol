@@ -16,5 +16,14 @@ First release: native Rust port of milsymbol.js 3.0.4.
 - `ReferencePlatform`: reproduces V8's x64 or arm64 `Math.sin`/`Math.cos`
   bit for bit (upstream output differs between them).
 - Typed path construction (`PathData::from_segments`) and cached segments.
+- Typed `Symbol::metadata()`; milsymbol.js representations (`JsMetadata`,
+  canonical JSON) live in `compat`.
+- `IconExtension` is queried by key (`icon_part`, `icon(IconKey)`,
+  `icon_bbox`); public data structs are `#[non_exhaustive]` with
+  constructors.
+- `Sidc::parse` checks the standards' code tables; `Renderer::check_sidc`
+  also checks renderer support; `is_sidc_valid` ignores icon visibility.
+- `CachedRenderer::with_prepared_paths`; unique clip-path ids and
+  `SvgOptions::id_prefix`; SVG path grammar enforced by the path parser.
 - `Symbol::write_svg` appends to a caller's buffer; SVG serialization,
   `is_valid()` and cache hits make no temporary allocations.

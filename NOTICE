@@ -32,6 +32,32 @@ distributed under AGPL-3.0-or-later, while the upstream MIT notice continues to
 apply to the upstream-originated portions.
 
 -------------------------------------------------------------------------------
+Math.sin / Math.cos: V8 and fdlibm
+-------------------------------------------------------------------------------
+
+src/js/math.rs is a Rust translation of the sine and cosine code in V8's
+src/base/ieee754.cc (V8 14.6, as shipped in Node 26), so that direction
+arrows and speed leaders match milsymbol.js bit for bit. That file carries
+these notices, which apply to the translated portion:
+
+    The following is adapted from fdlibm (http://www.netlib.org/fdlibm).
+
+    ====================================================
+    Copyright (C) 1993 by Sun Microsystems, Inc. All rights reserved.
+
+    Developed at SunSoft, a Sun Microsystems, Inc. business.
+    Permission to use, copy, modify, and distribute this
+    software is freely granted, provided that this notice
+    is preserved.
+    ====================================================
+
+    The original source code covered by the above license above has been
+    modified significantly by Google Inc.
+    Copyright 2016 the V8 project authors. All rights reserved.
+
+V8 is distributed under the BSD-style license reproduced in LICENSE-BSD-V8.
+
+-------------------------------------------------------------------------------
 Other references
 -------------------------------------------------------------------------------
 

@@ -7,6 +7,18 @@
 //! This is a line-for-line port of V8's `sin`, `cos`, `__kernel_sin`,
 //! `__kernel_cos`, `__ieee754_rem_pio2` and `__kernel_rem_pio2`.
 //!
+//! The translated code keeps the notices of its sources (see `NOTICE` and
+//! `LICENSE-BSD-V8`):
+//!
+//! > Copyright (C) 1993 by Sun Microsystems, Inc. All rights reserved.
+//! > Developed at SunSoft, a Sun Microsystems, Inc. business. Permission to
+//! > use, copy, modify, and distribute this software is freely granted,
+//! > provided that this notice is preserved.
+//! >
+//! > The original source code covered by the above license above has been
+//! > modified significantly by Google Inc. Copyright 2016 the V8 project
+//! > authors. All rights reserved.
+//!
 //! V8's arm64 builds are compiled with floating-point contraction, so their
 //! results differ in the last bit from x64 builds. With `FUSED` every
 //! expression clang contracts is evaluated as a fused multiply-add

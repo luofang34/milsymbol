@@ -108,7 +108,14 @@ Node on macOS arm64 and Linux arm64 agree with each other, but the two
 groups differ in the last bit of 66 of those 14,272 values. Over the `direction`
 suite this changes 215 of 36,000 SVGs.
 
-`src/js/math.rs` ports V8's fdlibm exactly, including argument reduction.
+`src/js/math.rs` ports V8's fdlibm exactly, including argument reduction
+(with the Sun and V8 notices; see `NOTICE` and `LICENSE-BSD-V8`). No
+existing implementation reproduces it: the `libm` crate (musl) differs on
+110 of the 7,136 reference arguments, including arguments below π/4, because
+its polynomial evaluation differs. An independent, correctly rounded
+Payne–Hanek reduction for large arguments also differs, because fdlibm's
+reduced value is not always correctly rounded: over 4.2 million arguments
+above 2^20·π/2 it changes the final sine or cosine in 4,907 cases.
 Plain evaluation reproduces the x64 group bit for bit, and fused evaluation
 reproduces the arm64 group bit for bit. `tests/data/v8_trig_*.txt` holds both
 reference sets, and `RendererConfig::reference_platform` selects the one to

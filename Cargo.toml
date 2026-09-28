@@ -30,6 +30,7 @@ include = [
     "/CHANGELOG.md",
     "/LICENSE",
     "/LICENSE-MIT-milsymbol",
+    "/LICENSE-BSD-V8",
     "/NOTICE",
     "/clippy.toml",
 ]
