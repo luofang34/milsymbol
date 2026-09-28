@@ -38,8 +38,8 @@ pub struct IconPartContext<'a> {
 }
 
 /// Which icon an [`IconExtension`] is asked for. Keys follow upstream:
-/// six-digit entity codes and two-digit modifier codes for numeric SIDCs,
-/// generic SIDCs such as `S-G-UCI---` for letter SIDCs.
+/// six-digit entity codes and two- or three-digit modifier codes for
+/// numeric SIDCs, generic SIDCs such as `S-G-UCI---` for letter SIDCs.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 #[non_exhaustive]
 pub enum IconKey<'k> {
@@ -54,14 +54,20 @@ pub enum IconKey<'k> {
     Modifier1 {
         /// Two-digit symbol set.
         symbol_set: &'k str,
-        /// Two-digit modifier code.
+        /// The two-digit field for the symbol set's own modifiers (`"07"`),
+        /// or the complete three-digit code when a 30-digit SIDC selects
+        /// another modifier set (`"107"`); see
+        /// [`NumericSidc::modifier_codes`](crate::sidc::NumericSidc::modifier_codes).
         code: &'k str,
     },
     /// Sector 2 modifier of a numeric SIDC.
     Modifier2 {
         /// Two-digit symbol set.
         symbol_set: &'k str,
-        /// Two-digit modifier code.
+        /// The two-digit field for the symbol set's own modifiers (`"07"`),
+        /// or the complete three-digit code when a 30-digit SIDC selects
+        /// another modifier set (`"107"`); see
+        /// [`NumericSidc::modifier_codes`](crate::sidc::NumericSidc::modifier_codes).
         code: &'k str,
     },
     /// Icon of a letter SIDC, by generic SIDC.

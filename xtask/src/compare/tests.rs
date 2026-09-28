@@ -111,3 +111,43 @@ fn extra_records_are_an_error() {
     );
     assert!(r.is_err());
 }
+
+#[test]
+fn lone_surrogates_are_a_reported_known_difference() -> TestResult {
+    // The oracle's sem text holds the escape `\ud83d`; Rust writes U+FFFD.
+    let oracle = record(r#"{"m":"\ud83d00","n":"\ude00"}"#);
+    let rust = record("{\"m\":\"\u{fffd}00\",\"n\":\"\u{fffd}\"}");
+    let mut out = Vec::new();
+    let agree = compare(
+        Cursor::new("case\n"),
+        Cursor::new(format!("{oracle}\n")),
+        Cursor::new(format!("{rust}\n")),
+        10,
+        &mut out,
+    )?;
+    assert!(agree);
+    assert!(String::from_utf8(out)?.contains("known differences (lone UTF-16 surrogates"));
+    Ok(())
+}
+
+#[test]
+fn lone_surrogates_do_not_hide_other_differences() -> TestResult {
+    let oracle = record(r#"{"m":"\ud83d00","x":1}"#);
+    let rust = record("{\"m\":\"\u{fffd}00\",\"x\":2}");
+    assert!(!one(&oracle, &rust)?);
+    // A valid surrogate pair is not lone; the texts must then match.
+    let pair = record(r#"{"m":"😀"}"#);
+    assert!(!one(&pair, &record("{\"m\":\"\u{fffd}\"}"))?);
+    Ok(())
+}
+
+#[test]
+fn surrogate_replacement_leaves_other_escapes_alone() {
+    use super::surrogates::replace_lone;
+    assert_eq!(replace_lone(r#""\\ud83d""#), None, "escaped backslash");
+    assert_eq!(replace_lone(r#""😀""#), None, "valid pair");
+    assert_eq!(
+        replace_lone(r#""a\ud83db\ude00""#).as_deref(),
+        Some(r#""a\ufffdb\ufffd""#)
+    );
+}

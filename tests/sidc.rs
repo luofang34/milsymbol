@@ -218,3 +218,27 @@ fn native_metadata_preserves_compatibility_sentinels() -> TestResult {
     }
     Ok(())
 }
+
+#[test]
+fn non_bmp_sidcs_render_like_upstream_with_lossy_metadata() -> TestResult {
+    // milsymbol.js 3.0.4 output for these inputs (tools/oracle/render.mjs).
+    let expected = include_str!("data/unicode_oracle.txt");
+    let face = '\u{1F600}';
+    let sidcs = [
+        format!("10031000001211000000{face}"),
+        format!("100310000012110000001{face}"),
+        format!("S{face}GPUCI----"),
+    ];
+    assert_eq!(expected.lines().count(), sidcs.len());
+    for (sidc, want) in sidcs.iter().zip(expected.lines()) {
+        let s = Renderer::default().symbol(sidc).render()?;
+        assert_eq!(s.to_svg(), want, "{sidc}");
+    }
+    // Upstream splits the surrogate pair into its halves; Rust strings
+    // cannot hold one, so each half reads as U+FFFD (UPSTREAM.md).
+    let s = Renderer::default().symbol(&sidcs[0]).render()?;
+    let js = s.js_metadata();
+    assert_eq!(js.flags.modifier1, Some("\u{FFFD}00"));
+    assert_eq!(js.flags.modifier2, Some("\u{FFFD}00"));
+    Ok(())
+}

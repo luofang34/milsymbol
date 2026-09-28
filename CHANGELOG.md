@@ -32,6 +32,11 @@ First release: native Rust port of milsymbol.js 3.0.4.
 - Streaming `compat::write_canonical_json`, shared field definitions with
   the owned JSON view, UTF-16 key ordering and any number of extension
   option keys.
+- `NumericSidc::modifier_codes` returns the complete three-digit modifier
+  codes that extensions receive; `0x`/`0o`/`0b` numeric strings round once,
+  as JavaScript `Number` does.
+- Oracle comparison reports lone UTF-16 surrogates (non-BMP SIDCs) as a
+  known difference.
 - Oracle comparison rejects malformed records; path preparation caches all
   valid paths even when another path or clip geometry fails to parse.
 - SIDC support checks include icons when a custom pipeline omits the icon

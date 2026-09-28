@@ -105,6 +105,8 @@ struct Tally {
     sem: usize,
     errors: usize,
     reported: usize,
+    /// Cases whose records differ only by lone UTF-16 surrogates.
+    lone_surrogates: usize,
     by_path: BTreeMap<String, usize>,
 }
 
@@ -113,6 +115,8 @@ enum Record<'a> {
         svg: &'a str,
         sem: &'a str,
         value: Value,
+        /// `sem` held lone surrogates, parsed as U+FFFD.
+        lone_surrogates: bool,
     },
     Error(&'a str),
 }
@@ -133,9 +137,20 @@ impl<'a> Record<'a> {
             return Ok(Self::Error(text("error")?));
         }
         let (svg, sem) = (text("svg")?, text("sem")?);
-        let value = serde_json::from_str(sem)
-            .map_err(|e| format!("record field \"sem\" is not valid JSON: {e}"))?;
-        Ok(Self::Rendered { svg, sem, value })
+        let invalid = |e: serde_json::Error| format!("record field \"sem\" is not valid JSON: {e}");
+        let (value, lone_surrogates) = match serde_json::from_str(sem) {
+            Ok(v) => (v, false),
+            Err(e) => match surrogates::replace_lone(sem) {
+                Some(replaced) => (serde_json::from_str(&replaced).map_err(invalid)?, true),
+                None => return Err(invalid(e).into()),
+            },
+        };
+        Ok(Self::Rendered {
+            svg,
+            sem,
+            value,
+            lone_surrogates,
+        })
     }
 }
 
@@ -143,19 +158,21 @@ impl Tally {
     /// Records one case and returns the problem to report, if any.
     fn case(&mut self, x: Record<'_>, y: Record<'_>) -> Option<String> {
         self.cases += 1;
-        let (svg_x, xs, xv, svg_y, ys, yv) = match (x, y) {
+        let (svg_x, xs, xv, svg_y, ys, yv, lone) = match (x, y) {
             (
                 Record::Rendered {
                     svg: a,
                     sem: b,
                     value: c,
+                    lone_surrogates: l1,
                 },
                 Record::Rendered {
                     svg: d,
                     sem: e,
                     value: f,
+                    lone_surrogates: l2,
                 },
-            ) => (a, b, c, d, e, f),
+            ) => (a, b, c, d, e, f, l1 || l2),
             // Oracle and Rust error messages need not use the same wording.
             (Record::Error(_), Record::Error(_)) => return None,
             (Record::Error(e), _) => {
@@ -178,13 +195,22 @@ impl Tally {
         } else {
             // Equal parsed values with different text (e.g. `1` and `1.0`)
             // are still a serialization difference.
-            first_diff(&xv, &yv, "sem").or_else(|| {
-                Some(format!(
+            match first_diff(&xv, &yv, "sem") {
+                Some(d) => Some(d),
+                // Equal once lone surrogates read as U+FFFD: the documented
+                // difference, reported but not counted as a mismatch.
+                None if lone && svg_x == svg_y => {
+                    self.lone_surrogates += 1;
+                    return Some(String::from(
+                        "known difference: lone UTF-16 surrogate in metadata (UPSTREAM.md)",
+                    ));
+                }
+                None => Some(format!(
                     "sem text differs: {} != {}",
                     clip_str(xs),
                     clip_str(ys)
-                ))
-            })
+                )),
+            }
         };
         if sem.is_some() {
             self.sem += 1;
@@ -247,6 +273,13 @@ fn compare(
         "cases {}: svg mismatches {}, semantic mismatches {}, error mismatches {}",
         tally.cases, tally.svg, tally.sem, tally.errors
     )?;
+    if tally.lone_surrogates > 0 {
+        writeln!(
+            out,
+            "known differences (lone UTF-16 surrogates, see UPSTREAM.md): {}",
+            tally.lone_surrogates
+        )?;
+    }
     let mut paths: Vec<(&String, &usize)> = tally.by_path.iter().collect();
     paths.sort_by(|p, q| q.1.cmp(p.1));
     for (path, n) in paths.into_iter().take(15) {
@@ -254,6 +287,8 @@ fn compare(
     }
     Ok(tally.svg + tally.sem + tally.errors == 0)
 }
+
+mod surrogates;
 
 #[cfg(test)]
 mod tests;

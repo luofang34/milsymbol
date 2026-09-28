@@ -116,3 +116,58 @@ fn number_to_string_matches_v8_including_ties() {
     }
     assert!(checked > 4000, "only {checked} vectors");
 }
+
+#[test]
+fn radix_literals_round_once_like_javascript() {
+    // (input, bits of JavaScript Number(input)), from Node 26.
+    let cases: [(&str, u64); 25] = [
+        ("0x2b0350ba06c7298", 0x438581a85d036395),
+        ("0x1fffffffffffff", 0x433fffffffffffff),
+        ("0x20000000000001", 0x4340000000000000),
+        ("0x20000000000003", 0x4340000000000002),
+        ("0x20000000000002", 0x4340000000000001),
+        ("0x40000000000005", 0x4350000000000001),
+        ("0xfffffffffffff800", 0x43efffffffffffff),
+        ("0xfffffffffffffc00", 0x43f0000000000000),
+        ("0xfffffffffffff7ff", 0x43efffffffffffff),
+        ("0x1000000000000081", 0x43b0000000000001),
+        ("0x1000000000000080", 0x43b0000000000000),
+        ("0x100000000000008000000001", 0x45b0000000000001),
+        ("0o777777777777777777777", 0x43e0000000000000),
+        ("0O1234567012345670123456701", 0x4474e5dc14e5dc15),
+        (
+            "0b11111111111111111111111111111111111111111111111111111",
+            0x433fffffffffffff,
+        ),
+        (
+            "0b100000000000000000000000000000000000000000000000000001",
+            0x4340000000000000,
+        ),
+        (
+            "0b1000000000000000000000000000000000000000000000000000011",
+            0x4350000000000001,
+        ),
+        (
+            "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+            0x7ff0000000000000,
+        ),
+        (
+            "0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+            0x7fb0000000000000,
+        ),
+        ("0x0000000000000000000abc", 0x40a5780000000000),
+        ("0xABCDEF0123456789abcdef", 0x456579bde02468ad),
+        ("0x1", 0x3ff0000000000000),
+        ("0x0", 0x0000000000000000),
+        ("0xg", 0x7ff8000000000000),
+        ("0x", 0x7ff8000000000000),
+    ];
+    for (input, bits) in cases {
+        let got = super::string_to_number(input);
+        assert!(
+            got.to_bits() == bits || (got.is_nan() && f64::from_bits(bits).is_nan()),
+            "{input}: {got:e} != {:e}",
+            f64::from_bits(bits)
+        );
+    }
+}

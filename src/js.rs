@@ -237,18 +237,53 @@ pub fn string_to_number(s: &str) -> f64 {
     }
 }
 
+/// A `0x`/`0o`/`0b` literal as JavaScript `Number` reads it: the exact
+/// integer, rounded once to the nearest double (ties to even).
 fn parse_radix(digits: &str, radix: u32) -> f64 {
     if digits.is_empty() {
         return f64::NAN;
     }
-    let mut acc = 0.0f64;
+    let bits_per_digit = radix.trailing_zeros();
+    // The first 64 significant bits, how many there are in total, and
+    // whether any bit after the first 64 is set.
+    let (mut top, mut significant, mut sticky) = (0u64, 0u32, false);
     for c in digits.chars() {
-        match c.to_digit(radix) {
-            Some(d) => acc = acc * f64::from(radix) + f64::from(d),
-            None => return f64::NAN,
+        let Some(d) = c.to_digit(radix) else {
+            return f64::NAN;
+        };
+        for shift in (0..bits_per_digit).rev() {
+            let bit = (d >> shift) & 1 == 1;
+            if significant == 0 && !bit {
+                continue;
+            }
+            if significant < 64 {
+                top = (top << 1) | u64::from(bit);
+            } else {
+                sticky |= bit;
+            }
+            significant = significant.saturating_add(1);
         }
     }
-    acc
+    round_to_double(top, significant, sticky)
+}
+
+/// `top` (the leading `min(significant, 64)` bits of an integer with
+/// `significant` bits, `sticky` if any later bit is set) rounded to the
+/// nearest double, ties to even.
+fn round_to_double(top: u64, significant: u32, sticky: bool) -> f64 {
+    let kept = significant.min(64);
+    if kept <= 53 {
+        return top as f64;
+    }
+    let drop = kept - 53;
+    let mut mantissa = top >> drop;
+    let rest = top & ((1u64 << drop) - 1);
+    let half = 1u64 << (drop - 1);
+    if rest > half || (rest == half && (sticky || mantissa & 1 == 1)) {
+        mantissa += 1;
+    }
+    let exponent = i32::try_from(significant - 53).unwrap_or(i32::MAX);
+    libm::ldexp(mantissa as f64, exponent)
 }
 
 fn is_decimal_literal(b: &[u8]) -> bool {

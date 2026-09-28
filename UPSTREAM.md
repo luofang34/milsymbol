@@ -162,3 +162,15 @@ These are deliberate and do not occur in the corpus:
   repeated requested id gets `-1`, `-2`, … appended; `SvgOptions::id_prefix`
   prefixes every id. Only the extension-only `clip` instruction and
   extension styles with `clip_path` create clip paths.
+- **Lone UTF-16 surrogates in metadata.** Upstream reads SIDC fields as
+  UTF-16 substrings, so a SIDC containing a non-BMP character (e.g. an
+  emoji) can put half a surrogate pair into `_modifier1`, `_modifier2` or
+  `functionid`, which `JSON.stringify` writes as `\udXXX`. Rust strings
+  cannot hold a lone surrogate; each half becomes U+FFFD. The SVG is
+  unaffected (`tests/data/unicode_oracle.txt`), and `cargo xtask compare`
+  reports such cases as known differences instead of mismatches.
+- **JavaScript object keys as option names.** Upstream assigns options onto
+  a plain object: a `__proto__` key is swallowed by the prototype setter,
+  and a `hasOwnProperty` key shadows the method upstream later calls, so it
+  throws. Here every name set with `SymbolOptions::set_text` is an ordinary
+  text field, kept in `options` and rendered normally.

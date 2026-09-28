@@ -363,3 +363,53 @@ fn cached_preparation_keeps_going_after_an_extension_path_error() -> TestResult 
     assert!(matches!(path.d.segments()?, Cow::Borrowed(_)));
     Ok(())
 }
+
+/// Records the modifier keys it is asked for.
+#[derive(Default)]
+struct ModifierKeys(std::sync::Mutex<Vec<String>>);
+
+impl IconExtension for ModifierKeys {
+    fn icon(&self, _: &IconPartContext<'_>, key: IconKey<'_>, _: &dyn PartLookup) -> Option<Node> {
+        if let IconKey::Modifier1 { code, .. } = key {
+            if let Ok(mut keys) = self.0.lock() {
+                keys.push(code.to_string());
+            }
+        }
+        None
+    }
+}
+
+#[test]
+fn modifier_keys_match_the_complete_modifier_codes() -> TestResult {
+    use milsymbol::sidc::Sidc;
+    for (sidc, key, complete) in [
+        ("10031000001211000700", "07", "007"),
+        ("100310000012110007001000000000", "107", "107"),
+    ] {
+        let Sidc::Numeric(n) = Sidc::parse(sidc)? else {
+            return Err("expected a numeric SIDC".into());
+        };
+        assert_eq!(n.modifiers().0, "07");
+        assert_eq!(n.modifier_codes().0.as_str(), complete);
+        let keys = std::sync::Arc::new(ModifierKeys::default());
+        let r = Renderer::default().with_icons(SharedKeys(std::sync::Arc::clone(&keys)));
+        r.symbol(sidc).render()?;
+        let seen = keys.0.lock().map_err(|e| e.to_string())?.clone();
+        assert_eq!(seen, [key], "{sidc}");
+    }
+    Ok(())
+}
+
+/// Lets the test read what a registered extension recorded.
+struct SharedKeys(std::sync::Arc<ModifierKeys>);
+
+impl IconExtension for SharedKeys {
+    fn icon(
+        &self,
+        ctx: &IconPartContext<'_>,
+        key: IconKey<'_>,
+        parts: &dyn PartLookup,
+    ) -> Option<Node> {
+        self.0.icon(ctx, key, parts)
+    }
+}

@@ -15,7 +15,7 @@ mod letter;
 mod numeric;
 
 pub use letter::LetterSidc;
-pub use numeric::NumericSidc;
+pub use numeric::{ModifierCode, NumericSidc};
 
 /// A SIDC whose fields are all well formed. Stored inline, so it is `Copy`.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]

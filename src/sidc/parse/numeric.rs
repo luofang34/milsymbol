@@ -16,6 +16,29 @@ const AMPLIFIERS: [&str; 30] = [
     "32", "33", "34", "35", "36", "37", "41", "42", "51", "52", "61", "62", "71", "72",
 ];
 
+/// A complete three-digit modifier code (see [`NumericSidc::modifier_codes`]).
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub struct ModifierCode([u8; 3]);
+
+impl ModifierCode {
+    /// The code as text, e.g. `"107"`.
+    pub fn as_str(&self) -> &str {
+        core::str::from_utf8(&self.0).unwrap_or("000")
+    }
+
+    /// The modifier-set digit (`0` for the symbol set's own modifiers).
+    pub fn set(&self) -> char {
+        let [set, _, _] = self.0;
+        char::from(set)
+    }
+}
+
+impl core::fmt::Display for ModifierCode {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        f.write_str(self.as_str())
+    }
+}
+
 /// A numeric SIDC of 20 or 30 digits.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct NumericSidc(Code<30>);
@@ -129,9 +152,32 @@ impl NumericSidc {
         self.0.field(11, 6)
     }
 
-    /// Sector 1 and sector 2 modifier codes.
+    /// The raw two-digit sector 1 and sector 2 modifier fields (positions
+    /// 17–18 and 19–20). See [`NumericSidc::modifier_codes`] for the codes
+    /// including the modifier set of a 30-digit SIDC.
     pub fn modifiers(&self) -> (&str, &str) {
         (self.0.field(17, 2), self.0.field(19, 2))
+    }
+
+    /// The complete sector 1 and sector 2 modifier codes: the modifier-set
+    /// digit (position 21 or 22 of a 30-digit SIDC, `0` otherwise) followed
+    /// by the two-digit field, e.g. `"107"`. These are the codes milsymbol.js
+    /// looks icons up by.
+    pub fn modifier_codes(&self) -> (ModifierCode, ModifierCode) {
+        let code = |set: usize, field: usize| {
+            let digit = |c: char| u8::try_from(c).unwrap_or(b'0');
+            let set = match self.0.at(set) {
+                '\0' => b'0',
+                c => digit(c),
+            };
+            let f = self.0.field(field, 2).as_bytes();
+            ModifierCode([
+                set,
+                f.first().copied().unwrap_or(b'0'),
+                f.get(1).copied().unwrap_or(b'0'),
+            ])
+        };
+        (code(21, 17), code(22, 19))
     }
 
     /// Whether the built-in tables have an icon for the entity (entity

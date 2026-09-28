@@ -275,3 +275,19 @@ fn enabling_prepared_paths_invalidates_unprepared_cache() -> TestResult {
     assert!(Arc::ptr_eq(&prepared, &cache.render(INFANTRY, &options)?));
     Ok(())
 }
+
+#[test]
+fn javascript_object_keys_are_ordinary_text_fields() -> TestResult {
+    // milsymbol.js drops `__proto__` (the prototype setter swallows it) and
+    // throws for `hasOwnProperty` (it shadows the method upstream calls).
+    // Here both are plain custom text fields (UPSTREAM.md).
+    for key in ["__proto__", "hasOwnProperty", "constructor"] {
+        let mut o = SymbolOptions::default();
+        o.set_text(key, "x");
+        let s = Renderer::default().render(INFANTRY, o)?;
+        assert_eq!(s.options().text(key), "x", "{key}");
+        let json = milsymbol::compat::canonical_json_string(&s);
+        assert!(json.contains(&format!("\"{key}\":\"x\"")), "{key}");
+    }
+    Ok(())
+}
