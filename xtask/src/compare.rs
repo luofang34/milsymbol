@@ -2,7 +2,8 @@
 //!
 //! Records are JSON lines `{"svg": …, "sem": …}` or `{"error": …}`; `sem` is
 //! the canonical JSON string of the semantic record. Files are streamed:
-//! record files for the base suite exceed a gigabyte.
+//! record files for the base suite exceed a gigabyte. An oracle record can
+//! carry an `expected` control record for a declared option-key difference.
 
 use crate::Error;
 use serde_json::Value;
@@ -255,13 +256,18 @@ fn compare(
         let (Some(x), Some(y)) = (next_record(&mut a)?, next_record(&mut b)?) else {
             return Err(format!("record files end before case #{i}").into());
         };
+        let expected = x
+            .get("expected")
+            .map(Record::read)
+            .transpose()
+            .map_err(|e| format!("oracle control for case #{i}: {e}"))?;
         let x = Record::read(&x).map_err(|e| format!("oracle record for case #{i}: {e}"))?;
         let y = Record::read(&y).map_err(|e| format!("rust record for case #{i}: {e}"))?;
         let declared = known::declared(&line).map_err(|e| format!("case #{i}: {e}"))?;
         let problem = match declared {
             Some(kind) => {
                 tally.cases += 1;
-                match known::check(kind, &x, &y) {
+                match known::check(&kind, &x, &y, expected.as_ref()) {
                     Ok(()) => {
                         tally.known += 1;
                         None
@@ -283,6 +289,9 @@ fn compare(
     }
     if next_record(&mut a)?.is_some() || next_record(&mut b)?.is_some() {
         return Err(format!("record files hold more than {} records", tally.cases).into());
+    }
+    if tally.cases == 0 {
+        return Err("case list is empty".into());
     }
     writeln!(
         out,

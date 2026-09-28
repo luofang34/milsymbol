@@ -34,7 +34,7 @@ export function canonical(value) {
 function sortKeys(v) {
   if (Array.isArray(v)) return v.map((e) => (typeof e === "function" ? null : sortKeys(e)));
   if (v && typeof v === "object") {
-    const out = {};
+    const out = Object.create(null);
     for (const k of Object.keys(v).sort()) {
       const e = v[k];
       if (typeof e === "function" || typeof e === "undefined") continue;

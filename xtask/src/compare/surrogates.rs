@@ -6,7 +6,7 @@
 //! cannot hold such a value, and the Rust port writes U+FFFD instead
 //! (UPSTREAM.md, "Known differences").
 
-/// `text` (JSON) with every escaped lone surrogate replaced by `\ufffd`, or
+/// `text` (JSON) with every escaped lone surrogate replaced by U+FFFD, or
 /// `None` if it has none.
 pub(super) fn replace_lone(text: &str) -> Option<String> {
     let bytes = text.as_bytes();
@@ -31,7 +31,7 @@ pub(super) fn replace_lone(text: &str) -> Option<String> {
             i += 12;
         } else if (0xD800..0xE000).contains(&unit) {
             out.push_str(text.get(last..i).unwrap_or(""));
-            out.push_str("\\ufffd");
+            out.push('\u{fffd}');
             i += 6;
             last = i;
             found = true;

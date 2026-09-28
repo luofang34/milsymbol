@@ -288,10 +288,15 @@ function known() {
   // in the function id.
   for (const sidc of [infantry + face, "100310000012110000001" + face, "1003100000121100000" + face])
     out({ sidc, known: "lone-surrogate" });
-  // `hasOwnProperty` shadows the method milsymbol.js calls, so it throws.
-  out({ sidc: infantry, options: { hasOwnProperty: "x" }, known: "throws-upstream" });
-  // An own `__proto__` key (JSON.parse creates one) is dropped upstream.
-  out({ sidc: infantry, options: JSON.parse('{"__proto__":"x","uniqueDesignation":"A"}'), known: "proto-key" });
+  for (const sidc of [infantry, "SFGPUCI-----"]) {
+    for (const value of ["", "x", "A\u2028B\"\\\u0000😀"]) {
+      const options = { uniqueDesignation: "A", "2": "two", "10": "ten", "😀": "face", "\uE000": "private" };
+      // `hasOwnProperty` shadows the method milsymbol.js calls, so it throws.
+      out({ sidc, options: { ...options, hasOwnProperty: value }, known: "throws-upstream" });
+      // A computed key creates an own property instead of changing the prototype.
+      out({ sidc, options: { ...options, ["__proto__"]: value }, known: "proto-key" });
+    }
+  }
 }
 
 const suites = { base, modifiers, options, config, invalid, fuzz, direction, known };

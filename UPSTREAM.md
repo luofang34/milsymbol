@@ -133,9 +133,12 @@ formatter does not (`tests/data/v8_numbers.txt`).
 ## Known differences
 
 These are deliberate and do not occur in the corpus. The `known` oracle
-suite (`tools/oracle/cases.mjs`) holds a case for each difference that the
-oracle can observe, labelled with its kind; `cargo xtask compare` accepts
-such a case only if exactly that difference occurs, and fails it otherwise.
+suite (`tools/oracle/cases.mjs`) covers non-BMP SIDCs and JavaScript option
+keys, labelled with their kind. `cargo xtask compare` accepts only the exact
+documented difference: lone surrogates become U+FFFD without changing any
+other JSON bytes or SVG; option-key cases match a safe upstream control
+render with the input key and value restored. Upstream exceptions must also
+match their expected message.
 
 - **Cross-render cache pollution** is not reproduced (see determinism policy).
 - **JavaScript exceptions become typed errors.** Inputs on which upstream
