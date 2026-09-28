@@ -7,6 +7,7 @@ use core::fmt;
 
 /// A value for [`SymbolOptions::set`].
 #[derive(Debug, Clone, PartialEq)]
+#[non_exhaustive]
 pub enum OptionValue {
     /// A string.
     Str(String),

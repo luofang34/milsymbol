@@ -7,6 +7,17 @@ Releases are published to crates.io by `.github/workflows/release.yml` when a
 
 1. Update `version` in `Cargo.toml` and the `CHANGELOG.md` entry.
 2. Make sure CI on `main` is green (it includes `cargo publish --dry-run`).
+   The release job refuses a tag whose commit is not on `main` or has no
+   successful CI run; after CI passes, re-run the failed release job.
+
+## Repository protections
+
+- `main`: no force pushes or deletion; the CI jobs are required status
+  checks (repository admins may still push directly).
+- Tags `v*`: only repository admins may create them; they cannot be moved
+  or deleted.
+- Environment `crates-io` (used by the release job and holding its
+  secrets): deployments only from `v*` tags. No reviewer is required.
 
 ## First release (API token)
 

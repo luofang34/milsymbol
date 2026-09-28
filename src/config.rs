@@ -8,6 +8,7 @@ use alloc::string::String;
 
 /// The symbology standard used when a symbol does not override it.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+#[non_exhaustive]
 pub enum Standard {
     /// MIL-STD-2525 (upstream default).
     #[default]

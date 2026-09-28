@@ -81,6 +81,7 @@ impl PartialEq for PathData {
 /// Error from [`PathData::segments`], carrying the segments parsed before the
 /// error (SVG renderers draw that prefix).
 #[derive(Debug, Clone, PartialEq)]
+#[non_exhaustive]
 pub struct PathParseError {
     /// Byte offset of the offending input.
     pub offset: usize,

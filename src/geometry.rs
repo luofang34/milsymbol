@@ -5,6 +5,7 @@ use crate::generated::misc;
 
 /// Shape of a base frame.
 #[derive(Debug, Clone, Copy, PartialEq)]
+#[non_exhaustive]
 pub enum GeomShape {
     /// A path frame.
     Path(&'static str),

@@ -108,6 +108,7 @@ pub mod field {
 
 /// A style colour: a CSS string, or one colour per affiliation.
 #[derive(Debug, Clone, PartialEq)]
+#[non_exhaustive]
 pub enum StyleColor {
     /// A single colour (the empty string means "not set").
     Str(Str),

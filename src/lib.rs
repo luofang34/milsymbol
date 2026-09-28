@@ -22,6 +22,7 @@
 //! for the compatibility baseline, extension model and known differences.
 
 #![cfg_attr(not(feature = "std"), no_std)]
+#![cfg_attr(docsrs, feature(doc_cfg))]
 #![forbid(unsafe_code)]
 #![warn(missing_docs)]
 
@@ -29,6 +30,7 @@ extern crate alloc;
 
 mod bbox;
 #[cfg(feature = "std")]
+#[cfg_attr(docsrs, doc(cfg(feature = "std")))]
 pub mod cache;
 pub mod catalog;
 pub mod color;

@@ -6,6 +6,7 @@ use crate::geometry::BaseGeometry;
 
 /// Standard identity (affiliation code of the SIDC).
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[non_exhaustive]
 pub enum StandardIdentity {
     /// Pending.
     Pending,
@@ -42,6 +43,7 @@ pub enum Context {
 
 /// Operational status or condition.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[non_exhaustive]
 pub enum Status {
     /// Present.
     Present,
@@ -181,6 +183,7 @@ impl Mobility {
 
 /// Edition of the standard a numeric SIDC follows.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[non_exhaustive]
 pub enum Edition {
     /// MIL-STD-2525D / APP-6D (SIDC versions 10–12).
     D,
