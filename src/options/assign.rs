@@ -126,10 +126,9 @@ impl SymbolOptions {
         key: &str,
         value: impl Into<OptionValue>,
     ) -> Result<&mut Self, OptionError> {
-        let v = value.into();
-        if self.set_style(key, v.clone())? {
+        let Some(v) = self.set_style(key, value.into())? else {
             return Ok(self);
-        }
+        };
         match key {
             "sidc" | "SIDC" => return err(key, "to be passed to Renderer::symbol"),
             "direction" => {
@@ -156,7 +155,8 @@ impl SymbolOptions {
         Ok(self)
     }
 
-    fn set_style(&mut self, key: &str, v: OptionValue) -> Result<bool, OptionError> {
+    /// Sets a style option; hands `v` back when `key` is not one.
+    fn set_style(&mut self, key: &str, v: OptionValue) -> Result<Option<OptionValue>, OptionError> {
         let st = &mut self.style;
         match key {
             "alternateMedal" => st.alternate_medal = boolean(key, v)?,
@@ -201,8 +201,8 @@ impl SymbolOptions {
             }
             "strokeWidth" => st.stroke_width = num(key, v)?,
             "styleFill" => st.style_fill = boolean(key, v)?,
-            _ => return Ok(false),
+            _ => return Ok(Some(v)),
         }
-        Ok(true)
+        Ok(None)
     }
 }
