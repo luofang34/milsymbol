@@ -25,6 +25,7 @@ pub(crate) struct Resolver<'a> {
     /// Affiliation the icon parts were built for (after `|| "Friend"`).
     pub part_affiliation: Option<crate::domain::Affiliation>,
     pub mono_color: &'a str,
+    pub icon_font_family: Option<&'a crate::ir::Str>,
     pub dash_pending: &'a str,
     pub dash_anticipated: &'a str,
     /// Mapping whose in-place part mutations apply (symbol set, or -1 for letter).
@@ -175,7 +176,7 @@ impl Resolver<'_> {
             y: num(t.y),
             text: Cow::Borrowed(t.text),
             font_size: t.size.map(num),
-            font_family: b(t.family),
+            font_family: self.icon_font_family.cloned().or_else(|| b(t.family)),
             font_weight: b(t.weight),
             text_anchor: b(t.anchor),
             alignment_baseline: b(t.baseline),

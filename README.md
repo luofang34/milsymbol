@@ -156,6 +156,14 @@ fill opacity, monochrome, outline colour and width, stroke width, padding,
 size, square, information-field size/colour/background/outline, font, HQ
 staff length, alternate MEDAL icons and the standard override.
 
+`fontfamily` sets the font of generated labels and other non-icon text.
+Built-in icon text keeps its milsymbol.js template font (usually Arial) unless
+`iconTextUsesFontFamily: true` is set. The switch is `false` by default, so
+existing SVG output remains byte-identical to milsymbol.js. Set
+`options.style.icon_text_uses_font_family = true` in the typed API. The switch
+does not override custom text nodes supplied by icon extensions or load fonts
+for an SVG consumer.
+
 ### Letter SIDCs and APP-6
 
 | MIL-STD-2525C `SFGPUCFRM---` | APP-6B `SFGPUCFRM---` | 2525C sea mine `SHUPWMGX----` |

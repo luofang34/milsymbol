@@ -130,9 +130,15 @@ formatter does not (`tests/data/v8_numbers.txt`).
 ## Known differences
 
 These are deliberate and do not occur in the corpus. The `known` oracle
-suite checks that the observable ones occur exactly as described.
+suite and native regression tests check the observable differences.
 
 - **Cross-render cache pollution** is not reproduced (see determinism policy).
+- **Opt-in icon font override.** `iconTextUsesFontFamily: true` uses
+  `fontfamily` for built-in icon text, including sector modifiers. Upstream
+  keeps template fonts for these nodes. The option defaults to `false` and
+  appears in canonical options only when enabled. Custom text nodes returned
+  by icon extensions keep their own fonts. Font metrics and icon bounds are
+  not recalculated, so wider fonts can extend beyond the template bounds.
 - **JavaScript exceptions become typed errors.** Inputs on which upstream
   throws (an unknown `colorMode`, `undefined` instructions reaching
   `ms.outline` or `_scale`) return `RenderError` instead of rendering.

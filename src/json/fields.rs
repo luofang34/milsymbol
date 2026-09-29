@@ -223,6 +223,9 @@ pub(super) fn options<'a>(sidc: &'a str, o: &'a SymbolOptions, j: &mut Object<'a
         )
         .put("strokeWidth", n(st.stroke_width))
         .put("styleFill", b(st.style_fill));
+    if st.icon_text_uses_font_family {
+        j.put("iconTextUsesFontFamily", b(true));
+    }
     j.extend_missing(o.text.iter().map(|(k, v)| (k.as_str(), s(v))));
 }
 

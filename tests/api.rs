@@ -95,6 +95,44 @@ fn text_is_escaped_in_svg() -> TestResult {
 }
 
 #[test]
+fn built_in_icon_text_uses_font_family_only_when_requested() -> TestResult {
+    const CIVILIAN: &str = "10031100001100000000";
+    fn text_family<'a>(nodes: &'a [Node], text: &str) -> Option<&'a str> {
+        nodes.iter().find_map(|node| match node {
+            Node::Text(t) if t.text == text => t.font_family.as_deref(),
+            other => other
+                .children()
+                .and_then(|children| text_family(children, text)),
+        })
+    }
+
+    let renderer = Renderer::default();
+    let mut legacy = SymbolOptions::default();
+    legacy.set("fontfamily", "Courier")?;
+    legacy.set("uniqueDesignation", "A")?;
+    let default = renderer.render(CIVILIAN, legacy.clone())?;
+    assert_eq!(text_family(default.instructions(), "CIV"), Some("Arial"));
+    assert_eq!(text_family(default.instructions(), "A"), Some("Courier"));
+
+    legacy.set("iconTextUsesFontFamily", false)?;
+    assert_eq!(
+        renderer.render(CIVILIAN, legacy.clone())?.to_svg(),
+        default.to_svg()
+    );
+    legacy.set("iconTextUsesFontFamily", true)?;
+    let enabled = renderer.render(CIVILIAN, legacy)?;
+    assert_eq!(text_family(enabled.instructions(), "CIV"), Some("Courier"));
+    assert_eq!(text_family(enabled.instructions(), "A"), Some("Courier"));
+    assert_eq!(
+        enabled.to_svg(),
+        default
+            .to_svg()
+            .replace("font-family=\"Arial\"", "font-family=\"Courier\"")
+    );
+    Ok(())
+}
+
+#[test]
 fn standard_is_renderer_configuration() -> TestResult {
     let app6 = Renderer::default().with_standard(Standard::App6);
     assert!(!app6.symbol(INFANTRY).render()?.metadata().std2525);

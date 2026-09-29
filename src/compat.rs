@@ -19,6 +19,8 @@ pub use metadata::{Metadata as JsMetadata, OptionalFlags};
 /// anchors, validity and options.
 /// Emitted native options take precedence over same-named custom text
 /// fields; the text values remain available through [`Symbol::options`].
+/// The Rust-only `iconTextUsesFontFamily` option is emitted when enabled;
+/// its disabled default is omitted to preserve upstream records.
 pub fn canonical_json(symbol: &Symbol) -> Json {
     Value::Symbol(symbol).to_json()
 }

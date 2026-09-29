@@ -182,6 +182,7 @@ impl SymbolOptions {
             "frameColor" => st.frame_color = color(key, v)?,
             "hqStaffLength" => st.hq_staff_length = num(key, v)?,
             "icon" => st.icon = boolean(key, v)?,
+            "iconTextUsesFontFamily" => st.icon_text_uses_font_family = boolean(key, v)?,
             "iconColor" => st.icon_color = color(key, v)?,
             "infoBackground" => st.info_background = color(key, v)?,
             "infoBackgroundFrame" => st.info_background_frame = color(key, v)?,

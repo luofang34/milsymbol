@@ -16,7 +16,7 @@ type Change = (&'static str, fn(&mut SymbolOptions));
 #[test]
 fn every_option_changes_the_key() {
     let mode = || StyleColor::PerAffiliation(ColorMode::uniform(Some(Paint::color("red"))));
-    let changes: [Change; 37] = [
+    let changes: [Change; 38] = [
         ("text", |o| {
             o.set_text("uniqueDesignation", "A");
         }),
@@ -41,6 +41,9 @@ fn every_option_changes_the_key() {
         }),
         ("hq_staff_length", |o| o.style.hq_staff_length = 50.0),
         ("icon", |o| o.style.icon = false),
+        ("icon_text_uses_font_family", |o| {
+            o.style.icon_text_uses_font_family = true
+        }),
         ("icon_color", |o| {
             o.style.icon_color = StyleColor::from("red")
         }),

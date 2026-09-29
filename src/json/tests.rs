@@ -7,6 +7,25 @@ use alloc::{string::String, vec};
 type TestResult = Result<(), alloc::boxed::Box<dyn core::error::Error>>;
 
 #[test]
+fn canonical_options_record_enabled_icon_font_override() -> TestResult {
+    for enabled in [false, true] {
+        let mut options = SymbolOptions::default();
+        options.style.icon_text_uses_font_family = enabled;
+        let symbol = Renderer::default().render("10031100001100000000", options)?;
+        let out = canonical_json_string(&symbol);
+        assert_eq!(out, canonical_json(&symbol).to_canonical_string());
+        let record: serde_json::Value = serde_json::from_str(&out)?;
+        assert_eq!(
+            record
+                .get("options")
+                .and_then(|o| o.get("iconTextUsesFontFamily")),
+            enabled.then_some(&serde_json::Value::Bool(true))
+        );
+    }
+    Ok(())
+}
+
+#[test]
 fn canonical_options_keep_native_values_without_duplicate_keys() -> TestResult {
     let mut options = SymbolOptions::default();
     for key in ["size", "sidc", "fill", "direction", "uniqueDesignation"] {

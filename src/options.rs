@@ -164,7 +164,8 @@ pub struct Style {
     pub fill_color: Str,
     /// Frame fill opacity.
     pub fill_opacity: f64,
-    /// Font family for text.
+    /// Font family for generated text. Built-in icon text uses it when
+    /// `icon_text_uses_font_family` is enabled.
     pub font_family: Str,
     /// Draw the frame.
     pub frame: bool,
@@ -174,6 +175,9 @@ pub struct Style {
     pub hq_staff_length: f64,
     /// Draw the icon.
     pub icon: bool,
+    /// Use `font_family` for built-in icon text instead of its template font.
+    /// Defaults to `false` to preserve milsymbol.js SVG output.
+    pub icon_text_uses_font_family: bool,
     /// Icon colour override (per affiliation).
     pub icon_color: StyleColor,
     /// Background behind the information fields.
@@ -226,6 +230,7 @@ impl Default for Style {
             frame_color: StyleColor::unset(),
             hq_staff_length: 0.0,
             icon: true,
+            icon_text_uses_font_family: false,
             icon_color: StyleColor::unset(),
             info_background: StyleColor::unset(),
             info_background_frame: StyleColor::unset(),

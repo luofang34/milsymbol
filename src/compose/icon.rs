@@ -207,6 +207,11 @@ fn icon(s: &SymbolState<'_>) -> Result<(Vec<Node>, BBox, bool), RenderError> {
             colors: s.colors,
             part_affiliation: part_aff.known(),
             mono_color: &s.options.style.mono_color,
+            icon_font_family: s
+                .options
+                .style
+                .icon_text_uses_font_family
+                .then_some(&s.options.style.font_family),
             dash_pending: &dashes.pending,
             dash_anticipated: &dashes.anticipated,
             mapping,
