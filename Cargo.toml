@@ -78,10 +78,14 @@ unsafe_code = "forbid"
 unexpected_cfgs = { level = "warn", check-cfg = ["cfg(docsrs)"] }
 missing_docs = "warn"
 let_underscore_drop = "warn"
+dead_code = "deny"
+unused = { level = "deny", priority = -1 }
+unreachable_pub = "deny"
+missing_debug_implementations = "deny"
 
-# Panicking constructs are forbidden everywhere, tests included: tests return
-# `Result` and use `assert!`.
 [workspace.lints.clippy]
+all = { level = "deny", priority = -1 }
+dbg_macro = "deny"
 unwrap_used = "forbid"
 expect_used = "forbid"
 panic = "forbid"

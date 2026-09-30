@@ -54,7 +54,7 @@ fn domain(vars: &[Value], name: &str) -> Vec<String> {
         .unwrap_or_default()
 }
 
-pub fn write_all(
+pub(super) fn write_all(
     root: &Path,
     tables: &Value,
     misc: &Value,

@@ -29,14 +29,14 @@ pub(crate) fn cos(x: f64, platform: crate::config::ReferencePlatform) -> f64 {
 }
 
 /// Formats `v` exactly like JavaScript's `String(v)` for numbers.
-pub fn number_to_string(v: f64) -> String {
+pub(crate) fn number_to_string(v: f64) -> String {
     let mut out = String::new();
     write_number(&mut out, v);
     out
 }
 
 /// Appends `v` formatted like JavaScript's `String(v)`.
-pub fn write_number(out: &mut String, v: f64) {
+pub(crate) fn write_number(out: &mut String, v: f64) {
     if v.is_nan() {
         out.push_str("NaN");
         return;
@@ -208,7 +208,7 @@ pub(crate) fn is_js_whitespace(c: char) -> bool {
 }
 
 /// JavaScript `ToNumber` applied to a string.
-pub fn string_to_number(s: &str) -> f64 {
+pub(crate) fn string_to_number(s: &str) -> f64 {
     let t = s.trim_matches(is_js_whitespace);
     if t.is_empty() {
         return 0.0;
@@ -324,13 +324,13 @@ fn is_decimal_literal(b: &[u8]) -> bool {
 }
 
 /// JavaScript `isNaN(s)` for a string argument.
-pub fn is_nan_str(s: &str) -> bool {
+pub(crate) fn is_nan_str(s: &str) -> bool {
     string_to_number(s).is_nan()
 }
 
 /// JavaScript `parseInt(s)` (radix 10) for the single-character strings
 /// upstream passes it; returns `None` for `NaN`.
-pub fn parse_int(s: &str) -> Option<i64> {
+pub(crate) fn parse_int(s: &str) -> Option<i64> {
     let t = s.trim_start_matches(is_js_whitespace);
     let (neg, t) = match t.strip_prefix('-') {
         Some(r) => (true, r),
@@ -342,7 +342,7 @@ pub fn parse_int(s: &str) -> Option<i64> {
 }
 
 /// JavaScript `Math.max(a, b)`: NaN-propagating, `+0` above `-0`.
-pub fn max(a: f64, b: f64) -> f64 {
+pub(crate) fn max(a: f64, b: f64) -> f64 {
     if a.is_nan() || b.is_nan() {
         f64::NAN
     } else if a == b {
@@ -355,7 +355,7 @@ pub fn max(a: f64, b: f64) -> f64 {
 }
 
 /// JavaScript `Math.min(a, b)`: NaN-propagating, `-0` below `+0`.
-pub fn min(a: f64, b: f64) -> f64 {
+pub(crate) fn min(a: f64, b: f64) -> f64 {
     if a.is_nan() || b.is_nan() {
         f64::NAN
     } else if a == b {
@@ -369,7 +369,7 @@ pub fn min(a: f64, b: f64) -> f64 {
 
 /// A string viewed as UTF-16 code units, as JavaScript string methods see it.
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub enum JsStr<'a> {
+pub(crate) enum JsStr<'a> {
     /// ASCII text, borrowed: bytes and code units coincide.
     Ascii(&'a str),
     /// Other text, as UTF-16 code units.
@@ -384,7 +384,7 @@ impl Default for JsStr<'_> {
 
 impl<'a> JsStr<'a> {
     /// Wraps `s`.
-    pub fn new(s: &'a str) -> Self {
+    pub(crate) fn new(s: &'a str) -> Self {
         if s.is_ascii() {
             JsStr::Ascii(s)
         } else {
@@ -393,7 +393,7 @@ impl<'a> JsStr<'a> {
     }
 
     /// Length in UTF-16 code units (`String.prototype.length`).
-    pub fn len(&self) -> usize {
+    pub(crate) fn len(&self) -> usize {
         match self {
             JsStr::Ascii(s) => s.len(),
             JsStr::Utf16(u) => u.len(),
@@ -402,7 +402,7 @@ impl<'a> JsStr<'a> {
 
     /// `String.prototype.substr(start, len)` for non-negative arguments;
     /// borrows from ASCII input.
-    pub fn substr(&self, start: usize, len: usize) -> Cow<'a, str> {
+    pub(crate) fn substr(&self, start: usize, len: usize) -> Cow<'a, str> {
         let end = start.saturating_add(len).min(self.len());
         let start = start.min(end);
         match self {
@@ -414,13 +414,13 @@ impl<'a> JsStr<'a> {
     }
 
     /// `String.prototype.charAt(i)`.
-    pub fn char_at(&self, i: usize) -> Cow<'a, str> {
+    pub(crate) fn char_at(&self, i: usize) -> Cow<'a, str> {
         self.substr(i, 1)
     }
 }
 
 /// Length of `s` in UTF-16 code units.
-pub fn utf16_len(s: &str) -> usize {
+pub(crate) fn utf16_len(s: &str) -> usize {
     if s.is_ascii() {
         s.len()
     } else {
@@ -429,7 +429,7 @@ pub fn utf16_len(s: &str) -> usize {
 }
 
 /// JavaScript `substr(start, len)` on a Rust string (UTF-16 semantics).
-pub fn substr(s: &str, start: usize, len: usize) -> Cow<'_, str> {
+pub(crate) fn substr(s: &str, start: usize, len: usize) -> Cow<'_, str> {
     JsStr::new(s).substr(start, len)
 }
 

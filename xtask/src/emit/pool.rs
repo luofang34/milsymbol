@@ -10,7 +10,7 @@ use std::collections::HashMap;
 
 /// Accumulated literals of the generated tables.
 #[derive(Default)]
-pub struct Pools {
+pub(super) struct Pools {
     pub styles: Vec<String>,
     style_index: HashMap<String, usize>,
     pub texts: Vec<String>,
@@ -153,7 +153,7 @@ impl Pools {
     }
 
     /// Pool index of a node template.
-    pub fn node_of(&mut self, t: &Value) -> Result<usize, Error> {
+    pub(super) fn node_of(&mut self, t: &Value) -> Result<usize, Error> {
         let key = t.to_string();
         if let Some(&i) = self.node_index.get(&key) {
             return Ok(i);
@@ -208,7 +208,7 @@ impl Pools {
     }
 
     /// Entry index of a table entry `{key, deps, rows}`.
-    pub fn entry_of(&mut self, e: &Value) -> Result<usize, Error> {
+    pub(super) fn entry_of(&mut self, e: &Value) -> Result<usize, Error> {
         let key = e.get("key").and_then(Value::as_str).unwrap_or("?");
         let deps: Vec<usize> = e
             .get("deps")
