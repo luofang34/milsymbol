@@ -1,5 +1,43 @@
 # Changelog
 
+## 0.2.0 — 2026-09-30
+
+Breaking API changes toward typed, single-path use; SVG output is unchanged.
+
+Migrating from 0.1: `Renderer::default().with_x(..)` becomes
+`Renderer::builder().x(..).build()`, `field::X` becomes `TextField::X`,
+colour strings become `Color::new(..)` and `symbol.is_valid()` becomes
+`symbol.validity().is_valid()`.
+
+- Options are typed: `options::TextField` replaces the `field` name
+  constants, `options::Color` and `ColorChoice` replace colour strings, and
+  "not set" is `None` (`speed_leader`, `hq_staff_length` and every optional
+  colour are `Option`). `SymbolOptions::set` keeps the milsymbol.js names.
+  NaN and infinite numbers are rejected with `RenderError::InvalidOption`.
+- `Renderer::symbol` is the entry point. It takes text or a parsed `Sidc`,
+  has setters for the common options, and `strict()` fails on malformed or
+  unrecognised SIDCs. `CachedRenderer::symbol` has the same setters.
+- `Renderer` is built with `Renderer::builder()`, is immutable and `Clone`;
+  the `with_*` methods and `config_mut` are gone.
+- `Symbol::drawing()` returns a flat, typed `Drawing` (resolved transforms,
+  paint, dashes, clips, text attributes). `cache_path_segments` and
+  `CachedRenderer::with_prepared_paths` are removed.
+- `Symbol::is_valid`, `is_sidc_valid` and `js_metadata` are replaced by
+  `Symbol::validity`, `Symbol::sidc_validity`, `compat::is_valid` and
+  `compat::js_metadata`.
+- `IconPartContext::mono_color` is `Option<&str>`. `SymbolOptions::text` is
+  no longer a public field; use `text`, `text_named`, `text_fields` and
+  `set_text`. `LabelField::for_field` takes a `TextField`.
+- `Renderer::symbol` builders own a handle on the renderer, so they can be
+  stored; `Renderer` is `Rc`-shared (not `Send`) on targets without atomic
+  pointers such as thumbv6m.
+- New `serde` feature for options, configuration, metadata and the drawing
+  view.
+- Stricter lints (`dead_code`, `unused`, `unreachable_pub`, `clippy::all`)
+  for every crate, enforced on stable, beta and the minimum Rust version;
+  fuzz targets for the SIDC parser, rendering and option assignment;
+  semver, feature-combination and lint-configuration checks in CI.
+
 ## 0.1.0 — 2026-09-28
 
 First release: a native Rust port of milsymbol.js 3.0.4.
