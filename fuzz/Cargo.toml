@@ -1,0 +1,66 @@
+[package]
+name = "milsymbol-fuzz"
+version = "0.0.0"
+publish = false
+edition = "2024"
+
+[package.metadata]
+cargo-fuzz = true
+
+[dependencies]
+libfuzzer-sys = "0.4"
+milsymbol = { path = ".." }
+
+# Detached from the library workspace so ordinary builds never need libFuzzer.
+[workspace]
+
+[lints.rust]
+unsafe_code = "forbid"
+unexpected_cfgs = { level = "warn", check-cfg = ["cfg(docsrs)"] }
+missing_docs = "warn"
+let_underscore_drop = "warn"
+dead_code = "deny"
+unused = { level = "deny", priority = -1 }
+unreachable_pub = "deny"
+missing_debug_implementations = "deny"
+
+[lints.clippy]
+all = { level = "deny", priority = -1 }
+dbg_macro = "deny"
+unwrap_used = "forbid"
+expect_used = "forbid"
+panic = "forbid"
+unwrap_in_result = "forbid"
+get_unwrap = "forbid"
+indexing_slicing = "forbid"
+string_slice = "forbid"
+todo = "forbid"
+unimplemented = "forbid"
+unreachable = "forbid"
+exit = "forbid"
+mem_forget = "forbid"
+let_underscore_must_use = "deny"
+let_underscore_future = "deny"
+await_holding_lock = "deny"
+too_many_lines = "deny"
+
+[[bin]]
+name = "sidc_parse"
+path = "fuzz_targets/sidc_parse.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "render"
+path = "fuzz_targets/render.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "set_option"
+path = "fuzz_targets/set_option.rs"
+test = false
+doc = false
+bench = false
