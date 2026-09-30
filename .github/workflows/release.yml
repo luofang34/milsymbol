@@ -63,6 +63,8 @@ jobs:
         run: |
           version=$(cargo metadata --no-deps --format-version 1 | jq -r '.packages[] | select(.name == "milsymbol") | .version')
           test "v$version" = "$GITHUB_REF_NAME"
+      - name: Changelog entry is dated
+        run: tools/ci/changelog.sh --release
       - run: cargo test --release -p milsymbol
       - name: Authenticate with Trusted Publishing
         id: trusted
