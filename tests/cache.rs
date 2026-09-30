@@ -3,7 +3,7 @@
 #![cfg(feature = "std")]
 
 use milsymbol::cache::CachedRenderer;
-use milsymbol::options::{SymbolOptions, field};
+use milsymbol::options::{SymbolOptions, TextField};
 use milsymbol::{PartError, PartOutput, Renderer, SymbolPart, SymbolState};
 use std::sync::{Arc, Barrier};
 
@@ -11,7 +11,7 @@ struct ConcurrentMisses(Arc<Barrier>);
 
 impl SymbolPart for ConcurrentMisses {
     fn draw(&self, state: &SymbolState<'_>) -> Result<PartOutput, PartError> {
-        if state.options().text(field::UNIQUE_DESIGNATION) == "concurrent" {
+        if state.options().text(&TextField::UniqueDesignation) == "concurrent" {
             self.0.wait();
         }
         Ok(PartOutput::default())
@@ -22,12 +22,13 @@ impl SymbolPart for ConcurrentMisses {
 fn same_key_misses_reuse_the_winner_without_evicting_other_keys()
 -> Result<(), Box<dyn std::error::Error>> {
     const SIDC: &str = "10031000001211000000";
-    let renderer =
-        Renderer::default().with_symbol_part(ConcurrentMisses(Arc::new(Barrier::new(2))));
+    let renderer = Renderer::builder()
+        .symbol_part(ConcurrentMisses(Arc::new(Barrier::new(2))))
+        .build();
     let cache = Arc::new(CachedRenderer::new(renderer, 2));
     let warm = cache.render(SIDC, &SymbolOptions::default())?;
     let mut options = SymbolOptions::default();
-    options.set_text(field::UNIQUE_DESIGNATION, "concurrent");
+    options.set_text(TextField::UniqueDesignation, "concurrent");
     let spawn = || {
         let cache = Arc::clone(&cache);
         let options = options.clone();

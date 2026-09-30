@@ -7,6 +7,7 @@ use alloc::collections::BTreeMap;
 use alloc::string::String;
 
 /// The symbology standard used when a symbol does not override it.
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 #[non_exhaustive]
 pub enum Standard {
@@ -25,6 +26,7 @@ pub enum Standard {
 /// multiply-adds, so the last digit of those coordinates differs between
 /// platforms. This crate reproduces either one exactly, independently of
 /// the platform it runs on.
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 #[non_exhaustive]
 pub enum ReferencePlatform {
@@ -38,6 +40,7 @@ pub enum ReferencePlatform {
 
 /// Dash arrays of not-present frames and feint/dummy indicators
 /// (upstream `ms.setDashArrays`).
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Debug, Clone, PartialEq, Eq)]
 #[non_exhaustive]
 pub struct DashArrays {
@@ -75,6 +78,7 @@ impl Default for DashArrays {
 }
 
 /// Configuration shared by all symbols a [`Renderer`](crate::Renderer) draws.
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Debug, Clone, PartialEq)]
 #[non_exhaustive]
 pub struct RendererConfig {

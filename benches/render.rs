@@ -3,7 +3,7 @@
 
 use criterion::{Criterion, criterion_group, criterion_main};
 use milsymbol::cache::CachedRenderer;
-use milsymbol::options::{SymbolOptions, field};
+use milsymbol::options::{SymbolOptions, TextField};
 use milsymbol::{Renderer, catalog};
 use std::hint::black_box;
 
@@ -30,9 +30,25 @@ fn single(c: &mut Criterion) {
         })
     });
     let mut text = SymbolOptions::default();
-    text.set_text(field::UNIQUE_DESIGNATION, "1-66")
-        .set_text(field::HIGHER_FORMATION, "2 BDE");
+    text.set_text(TextField::UniqueDesignation, "1-66")
+        .set_text(TextField::HigherFormation, "2 BDE");
     text.direction = Some(45.0);
+    let mut buffer = String::with_capacity(2048);
+    g.bench_function("compose_and_write_svg_reused_buffer_infantry", |b| {
+        b.iter(|| {
+            buffer.clear();
+            if let Ok(s) = r.render(black_box("10031000001211000000"), SymbolOptions::default()) {
+                s.write_svg(&mut buffer);
+            }
+            buffer.len()
+        })
+    });
+    g.bench_function("compose_and_drawing_infantry", |b| {
+        b.iter(|| {
+            r.render(black_box("10031000001211000000"), SymbolOptions::default())
+                .map(|s| s.drawing().items.len())
+        })
+    });
     g.bench_function("compose_and_svg_with_fields", |b| {
         b.iter(|| {
             r.render(black_box("10031002151211000000"), text.clone())
@@ -76,6 +92,23 @@ fn bulk(c: &mut Criterion) {
             bytes
         })
     });
+    g.bench_function(
+        format!("all_number_icons_{}_reused_buffer", sidcs.len()),
+        |b| {
+            let mut buffer = String::with_capacity(4096);
+            b.iter(|| {
+                let mut bytes = 0usize;
+                for s in &sidcs {
+                    if let Ok(sym) = r.render(s, SymbolOptions::default()) {
+                        buffer.clear();
+                        sym.write_svg(&mut buffer);
+                        bytes += buffer.len();
+                    }
+                }
+                bytes
+            })
+        },
+    );
     g.finish();
 }
 

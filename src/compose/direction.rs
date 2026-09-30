@@ -66,11 +66,9 @@ fn movement(
             );
             arrow = alloc::vec![Node::translate(0.0, bbox.y2, arrow), stem];
         } else {
-            let hq = if st.hq_staff_length != 0.0 && !st.hq_staff_length.is_nan() {
-                st.hq_staff_length
-            } else {
-                s.config.hq_staff_length
-            };
+            let hq = st
+                .hq_staff_length_override()
+                .unwrap_or(s.config.hq_staff_length);
             arrow = alloc::vec![Node::translate(
                 bbox.x1 - 100.0,
                 bbox.y2 - (100.0 - hq),
@@ -92,7 +90,7 @@ fn speed_leader(
     gbbox: &mut BBox,
 ) -> Node {
     let st = &s.options.style;
-    let length = s.options.speed_leader * (100.0 / st.size);
+    let length = s.options.speed_leader_px() * (100.0 / st.size);
     let rad = (direction * PI) / 180.0;
     let platform = s.config.reference_platform;
     let y = -length * js::cos(rad, platform);
@@ -125,7 +123,7 @@ pub(super) fn draw(s: &SymbolState<'_>) -> Result<PartOutput, RenderError> {
     let Some(direction) = opts.direction.filter(|_| st.info_fields) else {
         return Ok(PartOutput::new(pre, post, gbbox));
     };
-    let arrow = if opts.speed_leader == 0.0 {
+    let arrow = if opts.speed_leader_px() == 0.0 {
         movement(s, bbox, direction, &color, &mut gbbox)
     } else {
         speed_leader(s, direction, &color, &mut gbbox)
@@ -137,7 +135,7 @@ pub(super) fn draw(s: &SymbolState<'_>) -> Result<PartOutput, RenderError> {
         };
         pre.push(outline);
     }
-    if opts.speed_leader == 0.0 {
+    if opts.speed_leader_px() == 0.0 {
         post.push(arrow);
     } else {
         pre.push(arrow);

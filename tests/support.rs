@@ -8,7 +8,7 @@ use milsymbol::{DashArrays, ReferencePlatform, Renderer, RendererConfig, Standar
 use serde_json::Value;
 
 /// FNV-1a 64-bit over UTF-8 bytes (mirrors `tools/oracle/oracle.mjs`).
-pub fn fnv64(s: &str) -> String {
+pub(crate) fn fnv64(s: &str) -> String {
     let mut h: u64 = 0xcbf29ce484222325;
     for b in s.bytes() {
         h ^= u64::from(b);
@@ -32,7 +32,7 @@ fn color_mode(obj: &serde_json::Map<String, Value>) -> ColorMode {
 }
 
 /// Options of a case, or the error message expected from `set`.
-pub fn options(case: &Value) -> Result<SymbolOptions, String> {
+pub(crate) fn options(case: &Value) -> Result<SymbolOptions, String> {
     let mut o = SymbolOptions::default();
     if let Some(Value::Object(map)) = case.get("options") {
         for (k, v) in map {
@@ -61,7 +61,7 @@ pub fn options(case: &Value) -> Result<SymbolOptions, String> {
 }
 
 /// Renderer configured for a case, reproducing V8 on `platform`.
-pub fn renderer(case: &Value, platform: ReferencePlatform) -> Renderer {
+pub(crate) fn renderer(case: &Value, platform: ReferencePlatform) -> Renderer {
     let mut config = RendererConfig::default();
     config.reference_platform = platform;
     if let Some(cfg) = case.get("cfg") {
@@ -87,12 +87,15 @@ pub fn renderer(case: &Value, platform: ReferencePlatform) -> Renderer {
 }
 
 /// Rendered record of a case for V8 on x64 (the fixtures' platform).
-pub fn render(case: &Value) -> Result<(String, String), String> {
+pub(crate) fn render(case: &Value) -> Result<(String, String), String> {
     render_for(case, ReferencePlatform::X64)
 }
 
 /// Rendered record of a case: (svg, canonical json) or an error string.
-pub fn render_for(case: &Value, platform: ReferencePlatform) -> Result<(String, String), String> {
+pub(crate) fn render_for(
+    case: &Value,
+    platform: ReferencePlatform,
+) -> Result<(String, String), String> {
     let sidc = case.get("sidc").and_then(Value::as_str).unwrap_or_default();
     let options = options(case)?;
     let r = renderer(case, platform);

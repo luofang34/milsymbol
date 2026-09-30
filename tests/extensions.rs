@@ -36,7 +36,7 @@ impl SymbolPart for Marker {
 #[test]
 fn custom_symbol_part_extends_pipeline_and_bbox() -> TestResult {
     let plain = Renderer::default().symbol(INFANTRY).render()?;
-    let r = Renderer::default().with_symbol_part(Marker);
+    let r = Renderer::builder().symbol_part(Marker).build();
     let s = r.symbol(INFANTRY).render()?;
     assert!(s.to_svg().contains("fill=\"magenta\""));
     assert_eq!(s.bounding_box().y1, plain.bounding_box().y1 - 30.0);
@@ -91,9 +91,9 @@ impl IconExtension for Custom {
 
 #[test]
 fn icon_extension_adds_sidc_with_builtin_parts() -> TestResult {
-    let r = Renderer::default().with_icons(Custom);
+    let r = Renderer::builder().icons(Custom).build();
     let s = r.symbol("10031000009999000000").render()?;
-    assert!(s.is_valid());
+    assert!(s.validity().is_valid());
     let svg = s.to_svg();
     assert!(svg.contains("d=\"M80,80 L120,120\""), "{svg}");
     assert!(
@@ -104,6 +104,7 @@ fn icon_extension_adds_sidc_with_builtin_parts() -> TestResult {
         !Renderer::default()
             .symbol("10031000009999000000")
             .render()?
+            .validity()
             .is_valid()
     );
     Ok(())
@@ -111,9 +112,10 @@ fn icon_extension_adds_sidc_with_builtin_parts() -> TestResult {
 
 #[test]
 fn extension_icons_are_recognised_without_an_icon_stage() -> TestResult {
-    let r = Renderer::default()
-        .with_icons(Custom)
-        .with_builtin_parts(&[milsymbol::BuiltinPart::BaseGeometry]);
+    let r = Renderer::builder()
+        .icons(Custom)
+        .pipeline(&[milsymbol::BuiltinPart::BaseGeometry])
+        .build();
     let sidc = "10031000009999000000";
     r.check_sidc(sidc)?;
     for icon in [true, false] {
@@ -121,7 +123,8 @@ fn extension_icons_are_recognised_without_an_icon_stage() -> TestResult {
             r.symbol(sidc)
                 .with(|o| o.style.icon = icon)
                 .render()?
-                .is_sidc_valid()
+                .sidc_validity()
+                .is_valid()
         );
     }
     Ok(())
@@ -146,9 +149,10 @@ impl IconExtension for IncompleteIcon {
 fn incomplete_extension_icons_fail_sidc_validation_even_when_not_drawn() -> TestResult {
     use milsymbol::BuiltinPart;
     for parts in [&BuiltinPart::DEFAULT[..], &[BuiltinPart::BaseGeometry][..]] {
-        let renderer = Renderer::default()
-            .with_icons(IncompleteIcon)
-            .with_builtin_parts(parts);
+        let renderer = Renderer::builder()
+            .icons(IncompleteIcon)
+            .pipeline(parts)
+            .build();
         let sidc = "10031000009999000000";
         assert!(renderer.check_sidc(sidc).is_err());
         for icon in [true, false] {
@@ -156,7 +160,7 @@ fn incomplete_extension_icons_fail_sidc_validation_even_when_not_drawn() -> Test
                 .symbol(sidc)
                 .with(|o| o.style.icon = icon)
                 .render()?;
-            assert!(!symbol.is_sidc_valid(), "icon={icon}");
+            assert!(!symbol.sidc_validity().is_valid(), "icon={icon}");
         }
     }
     Ok(())
@@ -188,14 +192,14 @@ impl IconExtension for InfantryCircle {
 #[test]
 fn extension_parts_replace_builtin_parts_like_upstream() -> TestResult {
     let expected = include_str!("data/override_oracle.txt");
-    let r = Renderer::default().with_icons(InfantryCircle);
+    let r = Renderer::builder().icons(InfantryCircle).build();
     let sidcs = [
         "10031000001211000000",
         "SFGPUCI-----",
         "10061000001211000000",
     ];
     for (sidc, want) in sidcs.iter().zip(expected.lines()) {
-        assert_eq!(r.symbol(sidc).render()?.to_svg(), want, "{sidc}");
+        assert_eq!(r.symbol(*sidc).render()?.to_svg(), want, "{sidc}");
     }
     assert_eq!(expected.lines().count(), sidcs.len());
     Ok(())
@@ -223,8 +227,9 @@ impl SymbolPart for Failing {
 #[test]
 fn failing_part_keeps_its_position_and_source() -> TestResult {
     use std::error::Error as _;
-    let err = Renderer::default()
-        .with_symbol_part(Failing)
+    let err = Renderer::builder()
+        .symbol_part(Failing)
+        .build()
         .render(INFANTRY, SymbolOptions::default())
         .err();
     let Some(RenderError::Part { index, source }) = &err else {
@@ -268,8 +273,9 @@ fn renderer_checks_support_including_extensions() -> TestResult {
         r.check_sidc("SFQPUCI-----"),
         Err(SidcCheckError::Malformed(_))
     ));
-    Renderer::default()
-        .with_icons(Custom)
+    Renderer::builder()
+        .icons(Custom)
+        .build()
         .check_sidc("10031000009999000000")?;
     Ok(())
 }
@@ -306,12 +312,14 @@ fn clip_ids(svg: &str) -> Vec<String> {
 
 #[test]
 fn clip_ids_are_unique_and_prefixable() -> TestResult {
-    let r = Renderer::default().with_symbol_part(Clips(vec![
-        Some("clip-custom-0"),
-        None,
-        Some("a b"),
-        Some("a_b"),
-    ]));
+    let r = Renderer::builder()
+        .symbol_part(Clips(vec![
+            Some("clip-custom-0"),
+            None,
+            Some("a b"),
+            Some("a_b"),
+        ]))
+        .build();
     let s = r.symbol(INFANTRY).render()?;
     let ids = clip_ids(&s.to_svg());
     assert_eq!(ids, ["clip-custom-0", "clip-custom-1", "a_b", "a_b-1"]);
@@ -333,34 +341,6 @@ fn clip_ids_are_unique_and_prefixable() -> TestResult {
     for id in &ids {
         assert!(prefixed.contains(&format!("url(#{id})")), "{id}");
     }
-    Ok(())
-}
-
-#[cfg(feature = "std")]
-#[test]
-fn cached_preparation_keeps_going_after_an_extension_path_error() -> TestResult {
-    struct MixedPaths;
-    impl SymbolPart for MixedPaths {
-        fn draw(&self, _: &SymbolState<'_>) -> Result<PartOutput, milsymbol::PartError> {
-            Ok(PartOutput::new(
-                vec![],
-                vec![Node::path("M,0,0"), Node::path("M101,101 L102,102")],
-                PartialBBox::default(),
-            ))
-        }
-    }
-    let cache =
-        milsymbol::cache::CachedRenderer::new(Renderer::default().with_symbol_part(MixedPaths), 4)
-            .with_prepared_paths();
-    let options = SymbolOptions::default();
-    let symbol = cache.render(INFANTRY, &options)?;
-    let hit = cache.render(INFANTRY, &options)?;
-    assert!(std::sync::Arc::ptr_eq(&symbol, &hit));
-    let Some(Node::Path(path)) = hit.instructions().last() else {
-        return Err("expected final extension path".into());
-    };
-    assert_eq!(path.d.source(), "M101,101 L102,102");
-    assert!(matches!(path.d.segments()?, Cow::Borrowed(_)));
     Ok(())
 }
 
@@ -392,7 +372,9 @@ fn modifier_keys_match_the_complete_modifier_codes() -> TestResult {
         assert_eq!(n.modifiers().0, "07");
         assert_eq!(n.modifier_codes().0.as_str(), complete);
         let keys = std::sync::Arc::new(ModifierKeys::default());
-        let r = Renderer::default().with_icons(SharedKeys(std::sync::Arc::clone(&keys)));
+        let r = Renderer::builder()
+            .icons(SharedKeys(std::sync::Arc::clone(&keys)))
+            .build();
         r.symbol(sidc).render()?;
         let seen = keys.0.lock().map_err(|e| e.to_string())?.clone();
         assert_eq!(seen, [key], "{sidc}");
@@ -450,11 +432,12 @@ impl IconExtension for CountPartLookups {
 
 #[test]
 fn named_builtin_lookup_queries_each_extension_once() -> TestResult {
-    let symbol = Renderer::default()
-        .with_icons(CountPartLookups::default())
+    let symbol = Renderer::builder()
+        .icons(CountPartLookups::default())
+        .build()
         .symbol("10031000009999000000")
         .render()?;
-    assert!(symbol.is_valid());
+    assert!(symbol.validity().is_valid());
     assert!(symbol.to_svg().contains("M25,50 L175,150"));
     Ok(())
 }

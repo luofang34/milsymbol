@@ -25,7 +25,7 @@ pub(super) struct Acc {
 impl Acc {
     /// Upstream's final pass: `fill = false`, `stroke = color`,
     /// `strokewidth = style.strokeWidth` where absent.
-    pub fn defaults(&self, extra: Style) -> Style {
+    pub(super) fn defaults(&self, extra: Style) -> Style {
         Style {
             fill: Some(extra.fill.unwrap_or(Paint::None)),
             stroke: extra.stroke.or_else(|| self.color.clone()),
@@ -36,7 +36,7 @@ impl Acc {
 
     /// Outlines a raw leaf geometry (before defaults, as upstream does) and
     /// pushes it with default attributes applied.
-    pub fn push_leaf(
+    pub(super) fn push_leaf(
         &mut self,
         s: &SymbolState<'_>,
         d: String,
@@ -58,7 +58,7 @@ impl Acc {
     }
 
     /// Pushes a translated group and its outline.
-    pub fn push_group(
+    pub(super) fn push_group(
         &mut self,
         s: &SymbolState<'_>,
         x: f64,
@@ -83,13 +83,11 @@ impl Acc {
 }
 
 fn modifier_color(s: &SymbolState<'_>) -> Option<Paint> {
-    let fc = &s.options.style.frame_color;
-    if fc.is_set() {
+    match &s.options.style.frame_color {
         // A string frameColor is indexed by affiliation like an object and
         // yields `undefined` upstream.
-        fc.as_mode().and_then(|m| s.color_of(m))
-    } else {
-        s.color_of(&s.colors.icon_color)
+        Some(fc) => fc.as_mode().and_then(|m| s.color_of(m)),
+        None => s.color_of(&s.colors.icon_color),
     }
 }
 
@@ -104,11 +102,9 @@ pub(super) fn draw(s: &SymbolState<'_>) -> Result<PartOutput, RenderError> {
         stroke_width: st.stroke_width,
     };
     let dim_aff = crate::geometry::frame_name(md.dimension.known(), md.affiliation.known());
-    let hq_len = if st.hq_staff_length != 0.0 && !st.hq_staff_length.is_nan() {
-        st.hq_staff_length
-    } else {
-        s.config.hq_staff_length
-    };
+    let hq_len = st
+        .hq_staff_length_override()
+        .unwrap_or(s.config.hq_staff_length);
     if md.headquarters && hq_len > 0.0 {
         headquarters(s, &mut acc, &bbox, dim_aff.unwrap_or(""), hq_len)?;
     }

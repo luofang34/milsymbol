@@ -98,3 +98,53 @@ fn corpus_base() -> Result<(), Box<dyn std::error::Error>> {
 fn corpus_direction() -> Result<(), Box<dyn std::error::Error>> {
     replay("direction")
 }
+
+/// Every symbol of the oracle corpus draws as many items as its SVG has
+/// elements, and no path is malformed.
+#[test]
+fn corpus_drawings_match_svg_element_counts() -> Result<(), Box<dyn std::error::Error>> {
+    let mut checked = 0usize;
+    for suite in ["modifiers", "options", "direction", "config"] {
+        let path = format!(
+            "{}/tests/corpus/{suite}.jsonl.gz",
+            env!("CARGO_MANIFEST_DIR")
+        );
+        let reader = BufReader::new(GzDecoder::new(std::fs::File::open(path)?));
+        for line in reader.lines() {
+            let case: serde_json::Value = serde_json::from_str(&line?)?;
+            if case.get("error").is_some() {
+                continue;
+            }
+            let sidc = case
+                .get("sidc")
+                .and_then(serde_json::Value::as_str)
+                .unwrap_or_default();
+            let Ok(options) = support::options(&case) else {
+                continue;
+            };
+            let renderer = support::renderer(&case, milsymbol::ReferencePlatform::X64);
+            let Ok(symbol) = renderer.render(sidc, options) else {
+                continue;
+            };
+            let svg = symbol.to_svg();
+            let drawing = symbol.drawing();
+            let paths = drawing
+                .items
+                .iter()
+                .filter(|i| matches!(i.shape, milsymbol::drawing::Shape::Path(_)))
+                .count();
+            let want = svg.matches("<path").count() - svg.matches("clip-rule").count();
+            assert_eq!(paths, want, "{sidc} {suite}");
+            let texts = drawing
+                .items
+                .iter()
+                .filter(|i| matches!(i.shape, milsymbol::drawing::Shape::Text(_)))
+                .count();
+            assert_eq!(texts, svg.matches("<text").count(), "{sidc} {suite}");
+            assert_eq!(drawing.invalid_paths, 0, "{sidc} {suite}");
+            checked += 1;
+        }
+    }
+    assert!(checked > 10_000, "{checked}");
+    Ok(())
+}

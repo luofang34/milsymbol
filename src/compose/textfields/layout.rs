@@ -71,8 +71,8 @@ fn centred_fields(
     gbbox: &mut BBox,
 ) {
     let (md, opts) = (s.metadata, s.options);
-    let special_hq = opts.text(f::SPECIAL_HEADQUARTERS);
-    let quantity = opts.text(f::QUANTITY);
+    let special_hq = opts.text_named(f::SPECIAL_HEADQUARTERS);
+    let quantity = opts.text_named(f::QUANTITY);
     if !special_hq.is_empty() {
         post.push(centre_text(ts, special_hq));
     }
@@ -80,7 +80,7 @@ fn centred_fields(
         post.push(ts.text(quantity, 100.0, bbox.y1 - 10.0, "middle"));
         gbbox.y1 = bbox.y1 - 10.0 - ts.size;
     }
-    let hq_element = opts.text(f::HEADQUARTERS_ELEMENT);
+    let hq_element = opts.text_named(f::HEADQUARTERS_ELEMENT);
     if !hq_element.is_empty() {
         let mut t = ts.text(hq_element, 100.0, bbox.y2 + 35.0, "middle");
         if let Node::Text(t) = &mut t {
@@ -110,8 +110,8 @@ fn extent(
         }
     };
     let (hq_w, q_w) = (
-        centred(opts.text(f::SPECIAL_HEADQUARTERS)),
-        centred(opts.text(f::QUANTITY)),
+        centred(opts.text_named(f::SPECIAL_HEADQUARTERS)),
+        centred(opts.text_named(f::QUANTITY)),
     );
     let [l1, l2, l3, l4, l5] = &g.l;
     let [r1, r2, r3, r4, r5] = &g.r;
@@ -159,13 +159,13 @@ pub(super) fn draw(s: &SymbolState<'_>, ts: &TextStyle, post: &mut Vec<Node>, gb
     let (flag, stack) = offsets(s);
     centred_fields(s, ts, &bbox, post, gbbox);
     let g = fields::compute(s);
-    let quantity = s.options.text(f::QUANTITY);
+    let quantity = s.options.text_named(f::QUANTITY);
     if md.dismounted() && !quantity.is_empty() {
         post.push(ts.text(quantity, 100.0, bbox.y2 + fs, "middle"));
         gbbox.y2 = bbox.y2 + fs;
     }
     extent(s, &g, &bbox, fs, (flag, stack), gbbox);
-    if s.options.style.info_background.is_set() {
+    if s.options.style.info_background.is_some() {
         backgrounds(s, &g, &bbox, fs, post, gbbox);
     }
     let rows = [-1.5, -0.5, 0.5, 1.5, 2.5];
@@ -203,7 +203,7 @@ fn backgrounds(
     post: &mut Vec<Node>,
     gbbox: &mut BBox,
 ) {
-    let fill = style_color_value(&s.options.style.info_background, s.aff());
+    let fill = style_color_value(s.options.style.info_background.as_ref(), s.aff());
     let stroke = if truthy(&fill) {
         fill.clone()
     } else {

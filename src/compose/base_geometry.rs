@@ -102,10 +102,9 @@ pub(super) fn frame(s: &SymbolState<'_>) -> Result<Option<FrameNodes>, crate::Re
     } else {
         10.0
     };
-    let fill = if st.fill_color.is_empty() {
-        s.color_of(&s.colors.fill_color)
-    } else {
-        Some(Paint::Color(st.fill_color.clone()))
+    let fill = match &st.fill_color {
+        None => s.color_of(&s.colors.fill_color),
+        Some(c) => Some(Paint::Color(c.to_str())),
     };
     let mut geom_style = Style {
         fill,
@@ -117,7 +116,7 @@ pub(super) fn frame(s: &SymbolState<'_>) -> Result<Option<FrameNodes>, crate::Re
     let mut pre = Vec::new();
     if st.frame && st.outline_width > 0.0 {
         let outline = match g.shape {
-            GeomShape::Path(d) if md.fill && st.mono_color.is_empty() => {
+            GeomShape::Path(d) if md.fill && st.mono_color.is_none() => {
                 let mut o = PathNode {
                     d: PathData::new(String::from(d) + " Z"),
                     style: Style::default(),
@@ -129,7 +128,7 @@ pub(super) fn frame(s: &SymbolState<'_>) -> Result<Option<FrameNodes>, crate::Re
         };
         pre.push(s.outline_one(&outline)?);
     }
-    if (!st.mono_color.is_empty() || !st.fill) && !md.notpresent.is_empty() {
+    if (st.mono_color.is_some() || !st.fill) && !md.notpresent.is_empty() {
         geom_style.stroke_dasharray = Some(Cow::Owned(md.notpresent.clone()));
     }
     let mut post = alloc::vec![shape_node(g.shape, geom_style)];

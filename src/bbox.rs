@@ -1,6 +1,7 @@
 //! Bounding boxes in symbol units.
 
 /// An axis-aligned bounding box (upstream `ms.BBox`).
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct BBox {
     /// Left.
@@ -27,6 +28,7 @@ impl Default for BBox {
 
 /// A bounding box whose coordinates may be missing, as returned by symbol
 /// parts that only extend some edges.
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Debug, Clone, Copy, PartialEq, Default)]
 pub struct PartialBBox {
     /// Left.

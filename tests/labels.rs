@@ -1,7 +1,7 @@
 //! Public label constructors and custom placement bounds.
 
 use milsymbol::labels::{Label, LabelField};
-use milsymbol::options::field;
+use milsymbol::options::TextField;
 use milsymbol::{IconExtension, Renderer};
 use std::collections::BTreeMap;
 
@@ -21,8 +21,8 @@ impl IconExtension for Placements {
 
 impl Placements {
     fn fields(&self) -> Vec<LabelField> {
-        vec![LabelField::new(
-            field::UNIQUE_DESIGNATION,
+        vec![LabelField::for_field(
+            &TextField::UniqueDesignation,
             vec![self.0.clone()],
         )]
     }
@@ -40,11 +40,11 @@ fn default_label_placement_includes_text_in_bounds() -> Result<(), Box<dyn std::
 }
 
 fn check_bounds(label: Label) -> Result<(), Box<dyn std::error::Error>> {
-    let renderer = Renderer::default().with_icons(Placements(label));
+    let renderer = Renderer::builder().icons(Placements(label)).build();
     for sidc in ["SFGPUCI-----", "10032500001301000000"] {
         let symbol = renderer
             .symbol(sidc)
-            .text(field::UNIQUE_DESIGNATION, "VISIBLE")
+            .text(TextField::UniqueDesignation, "VISIBLE")
             .render()?;
         let svg = symbol.to_svg();
         assert!(svg.contains("x=\"300\" y=\"-300\" text-anchor=\"start\" font-size=\"12\""));
@@ -58,10 +58,11 @@ fn check_bounds(label: Label) -> Result<(), Box<dyn std::error::Error>> {
 
 #[test]
 fn omitted_label_coordinates_use_the_origin() -> Result<(), Box<dyn std::error::Error>> {
-    let symbol = Renderer::default()
-        .with_icons(Placements(Label::default()))
+    let symbol = Renderer::builder()
+        .icons(Placements(Label::default()))
+        .build()
         .symbol("SFGPUCI-----")
-        .text(field::UNIQUE_DESIGNATION, "VISIBLE")
+        .text(TextField::UniqueDesignation, "VISIBLE")
         .render()?;
     assert!(
         symbol
@@ -75,10 +76,12 @@ fn omitted_label_coordinates_use_the_origin() -> Result<(), Box<dyn std::error::
 
 #[test]
 fn numeric_unit_labels_keep_the_standard_layout() -> Result<(), Box<dyn std::error::Error>> {
-    let renderer = Renderer::default().with_icons(Placements(Label::at(300.0, -300.0)));
+    let renderer = Renderer::builder()
+        .icons(Placements(Label::at(300.0, -300.0)))
+        .build();
     let render = |r: &Renderer| {
         r.symbol("10031000001211000000")
-            .text(field::UNIQUE_DESIGNATION, "VISIBLE")
+            .text(TextField::UniqueDesignation, "VISIBLE")
             .render()
     };
     let custom = render(&renderer)?;

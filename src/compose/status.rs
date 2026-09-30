@@ -37,11 +37,11 @@ pub(super) fn draw(s: &SymbolState<'_>) -> Result<PartOutput, RenderError> {
     let (mut y1, mut y2) = (bbox.y1, bbox.y2);
     let mut pre = Vec::new();
     let mut post = Vec::new();
-    if !md.condition.is_none() {
-        if md.fill && st.mono_color.is_empty() && !st.simple_status_modifier {
+    if md.condition.is_some() {
+        if md.fill && st.mono_color.is_none() && !st.simple_status_modifier {
             if !s
                 .options
-                .text(crate::options::field::HEADQUARTERS_ELEMENT)
+                .text_named(crate::options::field::HEADQUARTERS_ELEMENT)
                 .is_empty()
             {
                 y2 += 35.0;

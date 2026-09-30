@@ -6,7 +6,7 @@
   run with `cargo bench --bench render -- --warm-up-time 0.5
   --measurement-time 1 --sample-size 20` (release profile, default options,
   size 100; the bulk group uses 10 samples).
-- Machine: Apple M3 Max, macOS; rustc 1.98.1. Single run, other load minimal.
+- Machine: Apple M3 Max, macOS; rustc 1.98.1. Rust and JavaScript were measured on the same day on the same machine; single run, other load minimal.
 - Reported value: criterion's central time estimate.
 - JavaScript comparison: milsymbol.js 3.0.4 (pinned oracle checkout) on Node
   26.5.0, same SIDCs, `new ms.Symbol(sidc).asSVG()` in a loop after warm-up.
@@ -15,12 +15,15 @@
 
 | Benchmark | What it measures | Rust | milsymbol.js |
 |---|---|---:|---:|
-| `single/compose_infantry` | SIDC → composed `Symbol` (no SVG), friendly infantry | 1.20 µs | — |
-| `single/compose_and_svg_infantry` | compose + `to_svg()` | 1.62 µs | 4.61 µs |
-| `single/compose_and_svg_with_fields` | HQ company (`10031002151211000000`) + 2 text fields + direction arrow | 4.52 µs | — |
-| `single/compose_and_svg_letter` | letter SIDC `SFGPUCI----D` | 3.18 µs | — |
-| `repeated_cached_render` | `CachedRenderer` hit (returns the cached `Symbol`, no SVG) | 0.16 µs | — |
-| `bulk/all_number_icons_1431` | compose + SVG for every numeric main icon (1,431 SIDCs, 20 symbol sets) | 3.16 ms | 9.17 ms |
+| `single/compose_infantry` | SIDC → composed `Symbol` (no SVG), friendly infantry | 1.32 µs | — |
+| `single/compose_and_svg_infantry` | compose + `to_svg()` | 1.71 µs | 3.50 µs |
+| `single/compose_and_write_svg_reused_buffer_infantry` | compose + `write_svg` into a reused `String` | 1.72 µs | — |
+| `single/compose_and_drawing_infantry` | compose + `drawing()` (flat typed view, parses every path) | 1.92 µs | — |
+| `single/compose_and_svg_with_fields` | HQ company (`10031002151211000000`) + 2 text fields + direction arrow | 4.61 µs | — |
+| `single/compose_and_svg_letter` | letter SIDC `SFGPUCI----D` | 3.33 µs | — |
+| `repeated_cached_render` | `CachedRenderer` hit (returns the cached `Symbol`, no SVG) | 0.13 µs | — |
+| `bulk/all_number_icons_1431` | compose + SVG for every numeric main icon (1,431 SIDCs, 20 symbol sets) | 3.37 ms | 8.24 ms |
+| `bulk/all_number_icons_1431_reused_buffer` | the same, `write_svg` into one reused `String` | 3.32 ms | — |
 
 Bulk throughput is ≈ 450,000 symbols/s on one core. A cache hit returns
 an already composed symbol; it is not comparable with SVG output times.
@@ -40,7 +43,7 @@ heap profiler, one profiling session per operation:
 | `to_svg`: letter SIDC | 1,024 B | 1,024 B | 1 | 595 B |
 | compose: HQ + text + direction + outline + stack 3 | 25,326 B | 72,192 B | 84 | |
 | `to_svg`: same | 4,096 B | 7,168 B | 3 | 3,361 B |
-| `is_valid()`: infantry | 0 B | 0 B | 0 | |
+| `validity().is_valid()`: infantry | 0 B | 0 B | 0 | |
 | `write_svg` into a reused `String` | 0 B | 0 B | 0 | |
 | `CachedRenderer` hit | 0 B | 0 B | 0 | |
 | native and JS metadata views | 0 B | 0 B | 0 | |
@@ -52,12 +55,12 @@ heap profiler, one profiling session per operation:
 caller's buffer. Composition allocates mainly for the IR nodes the symbol
 owns.
 
-`size_of::<Symbol>()` is 2,616 B and `size_of::<ir::Node>()` 384 B (both
+`size_of::<Symbol>()` is 2,632 B and `size_of::<ir::Node>()` 384 B (both
 excluding their heap data).
 
 Static footprint: a minimal `wasm32-unknown-unknown` module that renders a
-SIDC to SVG (`opt-level = "z"`, LTO, stripped) is 2.48 MB, 362 KB
-gzip-compressed. Nearly all of it is the icon tables (15,130 template nodes
+SIDC to SVG (`opt-level = "z"`, LTO, stripped) is 2.48 MB, 367 KB
+gzip-compressed (`gzip -9`). Nearly all of it is the icon tables (15,130 template nodes
 and their path data). A bare-metal build carries the same tables in flash;
 this has not been measured on a real target, so check the size against your
 device's budget.

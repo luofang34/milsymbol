@@ -5,6 +5,7 @@ use crate::ir::{Node, Num, Paint, Style};
 use alloc::vec::Vec;
 
 /// Why a symbol is not valid.
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 #[non_exhaustive]
 pub enum ValidityIssue {
@@ -22,12 +23,13 @@ pub enum ValidityIssue {
     /// milsymbol.js counts this as invalid even when the SIDC is fine.
     NullInDrawing,
     /// The SIDC fails [`Sidc::parse`](crate::sidc::Sidc::parse). Reported by
-    /// [`Symbol::is_sidc_valid`](crate::Symbol::is_sidc_valid) only;
+    /// [`Symbol::sidc_validity`](crate::Symbol::sidc_validity) only;
     /// milsymbol.js renders such codes and may count them as valid.
     MalformedSidc,
 }
 
 /// Why a symbol is or is not valid.
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Debug, Clone, PartialEq, Eq)]
 #[non_exhaustive]
 pub struct Validity {

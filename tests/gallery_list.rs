@@ -7,7 +7,7 @@ use milsymbol::options::SymbolOptions;
 use milsymbol::{Renderer, Standard, Symbol};
 
 /// One gallery image: file stem, SIDC, standard and `(option, value)` pairs.
-pub struct Item {
+pub(crate) struct Item {
     /// File stem under `docs/images`.
     pub name: &'static str,
     /// The SIDC.
@@ -20,7 +20,7 @@ pub struct Item {
 
 /// Option value in the gallery table.
 #[derive(Clone, Copy)]
-pub enum Value {
+pub(crate) enum Value {
     /// String.
     S(&'static str),
     /// Number.
@@ -34,7 +34,7 @@ use Value::{B, N, S};
 const SIZE: (&str, Value) = ("size", N(40.0));
 
 /// The gallery.
-pub const ITEMS: &[Item] = &[
+pub(crate) const ITEMS: &[Item] = &[
     // Upstream README hero: MIL-STD-2525C figure 13, as a 2525E SIDC.
     Item {
         name: "figure13",
@@ -287,9 +287,9 @@ pub const ITEMS: &[Item] = &[
 ];
 
 /// Renders a gallery item.
-pub fn render(item: &Item) -> Result<Symbol, Box<dyn std::error::Error>> {
+pub(crate) fn render(item: &Item) -> Result<Symbol, Box<dyn std::error::Error>> {
     let renderer = if item.app6 {
-        Renderer::default().with_standard(Standard::App6)
+        Renderer::builder().standard(Standard::App6).build()
     } else {
         Renderer::default()
     };
@@ -305,7 +305,7 @@ pub fn render(item: &Item) -> Result<Symbol, Box<dyn std::error::Error>> {
 }
 
 /// The README background: a white rounded rectangle covering the viewBox.
-pub fn background(svg: &str) -> Option<String> {
+pub(crate) fn background(svg: &str) -> Option<String> {
     let vb = svg.split("viewBox=\"").nth(1)?.split('"').next()?;
     let mut v = vb.split(' ');
     let (x, y, w, h) = (v.next()?, v.next()?, v.next()?, v.next()?);
@@ -315,7 +315,7 @@ pub fn background(svg: &str) -> Option<String> {
 }
 
 /// `svg` with [`background`] inserted as the first child of `<svg>`.
-pub fn with_background(svg: &str) -> Option<String> {
+pub(crate) fn with_background(svg: &str) -> Option<String> {
     let (start_tag, rest) = svg.split_once('>')?;
     Some(format!("{start_tag}>{}{rest}", background(svg)?))
 }

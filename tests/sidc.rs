@@ -1,7 +1,7 @@
 //! SIDC parsing, typed metadata and validity.
 
 use milsymbol::ValidityIssue;
-use milsymbol::options::field;
+use milsymbol::options::TextField;
 use milsymbol::{Renderer, catalog};
 
 type TestResult = Result<(), Box<dyn std::error::Error>>;
@@ -67,16 +67,16 @@ fn typed_info_and_validity_issues() -> TestResult {
     // Upstream counts text containing "null" as invalid; the SIDC is fine.
     let s = Renderer::default()
         .symbol(INFANTRY)
-        .text(field::UNIQUE_DESIGNATION, "null value")
+        .text(TextField::UniqueDesignation, "null value")
         .render()?;
-    assert!(!s.is_valid());
-    assert!(s.is_sidc_valid());
+    assert!(!s.validity().is_valid());
+    assert!(s.sidc_validity().is_valid());
     assert_eq!(s.validity().issues, vec![ValidityIssue::NullInDrawing]);
     let s = Renderer::default()
         .symbol("10031000009999000000")
         .render()?;
     assert_eq!(s.validity().issues, vec![ValidityIssue::UnknownIcon]);
-    assert!(!s.is_sidc_valid());
+    assert!(!s.sidc_validity().is_valid());
     Ok(())
 }
 
@@ -116,13 +116,16 @@ fn sidc_validity_does_not_depend_on_icon_visibility() -> TestResult {
             .symbol("10031000009999990000")
             .with(|o| o.style.icon = icon)
             .render()?;
-        assert!(!s.is_sidc_valid(), "icon={icon}");
+        assert!(!s.sidc_validity().is_valid(), "icon={icon}");
     }
     let hidden = Renderer::default()
         .symbol("10031000009999990000")
         .with(|o| o.style.icon = false)
         .render()?;
-    assert!(hidden.is_valid(), "upstream treats hidden icons as found");
+    assert!(
+        hidden.validity().is_valid(),
+        "upstream treats hidden icons as found"
+    );
     Ok(())
 }
 
@@ -130,7 +133,7 @@ fn sidc_validity_does_not_depend_on_icon_visibility() -> TestResult {
 fn sidc_validation_checks_icons_without_an_icon_stage() -> TestResult {
     use milsymbol::{BuiltinPart, sidc::SidcCheckError};
     for parts in [&[][..], &[BuiltinPart::BaseGeometry][..]] {
-        let renderer = Renderer::default().with_builtin_parts(parts);
+        let renderer = Renderer::builder().pipeline(parts).build();
         assert!(renderer.check_sidc(INFANTRY).is_ok());
         for sidc in [
             "10031000009999990000",
@@ -142,7 +145,7 @@ fn sidc_validation_checks_icons_without_an_icon_stage() -> TestResult {
                     .symbol(sidc)
                     .with(|o| o.style.icon = icon)
                     .render()?;
-                assert!(!s.is_sidc_valid(), "{sidc}, icon={icon}");
+                assert!(!s.sidc_validity().is_valid(), "{sidc}, icon={icon}");
             }
             assert!(matches!(renderer.check_sidc(sidc),
                 Err(SidcCheckError::Unsupported { issues })
@@ -188,7 +191,7 @@ fn sidc_validity_requires_a_well_formed_code() -> TestResult {
     for sidc in ["10070100001100000000", "10300100001100000000"] {
         let s = Renderer::default().symbol(sidc).render()?;
         assert!(Sidc::parse(sidc).is_err());
-        assert!(!s.is_sidc_valid(), "{sidc}");
+        assert!(!s.sidc_validity().is_valid(), "{sidc}");
     }
     Ok(())
 }
@@ -205,7 +208,7 @@ fn native_metadata_preserves_compatibility_sentinels() -> TestResult {
         ("10034400000000000000", Some("Friend"), ""),
     ] {
         let s = r.symbol(sidc).render()?;
-        let js = s.js_metadata();
+        let js = milsymbol::compat::js_metadata(&s);
         assert_eq!(js.affiliation, affiliation, "{sidc}");
         assert_eq!(js.dimension, dimension, "{sidc}");
         // The typed view names a known affiliation exactly as the JS view.
@@ -237,7 +240,7 @@ fn non_bmp_sidcs_render_like_upstream_with_lossy_metadata() -> TestResult {
     // Upstream splits the surrogate pair into its halves; Rust strings
     // cannot hold one, so each half reads as U+FFFD (UPSTREAM.md).
     let s = Renderer::default().symbol(&sidcs[0]).render()?;
-    let js = s.js_metadata();
+    let js = milsymbol::compat::js_metadata(&s);
     assert_eq!(js.flags.modifier1, Some("\u{FFFD}00"));
     assert_eq!(js.flags.modifier2, Some("\u{FFFD}00"));
     Ok(())
