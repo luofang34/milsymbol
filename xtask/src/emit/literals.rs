@@ -5,7 +5,7 @@ use crate::jsnum;
 use serde_json::Value;
 
 /// A Rust string literal.
-pub fn rstr(s: &str) -> String {
+pub(super) fn rstr(s: &str) -> String {
     let mut out = String::from("\"");
     for ch in s.chars() {
         match ch {
@@ -25,7 +25,7 @@ pub fn rstr(s: &str) -> String {
 }
 
 /// A Rust `f64` literal with JavaScript's shortest digits.
-pub fn rf64(v: &Value) -> Result<String, Error> {
+pub(super) fn rf64(v: &Value) -> Result<String, Error> {
     let n = v.as_f64().ok_or_else(|| format!("not a number: {v}"))?;
     if !n.is_finite() {
         return Err(format!("non-finite number {n}").into());
@@ -45,12 +45,12 @@ pub fn rf64(v: &Value) -> Result<String, Error> {
 }
 
 /// `Cow::Borrowed("…")`.
-pub fn rcow(s: &str) -> String {
+pub(super) fn rcow(s: &str) -> String {
     format!("Cow::Borrowed({})", rstr(s))
 }
 
 /// `None`, or `Some(f(v))` for a present key.
-pub fn ropt(
+pub(super) fn ropt(
     v: Option<&Value>,
     f: impl Fn(&Value) -> Result<String, Error>,
 ) -> Result<String, Error> {
@@ -61,26 +61,26 @@ pub fn ropt(
 }
 
 /// The string field `s` of a template value.
-pub fn field_s(v: &Value) -> Result<&str, Error> {
+pub(super) fn field_s(v: &Value) -> Result<&str, Error> {
     v.get("s")
         .and_then(Value::as_str)
         .ok_or_else(|| format!("expected {{\"s\": …}}, got {v}").into())
 }
 
 /// `field_s` as a string literal.
-pub fn rs(v: &Value) -> Result<String, Error> {
+pub(super) fn rs(v: &Value) -> Result<String, Error> {
     Ok(rstr(field_s(v)?))
 }
 
 /// A boolean literal.
-pub fn rbool(v: &Value) -> Result<String, Error> {
+pub(super) fn rbool(v: &Value) -> Result<String, Error> {
     v.as_bool()
         .map(|b| b.to_string())
         .ok_or_else(|| format!("not a boolean: {v}").into())
 }
 
 /// A `TNum` literal.
-pub fn rnum(t: &Value) -> Result<String, Error> {
+pub(super) fn rnum(t: &Value) -> Result<String, Error> {
     if let Some(n) = t.get("n") {
         return Ok(format!("TNum::N({})", rf64(n)?));
     }
@@ -120,7 +120,7 @@ fn aff_name(aff: &str) -> Option<&'static str> {
 }
 
 /// A `TPaint` literal.
-pub fn rpaint(p: &Value) -> Result<String, Error> {
+pub(super) fn rpaint(p: &Value) -> Result<String, Error> {
     let get = |k: &str| p.get(k).and_then(Value::as_str);
     match get("k") {
         Some("none") => Ok(String::from("TPaint::None")),
@@ -142,7 +142,7 @@ pub fn rpaint(p: &Value) -> Result<String, Error> {
 }
 
 /// A `TDash` literal.
-pub fn rdash(t: &Value) -> Result<String, Error> {
+pub(super) fn rdash(t: &Value) -> Result<String, Error> {
     match t.get("dash").and_then(Value::as_str) {
         Some("pending") => Ok(String::from("TDash::Pending")),
         Some("anticipated") => Ok(String::from("TDash::Anticipated")),

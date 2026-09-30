@@ -127,28 +127,28 @@ impl Metadata {
     }
 
     /// The base frame geometry, if any.
-    pub fn geometry(&self) -> Option<&'static BaseGeometry> {
+    pub(crate) fn geometry(&self) -> Option<&'static BaseGeometry> {
         self.base_geometry.and_then(geometry::by_name)
     }
 
     /// Bounding box of the base geometry (`100,100,100,100` without one).
-    pub fn geometry_bbox(&self) -> crate::BBox {
+    pub(crate) fn geometry_bbox(&self) -> crate::BBox {
         self.geometry()
             .map_or_else(crate::BBox::default, BaseGeometry::bbox)
     }
 
     /// Whether this is a control measure.
-    pub fn control_measure(&self) -> bool {
+    pub(crate) fn control_measure(&self) -> bool {
         self.flags.control_measure == Some(true)
     }
 
     /// Whether this is a dismounted individual.
-    pub fn dismounted(&self) -> bool {
+    pub(crate) fn dismounted(&self) -> bool {
         self.flags.dismounted == Some(true)
     }
 
     /// Standard edition of a numeric SIDC.
-    pub fn edition(&self) -> Option<Edition> {
+    pub(crate) fn edition(&self) -> Option<Edition> {
         self.flags.edition
     }
 }

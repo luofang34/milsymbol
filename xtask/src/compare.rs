@@ -232,7 +232,7 @@ impl Tally {
 }
 
 /// Compares the record files; returns whether they agree.
-pub fn run(cases: &Path, oracle: &Path, rust: &Path, max: usize) -> Result<bool, Error> {
+pub(crate) fn run(cases: &Path, oracle: &Path, rust: &Path, max: usize) -> Result<bool, Error> {
     let mut out = std::io::stdout().lock();
     compare(open(cases)?, open(oracle)?, open(rust)?, max, &mut out)
 }

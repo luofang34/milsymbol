@@ -8,7 +8,7 @@
 use std::fmt::Write as _;
 
 /// Formats `v` like JavaScript's `String(v)`.
-pub fn to_string(v: f64) -> String {
+pub(crate) fn to_string(v: f64) -> String {
     if v.is_nan() {
         return String::from("NaN");
     }

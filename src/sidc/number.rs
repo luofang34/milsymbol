@@ -180,13 +180,10 @@ fn identity(si1: &str, si2: &str, ss: &str, md: &mut Metadata) {
 
 fn civilian(ss: &str, fid: &JsStr, md: &mut Metadata) {
     let f2 = fid.substr(0, 2);
-    if (ss == "01" && f2 == "12")
-        || (ss == "05" && f2 == "12")
+    if (matches!(ss, "01" | "05" | "12" | "35") && f2 == "12")
         || ss == "11"
-        || (ss == "12" && f2 == "12")
         || (ss == "15" && f2 == "16")
         || (ss == "30" && f2 == "14")
-        || (ss == "35" && f2 == "12")
     {
         md.civilian = true;
     }

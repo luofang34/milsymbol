@@ -37,7 +37,7 @@ const EXPECT_VARS: [&str; 15] = [
 type Keyed = Vec<(String, usize)>;
 
 /// Everything the output files need, in emission order.
-pub struct Emitted {
+pub(crate) struct Emitted {
     pools: Pools,
     part_list: Vec<String>,
     overrides: Vec<String>,
@@ -63,7 +63,7 @@ fn key_of(e: &Value) -> &str {
 }
 
 /// Writes the generated modules under `root/src/generated`.
-pub fn run(root: &Path) -> Result<(), Error> {
+pub(crate) fn run(root: &Path) -> Result<(), Error> {
     let out = root.join("tools/codegen/out");
     let tables = read_json(&out.join("tables.json"))?;
     let misc = read_json(&out.join("misc.json"))?;
