@@ -147,6 +147,15 @@ suite and native regression tests check the observable differences.
   rejects unknown names and wrongly typed or unsupported values (e.g.
   `standard: "APP-6"`, which upstream silently treats as 2525) with
   `OptionError`; custom text fields go through `set_text`.
+- **Finite numbers only.** A NaN or infinite numeric option (`size`,
+  `strokeWidth`, `direction`, `speedLeader`, `hqStaffLength`, …) makes upstream
+  write `NaN` into its SVG; rendering rejects it with
+  `RenderError::InvalidOption`. `SymbolOptions::set` still accepts the number
+  and rendering reports it.
+- **Typed colours.** A style colour is `options::Color`, which cannot be the
+  empty string; upstream's empty string ("not set") is `None`, and
+  `SymbolOptions::set` maps `""` to `None`. Other text, including control
+  characters, is kept and written escaped, as upstream does.
 - **Bounded `stack`.** Upstream's `for (i = stack; i >= 1; i--)` never ends
   for non-finite or huge values (`i - 1 == i`). Rendering rejects a `stack`
   that is not finite or exceeds 1000 with `RenderError::InvalidOption`.

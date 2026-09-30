@@ -1,6 +1,6 @@
 //! Assigning options by name, e.g. `size` or `uniqueDesignation`.
 
-use super::{StyleColor, SymbolOptions};
+use super::{Color, ColorChoice, ColorModeChoice, SymbolOptions, TextField};
 use crate::color::ColorMode;
 use alloc::string::String;
 use core::fmt;
@@ -106,11 +106,26 @@ fn string(key: &str, v: OptionValue) -> Result<String, OptionError> {
     }
 }
 
-fn color(key: &str, v: OptionValue) -> Result<StyleColor, OptionError> {
+fn css(s: String) -> Result<Option<Color>, OptionError> {
+    if s.is_empty() {
+        return Ok(None);
+    }
+    Ok(Color::new(s).ok())
+}
+
+fn color(key: &str, v: OptionValue) -> Result<Option<ColorChoice>, OptionError> {
     match v {
-        OptionValue::Str(s) => Ok(StyleColor::Str(s.into())),
-        OptionValue::Colors(m) => Ok(StyleColor::PerAffiliation(m)),
+        OptionValue::Str(s) => Ok(css(s)?.map(ColorChoice::Uniform)),
+        OptionValue::Colors(m) => Ok(Some(ColorChoice::PerAffiliation(m))),
         _ => err(key, "a colour string or per-affiliation colours"),
+    }
+}
+
+fn color_mode(key: &str, v: OptionValue) -> Result<ColorModeChoice, OptionError> {
+    match v {
+        OptionValue::Str(s) => Ok(ColorModeChoice::Named(s.into())),
+        OptionValue::Colors(m) => Ok(ColorModeChoice::Custom(m)),
+        _ => err(key, "a colour mode name or per-affiliation colours"),
     }
 }
 
@@ -150,12 +165,12 @@ impl SymbolOptions {
                     _ => return err(key, "a number"),
                 }
             }
-            "speedLeader" => self.speed_leader = num(key, v)?,
+            "speedLeader" => self.speed_leader = Some(num(key, v)?),
             "stack" => self.stack = Some(num(key, v)?),
             "country_flag" => self.country_flag = Some(string(key, v)?),
             "full_frame_flag" => self.full_frame_flag = Some(boolean(key, v)?),
             "signature" => self.signature = Some(string(key, v)?),
-            _ if super::field::DEFAULTS.contains(&key) => {
+            _ if TextField::STANDARD.iter().any(|f| f.name() == key) => {
                 self.text.insert(String::from(key), string(key, v)?);
             }
             _ => {
@@ -173,14 +188,14 @@ impl SymbolOptions {
         match key {
             "alternateMedal" => st.alternate_medal = boolean(key, v)?,
             "civilianColor" => st.civilian_color = boolean(key, v)?,
-            "colorMode" => st.color_mode = color(key, v)?,
+            "colorMode" => st.color_mode = color_mode(key, v)?,
             "fill" => st.fill = boolean(key, v)?,
-            "fillColor" => st.fill_color = string(key, v)?.into(),
+            "fillColor" => st.fill_color = css(string(key, v)?)?,
             "fillOpacity" => st.fill_opacity = num(key, v)?,
             "fontfamily" => st.font_family = string(key, v)?.into(),
             "frame" => st.frame = boolean(key, v)?,
             "frameColor" => st.frame_color = color(key, v)?,
-            "hqStaffLength" => st.hq_staff_length = num(key, v)?,
+            "hqStaffLength" => st.hq_staff_length = Some(num(key, v)?),
             "icon" => st.icon = boolean(key, v)?,
             "iconTextUsesFontFamily" => st.icon_text_uses_font_family = boolean(key, v)?,
             "iconColor" => st.icon_color = color(key, v)?,
@@ -188,7 +203,7 @@ impl SymbolOptions {
             "infoBackgroundFrame" => st.info_background_frame = color(key, v)?,
             "infoColor" => st.info_color = color(key, v)?,
             "infoFields" => st.info_fields = boolean(key, v)?,
-            "infoOutlineColor" => st.info_outline_color = string(key, v)?.into(),
+            "infoOutlineColor" => st.info_outline_color = css(string(key, v)?)?,
             "infoOutlineWidth" => {
                 st.info_outline_width = match v {
                     OptionValue::Num(n) => Some(n),
@@ -197,7 +212,7 @@ impl SymbolOptions {
                 }
             }
             "infoSize" => st.info_size = num(key, v)?,
-            "monoColor" => st.mono_color = string(key, v)?.into(),
+            "monoColor" => st.mono_color = css(string(key, v)?)?,
             "outlineColor" => st.outline_color = color(key, v)?,
             "outlineWidth" => st.outline_width = num(key, v)?,
             "padding" => st.padding = num(key, v)?,

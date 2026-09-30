@@ -77,7 +77,7 @@ pub enum SidcCheckError {
     /// The SIDC is well formed, but the renderer does not recognise all of
     /// it (for example, it has no icon for the entity).
     Unsupported {
-        /// Every reason, as [`Symbol::is_sidc_valid`](crate::Symbol::is_sidc_valid) judges it.
+        /// Every reason, as [`Symbol::sidc_validity`](crate::Symbol::sidc_validity) judges it.
         issues: alloc::vec::Vec<crate::ValidityIssue>,
     },
 }

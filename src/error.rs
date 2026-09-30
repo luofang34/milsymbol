@@ -32,6 +32,15 @@ pub enum RenderError {
         /// The exception upstream raises.
         message: &'static str,
     },
+    /// The SIDC is malformed (reported only in strict mode; see
+    /// [`SymbolBuilder::strict`](crate::SymbolBuilder::strict)).
+    MalformedSidc(crate::sidc::SidcError),
+    /// The SIDC is well formed, but this renderer does not recognise all of
+    /// it, for example the icon (strict mode only).
+    UnsupportedSidc {
+        /// Every reason, as [`Symbol::validity`](crate::Symbol::validity) lists them.
+        issues: alloc::vec::Vec<crate::ValidityIssue>,
+    },
     /// A custom symbol part failed.
     Part {
         /// Position of the part in the renderer's pipeline.
@@ -55,6 +64,10 @@ impl fmt::Display for RenderError {
             RenderError::UpstreamException { message } => {
                 write!(f, "input makes milsymbol.js throw: {message}")
             }
+            RenderError::MalformedSidc(e) => write!(f, "malformed SIDC: {e}"),
+            RenderError::UnsupportedSidc { issues } => {
+                write!(f, "SIDC not supported by this renderer: {issues:?}")
+            }
             RenderError::Part { index, source } => {
                 write!(f, "symbol part #{index} failed: {source}")
             }
@@ -66,6 +79,7 @@ impl core::error::Error for RenderError {
     fn source(&self) -> Option<&(dyn core::error::Error + 'static)> {
         match self {
             RenderError::Part { source, .. } => Some(source.as_ref()),
+            RenderError::MalformedSidc(e) => Some(e),
             _ => None,
         }
     }

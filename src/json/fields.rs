@@ -5,7 +5,7 @@ use super::view::Value;
 use super::view::{Object, Value as Json};
 use crate::color::{COLOR_KEYS, ColorMode, ColorSet};
 use crate::ir::{Node, Num, Paint, Style};
-use crate::options::{StyleColor, SymbolOptions};
+use crate::options::{ColorChoice, ColorModeChoice, SymbolOptions};
 
 fn s(v: &str) -> Json<'_> {
     Json::Str(v)
@@ -23,10 +23,17 @@ fn paint(p: &Paint) -> Json<'_> {
         Paint::Color(c) => s(c),
     }
 }
-fn style_color(c: &StyleColor) -> Json<'_> {
+fn style_color(c: Option<&ColorChoice>) -> Json<'_> {
     match c {
-        StyleColor::Str(s) => Json::Str(s),
-        StyleColor::PerAffiliation(m) => Json::ColorMode(m),
+        None => Json::Str(""),
+        Some(ColorChoice::Uniform(c)) => Json::Str(c.as_str()),
+        Some(ColorChoice::PerAffiliation(m)) => Json::ColorMode(m),
+    }
+}
+fn mode_choice(c: &ColorModeChoice) -> Json<'_> {
+    match c {
+        ColorModeChoice::Named(s) => Json::Str(s),
+        ColorModeChoice::Custom(m) => Json::ColorMode(m),
     }
 }
 fn style<'a>(o: &mut Object<'a, 24>, st: &'a Style) {
@@ -168,12 +175,12 @@ pub(super) fn metadata<'a>(md: &'a crate::metadata::Metadata, o: &mut Object<'a,
     o.put("baseGeometry", Json::Geometry(md.geometry()));
 }
 pub(super) fn options<'a>(sidc: &'a str, o: &'a SymbolOptions, j: &mut Object<'a, 80>) {
-    for k in crate::options::field::DEFAULTS {
-        j.put(k, s(o.text(k)));
+    for f in crate::options::TextField::STANDARD {
+        j.put(f.name(), s(o.text(f)));
     }
     j.put("sidc", s(sidc))
         .opt("direction", o.direction.map(Json::Num))
-        .put("speedLeader", Json::Num(o.speed_leader))
+        .put("speedLeader", Json::Num(o.speed_leader_px()))
         .opt("stack", o.stack.map(Json::Num))
         .opt("country_flag", o.country_flag.as_deref().map(s))
         .opt("full_frame_flag", o.full_frame_flag.map(Json::Bool))
@@ -183,31 +190,37 @@ pub(super) fn options<'a>(sidc: &'a str, o: &'a SymbolOptions, j: &mut Object<'a
     let b = Json::Bool;
     j.put("alternateMedal", b(st.alternate_medal))
         .put("civilianColor", b(st.civilian_color))
-        .put("colorMode", style_color(&st.color_mode))
+        .put("colorMode", mode_choice(&st.color_mode))
         .put("fill", b(st.fill))
-        .put("fillColor", s(&st.fill_color))
+        .put(
+            "fillColor",
+            s(st.fill_color.as_ref().map_or("", |c| c.as_str())),
+        )
         .put("fillOpacity", n(st.fill_opacity))
         .put("fontfamily", s(&st.font_family))
         .put("frame", b(st.frame))
-        .put("frameColor", style_color(&st.frame_color))
-        .put("hqStaffLength", n(st.hq_staff_length))
+        .put("frameColor", style_color(st.frame_color.as_ref()))
+        .put("hqStaffLength", n(st.hq_staff_length.unwrap_or(0.0)))
         .put("icon", b(st.icon))
-        .put("iconColor", style_color(&st.icon_color))
-        .put("infoBackground", style_color(&st.info_background))
+        .put("iconColor", style_color(st.icon_color.as_ref()))
+        .put("infoBackground", style_color(st.info_background.as_ref()))
         .put(
             "infoBackgroundFrame",
-            style_color(&st.info_background_frame),
+            style_color(st.info_background_frame.as_ref()),
         )
-        .put("infoColor", style_color(&st.info_color))
+        .put("infoColor", style_color(st.info_color.as_ref()))
         .put("infoFields", b(st.info_fields))
-        .put("infoOutlineColor", s(&st.info_outline_color))
+        .put(
+            "infoOutlineColor",
+            s(st.info_outline_color.as_ref().map_or("", |c| c.as_str())),
+        )
         .put(
             "infoOutlineWidth",
             st.info_outline_width.map_or(Json::Bool(false), n),
         )
         .put("infoSize", n(st.info_size))
-        .put("monoColor", s(&st.mono_color))
-        .put("outlineColor", style_color(&st.outline_color))
+        .put("monoColor", s(st.mono_color_str()))
+        .put("outlineColor", style_color(st.outline_color.as_ref()))
         .put("outlineWidth", n(st.outline_width))
         .put("padding", n(st.padding))
         .put("simpleStatusModifier", b(st.simple_status_modifier))
@@ -237,13 +250,13 @@ pub(super) fn symbol<'a>(s: &'a crate::Symbol, o: &mut Object<'a, 10>) {
         .put("size", Value::Size(s.size()))
         .put("anchor", Value::Point(s.anchor()))
         .put("octagonAnchor", Value::Point(s.octagon_anchor()))
-        .put("valid", Value::Bool(s.is_valid()))
+        .put("valid", Value::Bool(s.validity().is_valid()))
         .put("validExtended", Value::Validity(s))
         .put("options", Value::Options(s));
 }
 
 pub(super) fn validity<'a>(s: &'a crate::Symbol, o: &mut Object<'a, 6>) {
-    let md = s.js_metadata();
+    let md = crate::compat::js_metadata(s);
     let issues = s.validity().issues;
     let has = |i| issues.contains(&i);
     use crate::ValidityIssue::{MissingInstruction, NullInDrawing, UnknownIcon};

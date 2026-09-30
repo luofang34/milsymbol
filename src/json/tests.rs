@@ -61,7 +61,7 @@ fn canonical_options_keep_native_values_without_duplicate_keys() -> TestResult {
         opts.get("uniqueDesignation"),
         Some(&serde_json::json!("custom label"))
     );
-    assert_eq!(symbol.options().text("size"), "custom label");
+    assert_eq!(symbol.options().text_named("size"), "custom label");
     Ok(())
 }
 
@@ -126,7 +126,7 @@ fn streaming_matches_owned_records_and_appends() -> TestResult {
 fn streaming_orders_utf16_keys_and_spills_without_losing_fields() -> TestResult {
     let mut options = SymbolOptions::default();
     for i in 0..150 {
-        options.set_text(&alloc::format!("custom-{i}"), alloc::format!("value-{i}"));
+        options.set_text(alloc::format!("custom-{i}"), alloc::format!("value-{i}"));
     }
     options.set_text("\u{e000}", "bmp");
     options.set_text("\u{10000}", "astral");

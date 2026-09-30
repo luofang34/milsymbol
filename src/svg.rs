@@ -6,9 +6,13 @@ use crate::js::write_number;
 use alloc::string::String;
 
 mod ids;
-mod sanitize;
+pub(crate) mod sanitize;
 use ids::ClipIds;
-use sanitize::*;
+use sanitize::{
+    escape_attr, escape_text, sanitize_baseline, sanitize_color, sanitize_dash_array,
+    sanitize_font_family, sanitize_font_weight, sanitize_line_cap, sanitize_text_anchor,
+    svg_fragment_blocked,
+};
 
 /// SVG output settings.
 #[derive(Debug, Clone, PartialEq, Eq, Default)]
@@ -38,6 +42,24 @@ pub(crate) struct SvgFrame {
     pub height: f64,
     pub base_width: f64,
     pub base_height: f64,
+}
+
+impl SvgFrame {
+    /// The SVG `viewBox` as `(x, y, width, height)`.
+    pub(crate) fn view_box(&self) -> (f64, f64, f64, f64) {
+        let sw = safe(self.stroke_width, 0.0);
+        let ow = safe(self.outline_width, 0.0);
+        let x = safe(self.bbox_x1, 0.0) - sw - ow;
+        let y = safe(self.bbox_y1, 0.0) - sw - ow;
+        let width = safe(self.width, self.base_width);
+        let height = safe(self.height, self.base_height);
+        (
+            x,
+            y,
+            safe(self.base_width, width),
+            safe(self.base_height, height),
+        )
+    }
 }
 
 fn safe(v: f64, fallback: f64) -> f64 {

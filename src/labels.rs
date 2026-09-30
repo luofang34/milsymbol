@@ -55,7 +55,15 @@ impl Label {
 }
 
 impl LabelField {
-    /// Placements of the option `field`.
+    /// Placements of a text field.
+    pub fn for_field(
+        field: &crate::options::TextField,
+        labels: impl Into<Cow<'static, [Label]>>,
+    ) -> Self {
+        LabelField::new(alloc::string::String::from(field.name()), labels)
+    }
+
+    /// Placements of the option named `field`.
     pub fn new(
         field: impl Into<Cow<'static, str>>,
         labels: impl Into<Cow<'static, [Label]>>,

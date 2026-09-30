@@ -55,7 +55,7 @@ pub(super) struct TextStyle {
 
 impl TextStyle {
     /// A plain information-field text node.
-    pub fn text(&self, text: &str, x: f64, y: f64, anchor: &'static str) -> Node {
+    pub(super) fn text(&self, text: &str, x: f64, y: f64, anchor: &'static str) -> Node {
         let mut t = crate::ir::TextNode::new(x, y, Str::Owned(String::from(text)));
         t.text_anchor = lit(anchor);
         t.font_size = Some(Num::Number(self.size));
@@ -67,7 +67,7 @@ impl TextStyle {
 }
 
 fn font_color(s: &SymbolState<'_>) -> Option<Paint> {
-    let info = style_color_value(&s.options.style.info_color, s.aff());
+    let info = style_color_value(s.options.style.info_color.as_ref(), s.aff());
     let icon = or_color(
         s.color_of(&s.colors.icon_color),
         s.colors.icon_color.get("Friend"),
@@ -92,7 +92,9 @@ pub(super) fn draw(s: &SymbolState<'_>) -> Result<PartOutput, RenderError> {
         }
         return Ok(PartOutput::new(pre, post, gbbox));
     }
-    let any_text = TRIGGER_FIELDS.iter().any(|k| !s.options.text(k).is_empty());
+    let any_text = TRIGGER_FIELDS
+        .iter()
+        .any(|k| !s.options.text_named(k).is_empty());
     if st.info_fields && any_text {
         layout::draw(s, &ts, &mut post, &mut gbbox);
         let width = match st.info_outline_width {
@@ -101,10 +103,9 @@ pub(super) fn draw(s: &SymbolState<'_>) -> Result<PartOutput, RenderError> {
             _ => None,
         };
         if let Some(w) = width {
-            let color = if st.info_outline_color.is_empty() {
-                s.outline_color()
-            } else {
-                Some(Paint::Color(st.info_outline_color.clone()))
+            let color = match &st.info_outline_color {
+                None => s.outline_color(),
+                Some(c) => Some(Paint::Color(c.to_str())),
             };
             pre.push(super::outline_list(&post, w, st.stroke_width, &color)?);
         }

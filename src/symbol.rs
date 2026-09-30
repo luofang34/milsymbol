@@ -15,6 +15,7 @@ use validity::IconCheck;
 pub use validity::{Validity, ValidityIssue};
 
 /// Pixel size of a rendered symbol.
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Size {
     /// Width in pixels.
@@ -79,20 +80,6 @@ impl Symbol {
         crate::domain::Metadata::from_internal(&self.metadata)
     }
 
-    /// Parses and caches the segments of every valid path, for renderers
-    /// that read [`PathData::segments`](crate::ir::PathData::segments)
-    /// repeatedly. Returns the first parse error; a path that fails keeps
-    /// only its source, which SVG output uses unchanged.
-    pub fn cache_path_segments(&mut self) -> Result<(), crate::ir::PathParseError> {
-        crate::ir::parse_paths(&mut self.instructions)
-    }
-
-    /// A borrowed, allocation-free view of milsymbol.js metadata (including
-    /// its `"undefined"` sentinels); see [`Symbol::metadata`] for typed values.
-    pub fn js_metadata(&self) -> crate::compat::JsMetadata<'_> {
-        (&self.metadata).into()
-    }
-
     /// Resolved colours.
     pub fn colors(&self) -> &ColorSet {
         &self.colors
@@ -125,32 +112,29 @@ impl Symbol {
     }
 
     /// Every reason milsymbol.js `isValid()` would reject the symbol.
+    ///
+    /// This mirrors upstream exactly, including its heuristic that treats
+    /// any text containing `null` (e.g. a unique designation `"null value"`)
+    /// or a non-finite number as invalid, and its treatment of hidden icons
+    /// as found. To judge the SIDC alone, use [`Symbol::sidc_validity`] or
+    /// [`Renderer::check_sidc`](crate::Renderer::check_sidc).
     pub fn validity(&self) -> Validity {
         Validity {
             issues: validity::issues(self, IconCheck::Drawn),
         }
     }
 
-    /// Whether milsymbol.js considers the symbol valid (`isValid()`).
-    ///
-    /// This mirrors upstream exactly, including its heuristic that treats
-    /// any text containing `null` (e.g. a unique designation `"null value"`)
-    /// or a non-finite number as invalid, and its treatment of hidden icons
-    /// as found. To check the SIDC itself, use [`Symbol::is_sidc_valid`] or
-    /// [`Renderer::check_sidc`](crate::Renderer::check_sidc).
-    pub fn is_valid(&self) -> bool {
-        validity::issues(self, IconCheck::Drawn).is_empty()
-    }
-
     /// Whether the SIDC is well formed ([`Sidc::parse`](crate::sidc::Sidc::parse))
     /// and fully recognised: every code is known and the icon exists,
     /// whether or not icons are drawn, and without upstream's `null`-text
-    /// heuristic.
-    pub fn is_sidc_valid(&self) -> bool {
-        self.sidc_issues().is_empty()
+    /// heuristic. [`Symbol::validity`] gives upstream's own verdict.
+    pub fn sidc_validity(&self) -> Validity {
+        Validity {
+            issues: self.sidc_issues(),
+        }
     }
 
-    /// The issues [`Symbol::is_sidc_valid`] checks.
+    /// The issues [`Symbol::sidc_validity`] reports.
     pub(crate) fn sidc_issues(&self) -> Vec<ValidityIssue> {
         let mut issues = validity::issues(self, IconCheck::Sidc);
         issues.retain(|i| *i != ValidityIssue::NullInDrawing);
@@ -188,8 +172,12 @@ impl Symbol {
 
     /// [`Symbol::write_svg`] with output settings such as an id prefix.
     pub fn write_svg_with(&self, out: &mut String, options: &svg::SvgOptions) {
+        svg::render_into(&self.svg_frame(), &self.instructions, options, out);
+    }
+
+    pub(crate) fn svg_frame(&self) -> SvgFrame {
         let st = &self.options.style;
-        let frame = SvgFrame {
+        SvgFrame {
             stroke_width: st.stroke_width,
             outline_width: st.outline_width,
             style_fill: st.style_fill,
@@ -199,7 +187,6 @@ impl Symbol {
             height: self.size.height,
             base_width: self.base_width,
             base_height: self.base_height,
-        };
-        svg::render_into(&frame, &self.instructions, options, out);
+        }
     }
 }

@@ -8,7 +8,7 @@
 
 use crate::color::ColorMode;
 use crate::ir::Paint;
-use crate::options::{Style, StyleColor, SymbolOptions};
+use crate::options::{Color, ColorChoice, ColorModeChoice, Style, SymbolOptions};
 use std::vec::Vec;
 
 /// Key bytes for a lookup: on the stack for typical requests, spilling to
@@ -102,13 +102,27 @@ fn put_mode(out: &mut KeyBuf, m: &ColorMode) {
     }
 }
 
-fn put_style_color(out: &mut KeyBuf, c: &StyleColor) {
+fn put_style_color(out: &mut KeyBuf, c: Option<&ColorChoice>) {
     match c {
-        StyleColor::Str(s) => {
+        None => out.push(0),
+        Some(ColorChoice::Uniform(c)) => {
+            out.push(1);
+            put_bytes(out, c.as_str().as_bytes());
+        }
+        Some(ColorChoice::PerAffiliation(m)) => {
+            out.push(2);
+            put_mode(out, m);
+        }
+    }
+}
+
+fn put_mode_choice(out: &mut KeyBuf, c: &ColorModeChoice) {
+    match c {
+        ColorModeChoice::Named(s) => {
             out.push(0);
             put_bytes(out, s.as_bytes());
         }
-        StyleColor::PerAffiliation(m) => {
+        ColorModeChoice::Custom(m) => {
             out.push(1);
             put_mode(out, m);
         }
@@ -134,7 +148,7 @@ pub(super) fn write_key(k: &mut KeyBuf, sidc: &str, o: &SymbolOptions) {
         put_bytes(k, value.as_bytes());
     }
     put_opt_f64(k, *direction);
-    put_f64(k, *speed_leader);
+    put_opt_f64(k, *speed_leader);
     put_opt_f64(k, *stack);
     put_opt_str(k, country_flag.as_deref());
     put_opt_str(k, signature.as_deref());
@@ -181,7 +195,6 @@ fn write_style(k: &mut KeyBuf, st: &Style) {
     } = st;
     for v in [
         fill_opacity,
-        hq_staff_length,
         info_size,
         outline_width,
         padding,
@@ -190,6 +203,7 @@ fn write_style(k: &mut KeyBuf, st: &Style) {
     ] {
         put_f64(k, *v);
     }
+    put_opt_f64(k, *hq_staff_length);
     put_opt_f64(k, *info_outline_width);
     let flags = [
         alternate_medal,
@@ -204,16 +218,17 @@ fn write_style(k: &mut KeyBuf, st: &Style) {
         style_fill,
     ];
     k.extend_from_slice(&flags.map(|f| u8::from(*f)));
-    for s in [fill_color, font_family, info_outline_color, mono_color] {
-        put_bytes(k, s.as_bytes());
+    put_bytes(k, font_family.as_bytes());
+    for c in [fill_color, info_outline_color, mono_color] {
+        put_opt_str(k, c.as_ref().map(Color::as_str));
     }
+    put_mode_choice(k, color_mode);
     k.push(match standard {
         None => 0,
         Some(crate::Standard::Mil2525) => 1,
         Some(crate::Standard::App6) => 2,
     });
     for c in [
-        color_mode,
         frame_color,
         icon_color,
         info_background,
@@ -221,7 +236,7 @@ fn write_style(k: &mut KeyBuf, st: &Style) {
         info_color,
         outline_color,
     ] {
-        put_style_color(k, c);
+        put_style_color(k, c.as_ref());
     }
 }
 

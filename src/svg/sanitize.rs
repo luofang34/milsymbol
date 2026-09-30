@@ -9,7 +9,7 @@ fn is_js_space(c: char) -> bool {
 }
 
 /// Attribute escaping: `& " ' < >` become entities, CR/LF/TAB become spaces.
-pub(super) fn escape_attr(out: &mut String, s: &str) {
+pub(crate) fn escape_attr(out: &mut String, s: &str) {
     escape(out, s, |b| match b {
         b'&' => Some("&amp;"),
         b'"' => Some("&quot;"),
@@ -36,7 +36,7 @@ fn escape(out: &mut String, s: &str, map: impl Fn(u8) -> Option<&'static str>) {
 }
 
 /// Text-content escaping: `& < >` become entities.
-pub(super) fn escape_text(out: &mut String, s: &str) {
+pub(crate) fn escape_text(out: &mut String, s: &str) {
     escape(out, s, |b| match b {
         b'&' => Some("&amp;"),
         b'<' => Some("&lt;"),
@@ -50,7 +50,7 @@ fn trim_js(s: &str) -> &str {
 }
 
 /// `^[0-9.,\s-]+$` after trimming; `None` drops the attribute.
-pub(super) fn sanitize_dash_array(v: &str) -> Option<&str> {
+pub(crate) fn sanitize_dash_array(v: &str) -> Option<&str> {
     let t = trim_js(v);
     (!t.is_empty()
         && t.chars()
@@ -68,7 +68,7 @@ fn js_lower(v: &str) -> Cow<'_, str> {
     }
 }
 
-pub(super) fn sanitize_line_cap(v: &str) -> Option<&'static str> {
+pub(crate) fn sanitize_line_cap(v: &str) -> Option<&'static str> {
     match &*js_lower(v) {
         "butt" => Some("butt"),
         "round" => Some("round"),
@@ -77,7 +77,7 @@ pub(super) fn sanitize_line_cap(v: &str) -> Option<&'static str> {
     }
 }
 
-pub(super) fn sanitize_font_weight(v: &str) -> Option<Cow<'_, str>> {
+pub(crate) fn sanitize_font_weight(v: &str) -> Option<Cow<'_, str>> {
     let l = js_lower(v);
     let ok = matches!(&*l, "normal" | "bold" | "bolder" | "lighter")
         || (l.len() == 3
@@ -88,7 +88,7 @@ pub(super) fn sanitize_font_weight(v: &str) -> Option<Cow<'_, str>> {
     ok.then_some(l)
 }
 
-pub(super) fn sanitize_text_anchor(v: &str) -> Option<&'static str> {
+pub(crate) fn sanitize_text_anchor(v: &str) -> Option<&'static str> {
     match &*js_lower(v) {
         "start" => Some("start"),
         "middle" => Some("middle"),
@@ -111,13 +111,13 @@ const BASELINES: [&str; 11] = [
     "text-after-edge",
 ];
 
-pub(super) fn sanitize_baseline(v: &str) -> Option<&'static str> {
+pub(crate) fn sanitize_baseline(v: &str) -> Option<&'static str> {
     let l = js_lower(v);
     BASELINES.iter().find(|b| **b == l).copied()
 }
 
 /// `^[a-zA-Z0-9 ,"'_:-]+$` after trimming, else `sans-serif`.
-pub(super) fn sanitize_font_family(v: Option<&str>) -> &str {
+pub(crate) fn sanitize_font_family(v: Option<&str>) -> &str {
     let Some(v) = v else { return "sans-serif" };
     let t = trim_js(v);
     let ok = !t.is_empty()
@@ -132,7 +132,7 @@ fn contains_ci(hay: &str, needle: &str) -> bool {
 }
 
 /// Rejects `url(`, `javascript:` and `data:` colours; returns the trimmed value.
-pub(super) fn sanitize_color(v: &str) -> Option<&str> {
+pub(crate) fn sanitize_color(v: &str) -> Option<&str> {
     let t = trim_js(v);
     if t.is_empty() {
         return None;
@@ -151,7 +151,7 @@ pub(super) fn sanitize_color(v: &str) -> Option<&str> {
 
 /// Upstream's raw-SVG blocklist:
 /// `<\s*(script|foreignObject|iframe|object|embed)[\s>]|on[a-z]+\s*=|javascript:` (case-insensitive).
-pub(super) fn svg_fragment_blocked(v: &str) -> bool {
+pub(crate) fn svg_fragment_blocked(v: &str) -> bool {
     if contains_ci(v, "javascript:") {
         return true;
     }
@@ -194,7 +194,7 @@ pub(super) fn svg_fragment_blocked(v: &str) -> bool {
 }
 
 /// Upstream `sanitizeId`; `None` means "use a generated id".
-pub(super) fn sanitize_id(v: &str) -> Option<String> {
+pub(crate) fn sanitize_id(v: &str) -> Option<String> {
     let t = trim_js(v);
     if t.is_empty() {
         return None;

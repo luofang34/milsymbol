@@ -14,6 +14,19 @@ pub use crate::json::Json;
 mod metadata;
 pub use metadata::{Metadata as JsMetadata, OptionalFlags};
 
+/// The symbol's metadata in milsymbol.js's representation, with its string
+/// values and `"undefined"` sentinels. [`Symbol::metadata`] has typed values.
+pub fn js_metadata(symbol: &Symbol) -> JsMetadata<'_> {
+    (&symbol.metadata).into()
+}
+
+/// milsymbol.js `isValid()`: the same verdict as
+/// [`Symbol::validity`]`().is_valid()`, including upstream's heuristic that
+/// any text containing `null` makes a symbol invalid.
+pub fn is_valid(symbol: &Symbol) -> bool {
+    symbol.validity().is_valid()
+}
+
 /// Canonical JSON of the symbol's observable state, in the same shape as
 /// the oracle records: instructions, metadata, colours, bounding box, size,
 /// anchors, validity and options.

@@ -6,6 +6,7 @@ use alloc::vec::Vec;
 use core::fmt;
 
 /// A point in symbol units.
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Point {
     /// Horizontal coordinate.
@@ -15,6 +16,7 @@ pub struct Point {
 }
 
 /// One absolute path segment.
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Debug, Clone, Copy, PartialEq)]
 #[non_exhaustive]
 pub enum Segment {

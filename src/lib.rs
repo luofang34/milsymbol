@@ -7,6 +7,7 @@
 extern crate alloc;
 
 mod bbox;
+mod builder;
 #[cfg(feature = "std")]
 #[cfg_attr(docsrs, doc(cfg(feature = "std")))]
 pub mod cache;
@@ -16,6 +17,7 @@ pub mod compat;
 mod compose;
 pub mod config;
 pub mod domain;
+pub mod drawing;
 mod error;
 mod generated;
 pub mod geometry;
@@ -33,12 +35,13 @@ mod symbol;
 mod template;
 
 pub use bbox::{BBox, PartialBBox};
+pub use builder::{SidcInput, SymbolBuilder};
 pub use compose::{BuiltinPart, PartOutput, SymbolPart, SymbolState};
 pub use config::{DashArrays, ReferencePlatform, RendererConfig, Standard};
 pub use domain::Metadata;
 pub use error::{PartError, RenderError};
 pub use registry::{IconExtension, IconKey, IconPartContext, PartLookup};
-pub use renderer::{Renderer, SymbolBuilder};
+pub use renderer::{Renderer, RendererBuilder};
 pub use svg::SvgOptions;
 pub use symbol::{Size, Symbol, Validity, ValidityIssue};
 

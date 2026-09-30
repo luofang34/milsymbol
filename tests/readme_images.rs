@@ -17,7 +17,7 @@ fn readme_images_match_renderer() -> Result<(), Box<dyn std::error::Error>> {
         };
         let symbol = gallery_list::render(item)?;
         assert!(
-            symbol.is_valid(),
+            symbol.validity().is_valid(),
             "{} ({}) is invalid",
             item.name,
             item.sidc

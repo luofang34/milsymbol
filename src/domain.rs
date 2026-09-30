@@ -5,6 +5,7 @@
 use crate::geometry::BaseGeometry;
 
 /// Standard identity (affiliation code of the SIDC).
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 #[non_exhaustive]
 pub enum StandardIdentity {
@@ -31,7 +32,9 @@ pub enum StandardIdentity {
 }
 
 /// Context of the SIDC.
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[non_exhaustive]
 pub enum Context {
     /// Reality.
     Reality,
@@ -42,6 +45,7 @@ pub enum Context {
 }
 
 /// Operational status or condition.
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 #[non_exhaustive]
 pub enum Status {
@@ -60,7 +64,9 @@ pub enum Status {
 }
 
 /// Affiliation the frame is drawn with.
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[non_exhaustive]
 pub enum Affiliation {
     /// Friend frame.
     Friend,
@@ -73,6 +79,7 @@ pub enum Affiliation {
 }
 
 /// Dimension the frame is drawn for.
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 #[non_exhaustive]
 pub enum Dimension {
@@ -89,6 +96,7 @@ pub enum Dimension {
 }
 
 /// Echelon indicator.
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 #[non_exhaustive]
 pub enum Echelon {
@@ -123,6 +131,7 @@ pub enum Echelon {
 }
 
 /// Mobility indicator.
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 #[non_exhaustive]
 pub enum Mobility {
@@ -155,7 +164,9 @@ pub enum Mobility {
 }
 
 /// Leadership indicator of dismounted individuals.
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[non_exhaustive]
 pub enum Leadership {
     /// Leader individual.
     Leader,
@@ -207,6 +218,7 @@ impl Mobility {
 }
 
 /// Edition of the standard a numeric SIDC follows.
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 #[non_exhaustive]
 pub enum Edition {
@@ -217,6 +229,7 @@ pub enum Edition {
 }
 
 /// Typed description of a rendered symbol.
+#[cfg_attr(feature = "serde", derive(serde::Serialize))]
 #[derive(Debug, Clone, PartialEq)]
 #[non_exhaustive]
 pub struct Metadata {
@@ -247,6 +260,7 @@ pub struct Metadata {
     /// Edition of a numeric SIDC.
     pub edition: Option<Edition>,
     /// Base frame geometry, if the affiliation and dimension have one.
+    #[cfg_attr(feature = "serde", serde(serialize_with = "serialize_geometry"))]
     pub geometry: Option<&'static BaseGeometry>,
     /// Headquarters.
     pub headquarters: bool,
@@ -296,3 +310,12 @@ impl Affiliation {
 }
 
 mod metadata;
+
+/// Serializes a frame geometry as its bounding box `[x1, y1, x2, y2]`.
+#[cfg(feature = "serde")]
+fn serialize_geometry<S: serde::Serializer>(
+    geometry: &Option<&'static BaseGeometry>,
+    serializer: S,
+) -> Result<S::Ok, S::Error> {
+    serde::Serialize::serialize(&geometry.map(|g| g.bbox), serializer)
+}

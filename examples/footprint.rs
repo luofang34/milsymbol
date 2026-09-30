@@ -5,7 +5,7 @@
 
 use milsymbol::compat;
 use milsymbol::ir::Node;
-use milsymbol::options::{SymbolOptions, field};
+use milsymbol::options::{SymbolOptions, TextField};
 use milsymbol::{Renderer, Symbol};
 use std::io::{self, Write};
 
@@ -33,8 +33,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         size_of::<milsymbol::ir::Node>()
     );
     let mut rich = SymbolOptions::default();
-    rich.set_text(field::UNIQUE_DESIGNATION, "1-66")
-        .set_text(field::HIGHER_FORMATION, "2 BDE");
+    rich.set_text(TextField::UniqueDesignation, "1-66")
+        .set_text(TextField::HigherFormation, "2 BDE");
     rich.direction = Some(45.0);
     let mut outlined = rich.clone();
     outlined.style.outline_width = 4.0;
@@ -53,7 +53,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         profile_symbol(&r, name, sidc, options)?;
     }
     let infantry = r.render("10031000001211000000", SymbolOptions::default())?;
-    measure("is_valid: infantry", || infantry.is_valid());
+    measure("is_valid: infantry", || infantry.validity().is_valid());
     let mut buf = String::with_capacity(4096);
     measure("write_svg into a reused buffer", || {
         infantry.write_svg(&mut buf);
@@ -95,7 +95,7 @@ fn profile_symbol(
         return Err("canonical JSON writers disagree".into());
     }
     measure("native + JS metadata views", || {
-        (symbol.metadata(), symbol.js_metadata())
+        (symbol.metadata(), milsymbol::compat::js_metadata(&symbol))
     });
     Ok(())
 }

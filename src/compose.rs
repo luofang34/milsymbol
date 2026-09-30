@@ -10,7 +10,7 @@ use crate::config::RendererConfig;
 use crate::error::RenderError;
 use crate::ir::{Node, Num, Paint, Str, Style};
 use crate::metadata::Metadata;
-use crate::options::{StyleColor, SymbolOptions};
+use crate::options::{ColorChoice, SymbolOptions};
 use crate::registry::Registry;
 use alloc::borrow::Cow;
 use alloc::vec::Vec;
@@ -37,6 +37,16 @@ pub struct SymbolState<'a> {
     pub(crate) bbox: BBox,
     pub(crate) config: &'a RendererConfig,
     pub(crate) registry: &'a Registry,
+}
+
+impl core::fmt::Debug for SymbolState<'_> {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        f.debug_struct("SymbolState")
+            .field("sidc", &self.sidc)
+            .field("options", &self.options)
+            .field("bbox", &self.bbox)
+            .finish_non_exhaustive()
+    }
 }
 
 impl<'a> SymbolState<'a> {
@@ -119,7 +129,7 @@ impl PartOutput {
 ///     }
 /// }
 ///
-/// let r = Renderer::default().with_symbol_part(AnchorDot);
+/// let r = Renderer::builder().symbol_part(AnchorDot).build();
 /// assert!(r.symbol("10031000001211000000").render()?.to_svg().contains("<circle"));
 /// # Ok::<(), milsymbol::RenderError>(())
 /// ```
@@ -224,7 +234,7 @@ impl SymbolState<'_> {
 
     /// Upstream's outline colour argument.
     pub(crate) fn outline_color(&self) -> Option<Paint> {
-        style_color_value(&self.options.style.outline_color, self.aff())
+        style_color_value(self.options.style.outline_color.as_ref(), self.aff())
     }
 
     /// `ms.outline(geom, outlineWidth, strokeWidth, outlineColor)`.
@@ -253,12 +263,13 @@ impl SymbolState<'_> {
 /// Value of a style colour for an affiliation: the string itself, or the
 /// per-affiliation entry.
 pub(crate) fn style_color_value(
-    c: &StyleColor,
+    c: Option<&ColorChoice>,
     aff: Option<crate::domain::Affiliation>,
 ) -> Option<Paint> {
     match c {
-        StyleColor::Str(s) => Some(Paint::Color(s.clone())),
-        StyleColor::PerAffiliation(m) => aff.and_then(|a| m.for_affiliation(a)).cloned(),
+        None => Some(Paint::Color(Str::Borrowed(""))),
+        Some(ColorChoice::Uniform(c)) => Some(Paint::Color(c.to_str())),
+        Some(ColorChoice::PerAffiliation(m)) => aff.and_then(|a| m.for_affiliation(a)).cloned(),
     }
 }
 

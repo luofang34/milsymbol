@@ -5,6 +5,7 @@
 //! every option, with floats compared by bit pattern (`-0.0` and `0.0` are
 //! different requests).
 
+use crate::builder::{SidcInput, option_setters};
 use crate::error::RenderError;
 use crate::options::SymbolOptions;
 use crate::renderer::Renderer;
@@ -27,7 +28,7 @@ use key::{KeyBuf, write_key};
 /// use milsymbol::{Renderer, cache::CachedRenderer, options::SymbolOptions};
 /// use std::sync::Arc;
 ///
-/// let cache = CachedRenderer::new(Renderer::default(), 1024).with_prepared_paths();
+/// let cache = CachedRenderer::new(Renderer::default(), 1024);
 /// let options = SymbolOptions::default();
 /// let a = cache.render("10031000001211000000", &options)?;
 /// let b = cache.render("10031000001211000000", &options)?;
@@ -37,7 +38,6 @@ use key::{KeyBuf, write_key};
 pub struct CachedRenderer {
     renderer: Renderer,
     capacity: usize,
-    prepare_paths: bool,
     entries: Mutex<Clock>,
 }
 
@@ -46,7 +46,6 @@ impl core::fmt::Debug for CachedRenderer {
         f.debug_struct("CachedRenderer")
             .field("renderer", &self.renderer)
             .field("capacity", &self.capacity)
-            .field("prepare_paths", &self.prepare_paths)
             .finish()
     }
 }
@@ -131,25 +130,8 @@ impl CachedRenderer {
         CachedRenderer {
             renderer,
             capacity,
-            prepare_paths: false,
             entries: Mutex::new(Clock::default()),
         }
-    }
-
-    /// Parses every path's segments before a symbol is cached, so backends
-    /// that read [`PathData::segments`](crate::ir::PathData::segments) get
-    /// them without parsing (a shared `Arc<Symbol>` cannot be prepared
-    /// afterwards). A path that fails to parse is left as is; `segments()`
-    /// then reports the error.
-    ///
-    /// Enabling this mode clears unprepared cache entries; symbols already
-    /// returned to callers remain usable. Repeated calls preserve the cache.
-    pub fn with_prepared_paths(mut self) -> Self {
-        if !self.prepare_paths {
-            self.entries = Mutex::new(Clock::default());
-        }
-        self.prepare_paths = true;
-        self
     }
 
     /// The wrapped renderer.
@@ -165,6 +147,25 @@ impl CachedRenderer {
     /// Whether the cache is empty.
     pub fn is_empty(&self) -> bool {
         self.len() == 0
+    }
+
+    /// Starts a symbol; [`CachedSymbolBuilder::render`] reuses an earlier
+    /// identical render.
+    ///
+    /// ```
+    /// use milsymbol::{Renderer, cache::CachedRenderer};
+    ///
+    /// let cache = CachedRenderer::new(Renderer::default(), 64);
+    /// let symbol = cache.symbol("10031000001211000000").size(50.0).render()?;
+    /// assert!(symbol.validity().is_valid());
+    /// # Ok::<(), milsymbol::RenderError>(())
+    /// ```
+    pub fn symbol<'a>(&'a self, sidc: impl Into<SidcInput<'a>>) -> CachedSymbolBuilder<'a> {
+        CachedSymbolBuilder {
+            cache: self,
+            sidc: sidc.into(),
+            options: SymbolOptions::default(),
+        }
     }
 
     /// Renders `sidc` with `options`, reusing an earlier identical render.
@@ -196,11 +197,27 @@ impl CachedRenderer {
     }
 
     fn render_uncached(&self, sidc: &str, options: &SymbolOptions) -> Result<Symbol, RenderError> {
-        let mut symbol = self.renderer.render(sidc, options.clone())?;
-        if self.prepare_paths {
-            symbol.cache_path_segments().ok();
-        }
-        Ok(symbol)
+        self.renderer.render(sidc, options.clone())
+    }
+}
+
+/// Builds one symbol for a [`CachedRenderer`]; returned by
+/// [`CachedRenderer::symbol`]. It has the setters of
+/// [`SymbolBuilder`](crate::SymbolBuilder) except `strict`.
+#[derive(Debug)]
+#[must_use = "a builder does nothing until it is built or rendered"]
+pub struct CachedSymbolBuilder<'a> {
+    cache: &'a CachedRenderer,
+    sidc: SidcInput<'a>,
+    options: SymbolOptions,
+}
+
+impl CachedSymbolBuilder<'_> {
+    option_setters!();
+
+    /// Renders the symbol, or returns the cached one.
+    pub fn render(self) -> Result<Arc<Symbol>, RenderError> {
+        self.cache.render(self.sidc.as_str(), &self.options)
     }
 }
 

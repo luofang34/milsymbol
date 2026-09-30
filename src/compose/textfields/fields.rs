@@ -18,14 +18,14 @@ struct Opts<'a>(&'a SymbolState<'a>);
 
 impl Opts<'_> {
     fn get(&self, key: &str) -> String {
-        String::from(self.0.options.text(key))
+        String::from(self.0.options.text_named(key))
     }
 
     /// Upstream's `if (a || b) { x = [a, b].filter(Boolean).join("/") }`.
     fn join(&self, keys: &[&str]) -> Option<String> {
         let parts: Vec<&str> = keys
             .iter()
-            .map(|k| self.0.options.text(k))
+            .map(|k| self.0.options.text_named(k))
             .filter(|v| !v.is_empty())
             .collect();
         if parts.is_empty() {

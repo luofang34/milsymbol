@@ -1,7 +1,7 @@
 //! Property tests: arbitrary input never panics and rendering is deterministic.
 
 use milsymbol::Renderer;
-use milsymbol::options::{SymbolOptions, field};
+use milsymbol::options::{Color, OptionValue, SymbolOptions, TextField};
 use proptest::prelude::*;
 use proptest::test_runner::TestCaseError;
 
@@ -45,7 +45,7 @@ proptest! {
     #[test]
     fn letter_sidcs_never_panic(sidc in letter_sidc()) {
         let s = Renderer::default().symbol(&sidc).render().map_err(fail)?;
-        s.is_valid();
+        s.validity().is_valid();
         prop_assert!(s.to_svg().ends_with("</svg>"));
     }
 
@@ -57,6 +57,41 @@ proptest! {
     #[test]
     fn arbitrary_strings_never_panic(sidc in "\\PC{0,40}") {
         Renderer::default().symbol(&sidc).render().map(|s| s.to_svg()).ok();
+    }
+
+    #[test]
+    fn drawing_agrees_with_svg(
+        sidc in numeric_sidc(),
+        size in 1.0f64..500.0,
+        direction in prop::option::of(0.0f64..360.0),
+        speed in 0.0f64..200.0,
+        text in "\\PC{0,12}",
+    ) {
+        let mut b = Renderer::default().symbol(&sidc).size(size).speed_leader(speed).text(TextField::UniqueDesignation, text);
+        if let Some(d) = direction {
+            b = b.direction(d);
+        }
+        let s = b.render().map_err(fail)?;
+        let svg = s.to_svg();
+        let drawing = s.drawing();
+        let circles = drawing.items.iter().filter(|i| matches!(i.shape, milsymbol::drawing::Shape::Circle { .. })).count();
+        prop_assert_eq!(circles, svg.matches("<circle").count());
+        prop_assert_eq!(drawing.invalid_paths, 0);
+    }
+
+    #[test]
+    fn option_names_and_values_never_panic(
+        name in "[a-zA-Z_]{0,24}",
+        text in "\\PC{0,12}",
+        number in prop::num::f64::ANY,
+        flag in any::<bool>(),
+    ) {
+        for value in [OptionValue::Str(text.clone()), OptionValue::Num(number), OptionValue::Bool(flag)] {
+            let mut o = SymbolOptions::default();
+            if o.set(&name, value).is_ok() {
+                Renderer::default().render("10031000161211000000", o).map(|s| s.to_svg()).ok();
+            }
+        }
     }
 
     #[test]
@@ -81,11 +116,11 @@ proptest! {
         o.style.icon = icon;
         o.style.square = square;
         o.style.info_fields = info_fields;
-        if mono { o.style.mono_color = "black".into(); }
+        if mono { o.style.mono_color = Color::new("black").ok(); }
         o.direction = direction;
-        o.speed_leader = speed;
+        o.speed_leader = Some(speed);
         o.stack = stack;
-        for k in [field::UNIQUE_DESIGNATION, field::QUANTITY, field::ENGAGEMENT_BAR, field::STAFF_COMMENTS] {
+        for k in [TextField::UniqueDesignation, TextField::Quantity, TextField::EngagementBar, TextField::StaffComments] {
             o.set_text(k, text.clone());
         }
         Renderer::default().render(&sidc, o).map(|s| (s.to_svg(), milsymbol::compat::canonical_json_string(&s))).ok();

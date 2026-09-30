@@ -73,7 +73,7 @@ fn context(s: &SymbolState<'_>, part_aff: Field<Affiliation>) -> IconContext {
     c.set_bool(Var::Frame, md.frame);
     c.set_bool(Var::NumberSidc, md.number_sidc);
     c.set_bool(Var::AlternateMedal, st.alternate_medal);
-    c.set(Var::Mono, u8::from(!st.mono_color.is_empty()));
+    c.set(Var::Mono, u8::from(st.mono_color.is_some()));
     c.set(
         Var::Edition,
         match md.edition() {
@@ -148,7 +148,7 @@ pub(super) fn draw(s: &SymbolState<'_>) -> Result<PartOutput, RenderError> {
     };
     let (md, st) = (s.metadata, &s.options.style);
     let mut pre = Vec::new();
-    if (!(st.frame && md.fill) || !st.mono_color.is_empty() || md.control_measure())
+    if (!(st.frame && md.fill) || st.mono_color.is_some() || md.control_measure())
         && st.outline_width > 0.0
     {
         pre.push(s.outline(&post)?);
@@ -199,14 +199,19 @@ fn icon(s: &SymbolState<'_>) -> Result<(Vec<Node>, BBox, bool), RenderError> {
             metadata: typed,
             js_metadata,
             colors: s.colors,
-            mono_color: &s.options.style.mono_color,
+            mono_color: s
+                .options
+                .style
+                .mono_color
+                .as_ref()
+                .map(crate::options::Color::as_str),
             alternate_medal: s.options.style.alternate_medal,
         });
     let parts = Parts {
         resolver: Resolver {
             colors: s.colors,
             part_affiliation: part_aff.known(),
-            mono_color: &s.options.style.mono_color,
+            mono_color: s.options.style.mono_color_str(),
             icon_font_family: s
                 .options
                 .style

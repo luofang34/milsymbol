@@ -5,7 +5,7 @@ use milsymbol::compat;
 use milsymbol::domain::Affiliation;
 use milsymbol::labels::{Label, LabelField};
 use milsymbol::options::SymbolOptions;
-use milsymbol::options::field;
+use milsymbol::options::TextField;
 use milsymbol::{IconExtension, Renderer, Symbol};
 use std::collections::BTreeMap;
 use std::hint::black_box;
@@ -26,14 +26,14 @@ fn prepared_observers_and_reused_json_buffer_do_not_allocate()
     let renderer = Renderer::default();
     let symbol = renderer
         .symbol("10031000001211000000")
-        .text(field::UNIQUE_DESIGNATION, "A\u{1}\n\"\\😀")
+        .text(TextField::UniqueDesignation, "A\u{1}\n\"\\😀")
         .render()?;
     let expected = compat::canonical_json_string(&symbol);
     let mut buffer = String::with_capacity(expected.len());
     let colors =
         milsymbol::color::ColorMode::new("pink", "blue", "red", "green", "yellow", "orange");
     #[cfg(feature = "std")]
-    let cached = milsymbol::cache::CachedRenderer::new(renderer, 4).with_prepared_paths();
+    let cached = milsymbol::cache::CachedRenderer::new(renderer, 4);
     #[cfg(feature = "std")]
     let options = SymbolOptions::default();
     #[cfg(feature = "std")]
@@ -43,7 +43,7 @@ fn prepared_observers_and_reused_json_buffer_do_not_allocate()
     for _ in 0..4 {
         buffer.clear();
         compat::write_canonical_json(black_box(&symbol), &mut buffer);
-        black_box((symbol.metadata(), symbol.js_metadata()));
+        black_box((symbol.metadata(), milsymbol::compat::js_metadata(&symbol)));
         black_box(colors.for_affiliation(Affiliation::Friend));
         #[cfg(feature = "std")]
         black_box(cached.render(symbol.sidc(), &options)?);
@@ -76,6 +76,7 @@ fn measured_render(
     sidc: &str,
     options: SymbolOptions,
 ) -> Result<(Symbol, dhat::HeapStats), milsymbol::RenderError> {
+    renderer.render(sidc, options.clone())?;
     let profiler = dhat::Profiler::builder().testing().build();
     let symbol = renderer.render(sidc, options)?;
     let stats = dhat::HeapStats::get();
@@ -84,8 +85,8 @@ fn measured_render(
 }
 
 fn unused_label_definitions_do_not_add_allocations() -> Result<(), Box<dyn std::error::Error>> {
-    let one = Renderer::default().with_icons(OwnedLabels(1));
-    let ten = Renderer::default().with_icons(OwnedLabels(10));
+    let one = Renderer::builder().icons(OwnedLabels(1)).build();
+    let ten = Renderer::builder().icons(OwnedLabels(10)).build();
     for text in ["", "VISIBLE"] {
         let mut options = SymbolOptions::default();
         options.set_text("custom0", text);
@@ -116,10 +117,10 @@ fn direction_rendering_stays_within_allocation_budgets() -> Result<(), Box<dyn s
         {
             let mut options = SymbolOptions::default();
             options.direction = Some(45.0);
-            options.speed_leader = speed;
+            options.speed_leader = Some(speed);
             options.style.outline_width = outline;
             let (symbol, stats) = measured_render(&renderer, sidc, options)?;
-            assert!(symbol.is_valid());
+            assert!(symbol.validity().is_valid());
             assert!(
                 stats.total_blocks <= budget,
                 "{sidc} speed={speed} outline={outline}: {} allocations exceeds {budget}",

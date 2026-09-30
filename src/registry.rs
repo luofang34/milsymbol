@@ -31,8 +31,8 @@ pub struct IconPartContext<'a> {
     pub js_metadata: &'a JsMetadata<'a>,
     /// Resolved colours of the symbol.
     pub colors: &'a ColorSet,
-    /// Monochrome colour, empty for full colour.
-    pub mono_color: &'a str,
+    /// Monochrome colour; `None` for full colour.
+    pub mono_color: Option<&'a str>,
     /// Alternate MEDAL icons requested.
     pub alternate_medal: bool,
 }
@@ -114,7 +114,7 @@ pub trait PartLookup {
 ///     }
 /// }
 ///
-/// let r = Renderer::default().with_icons(RoundInfantry);
+/// let r = Renderer::builder().icons(RoundInfantry).build();
 /// let svg = r.symbol("10031000001211000000").render()?.to_svg();
 /// assert!(svg.contains("<circle"));
 /// # Ok::<(), milsymbol::RenderError>(())

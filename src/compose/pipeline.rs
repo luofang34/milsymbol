@@ -8,7 +8,7 @@ use crate::error::RenderError;
 use crate::ir::{Node, Point};
 use crate::js;
 use crate::metadata::Metadata;
-use crate::options::{StyleColor, SymbolOptions};
+use crate::options::{ColorChoice, ColorModeChoice, SymbolOptions};
 use crate::registry::{PartSlot, Registry};
 use crate::sidc::{self, Dashes, ParseInput};
 use alloc::string::String;
@@ -41,7 +41,7 @@ pub(crate) fn metadata(
     let st = &options.style;
     let std2525 = st.standard.unwrap_or(config.standard) == Standard::Mil2525;
     let mut md = Metadata::new(st.fill, st.frame, std2525);
-    if !st.mono_color.is_empty() {
+    if st.mono_color.is_some() {
         md.fill = false;
     }
     let normalized = sidc::normalize(sidc_in);
@@ -80,13 +80,13 @@ pub(crate) fn colors(
 ) -> Result<ColorSet, RenderError> {
     let st = &options.style;
     let fill_mode = match &st.color_mode {
-        StyleColor::PerAffiliation(m) => m.clone(),
-        StyleColor::Str(name) => named_mode(config, name)?,
+        ColorModeChoice::Custom(m) => m.clone(),
+        ColorModeChoice::Named(name) => named_mode(config, name)?,
     };
     let inputs = ColorInputs {
         fill_mode,
-        frame_override: st.frame_color.as_mode(),
-        icon_override: st.icon_color.as_mode(),
+        frame_override: st.frame_color.as_ref().and_then(ColorChoice::as_mode),
+        icon_override: st.icon_color.as_ref().and_then(ColorChoice::as_mode),
         frame_mode: named_mode(config, "FrameColor")?,
         icon_mode: named_mode(config, "IconColor")?,
         black: named_mode(config, "Black")?,
@@ -94,7 +94,7 @@ pub(crate) fn colors(
         off_white: named_mode(config, "OffWhite")?,
         none: named_mode(config, "None")?,
         civilian_color: st.civilian_color,
-        mono_color: &st.mono_color,
+        mono_color: st.mono_color_str(),
         icon_visible: st.icon,
     };
     let flags = ColorFlags {
@@ -105,13 +105,13 @@ pub(crate) fn colors(
         fill: md.fill,
     };
     let (colors, mutated) = color::resolve_colors(inputs, &flags);
-    if let StyleColor::PerAffiliation(m) = &mut options.style.color_mode {
+    if let ColorModeChoice::Custom(m) = &mut options.style.color_mode {
         *m = mutated.color_mode;
     }
-    if let StyleColor::PerAffiliation(m) = &mut options.style.frame_color {
+    if let Some(ColorChoice::PerAffiliation(m)) = &mut options.style.frame_color {
         *m = mutated.frame_color;
     }
-    if let StyleColor::PerAffiliation(m) = &mut options.style.icon_color {
+    if let Some(ColorChoice::PerAffiliation(m)) = &mut options.style.icon_color {
         *m = mutated.icon_color;
     }
     Ok(colors)
@@ -216,6 +216,7 @@ pub(crate) fn compose(
     config: &RendererConfig,
     registry: &Registry,
 ) -> Result<Composition, RenderError> {
+    options.check_numbers()?;
     let (sidc, md) = metadata(sidc_in, options, config);
     let colors = colors(&md, options, config)?;
     let options = &*options;
@@ -306,11 +307,9 @@ fn layout(
     };
     let mut anchor = Point { x: 100.0, y: 100.0 };
     if md.headquarters {
-        let hq = if st.hq_staff_length != 0.0 && !st.hq_staff_length.is_nan() {
-            st.hq_staff_length
-        } else {
-            config.hq_staff_length
-        };
+        let hq = st
+            .hq_staff_length_override()
+            .unwrap_or(config.hq_staff_length);
         let g = md.geometry_bbox();
         anchor = Point {
             x: g.x1,

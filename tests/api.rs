@@ -3,7 +3,7 @@
 use milsymbol::ValidityIssue;
 use milsymbol::domain::Affiliation;
 use milsymbol::ir::Node;
-use milsymbol::options::{OptionError, OptionValue, SymbolOptions, field};
+use milsymbol::options::{OptionError, OptionValue, SymbolOptions, TextField};
 use milsymbol::{RenderError, Renderer, Standard, catalog};
 
 type TestResult = Result<(), Box<dyn std::error::Error>>;
@@ -13,14 +13,14 @@ const INFANTRY: &str = "10031000001211000000";
 #[test]
 fn renders_valid_infantry_with_expected_frame() -> TestResult {
     let s = Renderer::default().symbol(INFANTRY).render()?;
-    assert!(s.is_valid());
+    assert!(s.validity().is_valid());
     let svg = s.to_svg();
     assert!(svg.starts_with(
         "<svg xmlns=\"http://www.w3.org/2000/svg\" version=\"1.2\" baseProfile=\"tiny\""
     ));
     assert!(svg.contains("d=\"M25,50 l150,0 0,100 -150,0 z\""), "{svg}");
     assert_eq!(s.metadata().affiliation, Some(Affiliation::Friend));
-    assert_eq!(s.js_metadata().dimension, "Ground");
+    assert_eq!(milsymbol::compat::js_metadata(&s).dimension, "Ground");
     let a = s.anchor();
     assert_eq!((a.x, a.y), (79.0, 54.0));
     Ok(())
@@ -76,7 +76,7 @@ fn wrongly_typed_option_is_a_typed_error() -> TestResult {
     o.set("standard", "APP6")?;
     assert_eq!(o.style.standard, Some(Standard::App6));
     o.set_text("dtg1", "D1");
-    assert_eq!(o.text("dtg1"), "D1");
+    assert_eq!(o.text_named("dtg1"), "D1");
     assert!(o.set("size", OptionValue::Num(50.0)).is_ok());
     assert!(o.set("sidc", "SFG").is_err());
     Ok(())
@@ -86,7 +86,7 @@ fn wrongly_typed_option_is_a_typed_error() -> TestResult {
 fn text_is_escaped_in_svg() -> TestResult {
     let s = Renderer::default()
         .symbol(INFANTRY)
-        .text(field::UNIQUE_DESIGNATION, "<script>&")
+        .text(TextField::UniqueDesignation, "<script>&")
         .render()?;
     let svg = s.to_svg();
     assert!(svg.contains("&lt;script&gt;&amp;</text>"), "{svg}");
@@ -134,7 +134,7 @@ fn built_in_icon_text_uses_font_family_only_when_requested() -> TestResult {
 
 #[test]
 fn standard_is_renderer_configuration() -> TestResult {
-    let app6 = Renderer::default().with_standard(Standard::App6);
+    let app6 = Renderer::builder().standard(Standard::App6).build();
     assert!(!app6.symbol(INFANTRY).render()?.metadata().std2525);
     assert!(
         Renderer::default()
@@ -203,10 +203,10 @@ fn cached_renderer_keys_long_requests_exactly() -> TestResult {
     // Text long enough that the lookup key no longer fits on the stack.
     let long = "x".repeat(4096);
     let mut a = SymbolOptions::default();
-    a.set_text(field::ADDITIONAL_INFORMATION, &long);
+    a.set_text(TextField::AdditionalInformation, &long);
     let mut b = SymbolOptions::default();
     b.set_text(
-        field::ADDITIONAL_INFORMATION,
+        TextField::AdditionalInformation,
         format!("{}y", "x".repeat(4095)),
     );
     let first = c.render(INFANTRY, &a)?;
@@ -222,38 +222,6 @@ fn write_svg_appends_the_same_document() -> TestResult {
     let mut buf = String::from("prefix");
     symbol.write_svg(&mut buf);
     assert_eq!(buf.strip_prefix("prefix"), Some(symbol.to_svg().as_str()));
-    Ok(())
-}
-
-#[cfg(feature = "std")]
-#[test]
-fn cached_symbols_can_carry_parsed_paths() -> TestResult {
-    use milsymbol::cache::CachedRenderer;
-    use milsymbol::ir::Node;
-    fn all_borrowed(nodes: &[Node]) -> Result<bool, milsymbol::ir::PathParseError> {
-        for n in nodes {
-            if let Node::Path(p) = n {
-                if matches!(p.d.segments()?, std::borrow::Cow::Owned(_)) {
-                    return Ok(false);
-                }
-            }
-            if !all_borrowed(n.children().unwrap_or(&[]))? {
-                return Ok(false);
-            }
-        }
-        Ok(true)
-    }
-    let plain = CachedRenderer::new(Renderer::default(), 4);
-    assert!(!all_borrowed(
-        plain
-            .render(INFANTRY, &SymbolOptions::default())?
-            .instructions()
-    )?);
-    let c = CachedRenderer::new(Renderer::default(), 4).with_prepared_paths();
-    let first = c.render(INFANTRY, &SymbolOptions::default())?;
-    let hit = c.render(INFANTRY, &SymbolOptions::default())?;
-    assert!(std::sync::Arc::ptr_eq(&first, &hit));
-    assert!(all_borrowed(first.instructions())?);
     Ok(())
 }
 
@@ -274,43 +242,12 @@ fn every_catalog_symbol_has_parseable_paths() -> TestResult {
             .collect::<String>()
     }));
     for sidc in &sidcs {
-        let mut s = r
+        let s = r
             .symbol(sidc)
-            .text(field::UNIQUE_DESIGNATION, "A")
+            .text(TextField::UniqueDesignation, "A")
             .render()?;
-        s.cache_path_segments()
-            .map_err(|e| format!("{sidc}: {e}"))?;
+        assert_eq!(s.drawing().invalid_paths, 0, "{sidc}");
     }
-    Ok(())
-}
-
-#[cfg(feature = "std")]
-#[test]
-fn enabling_prepared_paths_invalidates_unprepared_cache() -> TestResult {
-    use milsymbol::cache::CachedRenderer;
-    use std::{borrow::Cow, sync::Arc};
-
-    let cache = CachedRenderer::new(Renderer::default(), 4);
-    let options = SymbolOptions::default();
-    let unprepared = cache.render(INFANTRY, &options)?;
-    let Some(Node::Path(original_frame)) = unprepared.instructions().first() else {
-        return Err("the frame is not the first instruction".into());
-    };
-    assert!(matches!(original_frame.d.segments()?, Cow::Owned(_)));
-
-    let cache = cache.with_prepared_paths();
-    let prepared = cache.render(INFANTRY, &options)?;
-    let Some(Node::Path(frame)) = prepared.instructions().first() else {
-        return Err("the frame is not the first instruction".into());
-    };
-    assert!(matches!(frame.d.segments()?, Cow::Borrowed(_)));
-    assert!(!Arc::ptr_eq(&unprepared, &prepared));
-    assert_eq!(unprepared.to_svg(), prepared.to_svg());
-    assert!(matches!(original_frame.d.segments()?, Cow::Owned(_)));
-    assert!(Arc::ptr_eq(&prepared, &cache.render(INFANTRY, &options)?));
-
-    let cache = cache.with_prepared_paths();
-    assert!(Arc::ptr_eq(&prepared, &cache.render(INFANTRY, &options)?));
     Ok(())
 }
 
@@ -323,7 +260,7 @@ fn javascript_object_keys_are_ordinary_text_fields() -> TestResult {
         let mut o = SymbolOptions::default();
         o.set_text(key, "x");
         let s = Renderer::default().render(INFANTRY, o)?;
-        assert_eq!(s.options().text(key), "x", "{key}");
+        assert_eq!(s.options().text_named(key), "x", "{key}");
         let json = milsymbol::compat::canonical_json_string(&s);
         assert!(json.contains(&format!("\"{key}\":\"x\"")), "{key}");
     }

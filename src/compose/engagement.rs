@@ -38,7 +38,7 @@ fn bar_fill(s: &SymbolState<'_>, filled: bool) -> Option<Paint> {
     }
     let named = match s
         .options
-        .text(field::ENGAGEMENT_TYPE)
+        .text_named(field::ENGAGEMENT_TYPE)
         .to_uppercase()
         .as_str()
     {
@@ -54,13 +54,13 @@ pub(super) fn draw(s: &SymbolState<'_>) -> Result<PartOutput, RenderError> {
     let (md, st) = (s.metadata, &s.options.style);
     let bbox = s.bbox;
     let (mut x1, mut x2, mut y1, y2) = (bbox.x1, bbox.x2, bbox.y1, bbox.y2);
-    let bar = s.options.text(field::ENGAGEMENT_BAR);
+    let bar = s.options.text_named(field::ENGAGEMENT_BAR);
     let mut pre = Vec::new();
     let mut post = Vec::new();
     if !bar.is_empty() {
         y1 -= 6.0;
         post.push(bar_text(s, bar, bbox.y1 - 11.0));
-        let filled = md.fill && st.mono_color.is_empty();
+        let filled = md.fill && st.mono_color.is_none();
         let color = bar_fill(s, filled);
         let width = js::max(bbox.width(), js::utf16_len(bar) as f64 * 16.0);
         x1 = js::min(x1, 100.0 - width / 2.0);

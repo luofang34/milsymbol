@@ -14,7 +14,9 @@ pub const COLOR_KEYS: [&str; 6] = [
 ///
 /// Each value is `Some(Paint::Color)`, `Some(Paint::None)` (upstream `false`)
 /// or `None` (upstream `undefined`, e.g. a key missing from a user object).
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Debug, Clone, PartialEq, Default)]
+#[non_exhaustive]
 pub struct ColorMode {
     /// Civilian colour.
     pub civilian: Option<Paint>,
@@ -144,6 +146,7 @@ pub(crate) fn truthy(v: &Option<Paint>) -> bool {
 }
 
 /// Resolved colours of one symbol (upstream `symbol.colors`).
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Debug, Clone, PartialEq, Default)]
 #[non_exhaustive]
 pub struct ColorSet {

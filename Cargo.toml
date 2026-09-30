@@ -1,6 +1,6 @@
 [package]
 name = "milsymbol"
-version = "0.1.0"
+version = "0.2.0"
 authors = ["Fang Luo"]
 edition = "2024"
 rust-version = "1.85"
@@ -40,6 +40,8 @@ include = [
 default = ["std"]
 # `std` only adds the `cache` module; the core is `no_std + alloc`.
 std = []
+# Serialize and deserialize options, configuration and the drawing view.
+serde = ["dep:serde"]
 
 [package.metadata.docs.rs]
 all-features = true
@@ -47,6 +49,7 @@ rustdoc-args = ["--cfg", "docsrs"]
 
 [dependencies]
 libm = "0.2.16"
+serde = { version = "1.0", default-features = false, features = ["alloc", "derive"], optional = true }
 
 [dev-dependencies]
 serde_json = { version = "1.0.151", features = ["float_roundtrip"] }

@@ -25,7 +25,7 @@ fn replace_fonts(nodes: &mut [Node]) -> usize {
 #[test]
 fn icon_font_override_preserves_layout_and_other_instructions() -> TestResult {
     for standard in [Standard::Mil2525, Standard::App6] {
-        let renderer = Renderer::default().with_standard(standard);
+        let renderer = Renderer::builder().standard(standard).build();
         for sidc in [CIVILIAN, "SFAPC-----", "10031000001211000700"] {
             let mut options = SymbolOptions::default();
             options.style.font_family = "Courier".into();
@@ -75,8 +75,9 @@ impl IconExtension for MixedText {
 
 #[test]
 fn extension_text_keeps_its_font_and_builtin_lookups_use_the_override() -> TestResult {
-    let symbol = Renderer::default()
-        .with_icons(MixedText)
+    let symbol = Renderer::builder()
+        .icons(MixedText)
+        .build()
         .symbol(CIVILIAN)
         .with(|options| {
             options.style.font_family = "Courier".into();

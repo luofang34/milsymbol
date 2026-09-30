@@ -1,4 +1,10 @@
-//! Native drawing IR.
+//! The instruction tree, exactly as milsymbol.js builds it.
+//!
+//! This is the layer extensions write ([`SymbolPart`](crate::SymbolPart) and
+//! [`IconExtension`](crate::IconExtension) return [`Node`]s) and the layer the
+//! SVG writer and the differential tests read. Renderers other than SVG should
+//! use [`Symbol::drawing`](crate::Symbol::drawing), which resolves it into
+//! flat typed items.
 //!
 //! A rendered symbol is a tree of [`Node`]s mirroring upstream's semantic
 //! draw instructions (`path`, `circle`, `text`, `translate`, `rotate`,
@@ -21,7 +27,9 @@ pub use path::{PathData, PathParseError, Point, Segment};
 pub type Str = Cow<'static, str>;
 
 /// A paint (fill or stroke) value.
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Debug, Clone, PartialEq)]
+#[non_exhaustive]
 pub enum Paint {
     /// Explicitly no paint (upstream `false`, SVG `none`).
     None,
