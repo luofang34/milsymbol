@@ -205,10 +205,11 @@ fn encode(text: &str) -> (Vec<u8>, bool) {
     let mut best: Option<Vec<u8>> = None;
     for places in 0..=MAX_PLACES {
         for style in 0..8u8 {
-            let header = style | places << HDR_PLACES_SHIFT;
-            if let Some(enc) = encode_with(&toks, header)
-                && best.as_ref().is_none_or(|b| enc.len() < b.len())
-            {
+            let header = style | (places << HDR_PLACES_SHIFT);
+            let Some(enc) = encode_with(&toks, header) else {
+                continue;
+            };
+            if best.as_ref().is_none_or(|b| enc.len() < b.len()) {
                 best = Some(enc);
             }
         }

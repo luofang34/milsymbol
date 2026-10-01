@@ -131,10 +131,10 @@ impl<'a> Items<'a> {
     fn scaled(&mut self, first: u8) -> Option<Number<'a>> {
         let z = match first {
             0x00..=0x7F => u32::from(first),
-            0x80..=0xBF => u32::from(first & 0x3F) << 8 | u32::from(self.byte()?),
+            0x80..=0xBF => (u32::from(first & 0x3F) << 8) | u32::from(self.byte()?),
             _ => {
                 let hi = u32::from(first & 0x0F) << 16;
-                hi | u32::from(self.byte()?) << 8 | u32::from(self.byte()?)
+                hi | (u32::from(self.byte()?) << 8) | u32::from(self.byte()?)
             }
         };
         let half = i32::try_from(z >> 1).ok()?;
