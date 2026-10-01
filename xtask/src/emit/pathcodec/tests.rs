@@ -13,7 +13,7 @@ fn round_trips(text: &str) -> Result<(), TestCaseError> {
 fn number() -> impl Strategy<Value = String> {
     (
         prop::bool::ANY,
-        prop_oneof![Just("0".to_string()), "[1-9][0-9]{0,4}"],
+        prop_oneof![Just("0".to_string()), "[1-9][0-9]{0,4}", "[1-9][0-9]{5,24}"],
         prop::option::of("[0-9]{1,7}"),
         prop::option::of("[eE][-+]?[0-9]{1,2}"),
     )
@@ -80,4 +80,26 @@ fn well_formed_upstream_style_paths_need_no_fallback() {
     ] {
         assert!(!encode(text).1, "{text}");
     }
+}
+
+#[test]
+fn integers_too_large_to_scale_fall_back_instead_of_overflowing() {
+    for text in [
+        "m 9000000000000000000,1",
+        "m 9223372036854775807,1",
+        "m 4611686018427387904,0",
+        "m -9223372036854775807,1",
+        "m 99999999999999999999999,1",
+    ] {
+        let (enc, _) = encode(text);
+        assert_eq!(decoded(&enc).as_deref().ok(), Some(text), "{text}");
+    }
+}
+
+#[test]
+fn a_wrong_encoding_is_rejected_by_the_round_trip_check() {
+    let paths = vec!["m 1,2 3,4 z".to_string()];
+    let wrong = |_: &str| encode("m 1,2 3,5 z");
+    assert!(pack_with(&paths, wrong).is_err());
+    assert!(pack_with(&paths, encode).is_ok());
 }

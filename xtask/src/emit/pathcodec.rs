@@ -126,7 +126,14 @@ fn scaled(t: &str, places: u8) -> Option<i64> {
 }
 
 fn push_number(out: &mut Vec<u8>, n: i64) -> bool {
-    let z = if n >= 0 { n * 2 } else { -n * 2 - 1 };
+    let doubled = if n >= 0 {
+        n.checked_mul(2)
+    } else {
+        n.checked_mul(-2).and_then(|v| v.checked_sub(1))
+    };
+    let Some(z) = doubled else {
+        return false;
+    };
     match z {
         0..=0x7F => out.push(z as u8),
         0x80..=0x3FFF => out.extend([0x80 | (z >> 8) as u8, z as u8]),
@@ -220,13 +227,22 @@ fn decoded(bytes: &[u8]) -> Result<String, Error> {
 
 /// Encodes `paths`, checking each against the library decoder.
 pub(super) fn pack_paths(paths: &[String]) -> Result<PathBlob, Error> {
+    pack_with(paths, encode)
+}
+
+/// [`pack_paths`] with the encoder supplied, so the round-trip check can be
+/// tested against an encoder that is wrong.
+fn pack_with(
+    paths: &[String],
+    encoder: impl Fn(&str) -> (Vec<u8>, bool),
+) -> Result<PathBlob, Error> {
     let mut blob = PathBlob {
         bytes: Vec::new(),
         offsets: Vec::with_capacity(paths.len() + 1),
         raw_paths: 0,
     };
     for text in paths {
-        let (enc, is_raw) = encode(text);
+        let (enc, is_raw) = encoder(text);
         if decoded(&enc)? != *text {
             return Err(format!("path does not round-trip: {text}").into());
         }
