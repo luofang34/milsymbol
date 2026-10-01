@@ -141,7 +141,6 @@ pub(super) fn write_key(k: &mut KeyBuf, sidc: &str, o: &SymbolOptions, strict: b
         signature,
         style,
     } = o;
-    k.push(u8::from(strict));
     put_bytes(k, sidc.as_bytes());
     k.extend_from_slice(&(text.len() as u64).to_le_bytes());
     for (name, value) in text {
@@ -159,6 +158,12 @@ pub(super) fn write_key(k: &mut KeyBuf, sidc: &str, o: &SymbolOptions, strict: b
         Some(true) => 2,
     });
     write_style(k, style);
+    // Appended only for strict requests, so a lenient key is the encoding of
+    // the request alone. Lenient keys of different requests are never prefixes
+    // of one another, so `lenient + marker` cannot equal another request's key.
+    if strict {
+        k.push(1);
+    }
 }
 
 fn write_style(k: &mut KeyBuf, st: &Style) {

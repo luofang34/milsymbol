@@ -105,3 +105,42 @@ fn long_text_spills_to_the_heap_losslessly() {
     assert!(long.len() > KeyBuf::INLINE);
     assert_eq!(long, key(&o));
 }
+
+#[test]
+fn strict_marks_the_key_without_touching_the_lenient_encoding() {
+    let o = SymbolOptions::default();
+    let (mut lenient, mut strict) = (KeyBuf::default(), KeyBuf::default());
+    write_key(&mut lenient, "10031000001211000000", &o, false);
+    write_key(&mut strict, "10031000001211000000", &o, true);
+    assert_eq!(
+        strict
+            .as_slice()
+            .split_last()
+            .map(|(last, rest)| (*last, rest)),
+        Some((1, lenient.as_slice()))
+    );
+}
+
+/// A strict key is its lenient key plus a marker, so two requests can only
+/// collide if one lenient key is a prefix of another's.
+#[test]
+fn no_lenient_key_is_a_prefix_of_another_request_s() {
+    let mut keys: Vec<Vec<u8>> = Vec::new();
+    for sidc in ["", "1", "10031000001211000000", "10031000001211000000 "] {
+        for text in ["", "a", "ab"] {
+            let mut o = SymbolOptions::default();
+            o.set_text("uniqueDesignation", text);
+            let mut k = KeyBuf::default();
+            write_key(&mut k, sidc, &o, false);
+            keys.push(k.as_slice().to_vec());
+        }
+    }
+    for (i, a) in keys.iter().enumerate() {
+        for (j, b) in keys.iter().enumerate() {
+            assert!(
+                i == j || !b.starts_with(a),
+                "key {i} is a prefix of key {j}"
+            );
+        }
+    }
+}
