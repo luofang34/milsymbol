@@ -113,7 +113,10 @@ impl Symbol {
 
     /// Whether the symbol is what its SIDC says, and every reason it is not.
     ///
-    /// This is the recommended judgement. The SIDC must be well formed
+    /// This is the recommended judgement. The verdict depends on the SIDC and
+    /// the renderer, never on options; the issue list can differ with
+    /// `style.icon` (a symbol drawn without its icon reports an unknown icon
+    /// rather than a missing instruction). The SIDC must be well formed
     /// ([`Sidc::parse`](crate::sidc::Sidc::parse)) and fully recognised by the
     /// renderer: every code is known and the icon exists (an icon added by an
     /// extension counts), whether or not icons are drawn. Text amplifiers

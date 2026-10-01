@@ -265,3 +265,32 @@ fn non_bmp_sidcs_render_like_upstream_with_lossy_metadata() -> TestResult {
     assert_eq!(js.flags.modifier2, Some("\u{FFFD}00"));
     Ok(())
 }
+
+#[test]
+fn malformed_letter_sidc_verdict_does_not_depend_on_icon_visibility() -> TestResult {
+    use ValidityIssue::{MalformedSidc, MissingInstruction, UnknownAffiliation, UnknownIcon};
+    for sidc in ["O-V-MA------", "OBVAMA------"] {
+        let drawn = Renderer::default().symbol(sidc).render()?;
+        let hidden = Renderer::default()
+            .symbol(sidc)
+            .with(|o| o.style.icon = false)
+            .render()?;
+        assert!(!drawn.validity().is_valid(), "{sidc}");
+        assert_eq!(
+            drawn.validity().is_valid(),
+            hidden.validity().is_valid(),
+            "{sidc}"
+        );
+        assert_eq!(
+            drawn.validity().issues,
+            [UnknownAffiliation, MissingInstruction, MalformedSidc],
+            "{sidc}"
+        );
+        assert_eq!(
+            hidden.validity().issues,
+            [UnknownAffiliation, UnknownIcon, MalformedSidc],
+            "{sidc}"
+        );
+    }
+    Ok(())
+}
