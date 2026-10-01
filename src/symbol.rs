@@ -138,15 +138,6 @@ impl Symbol {
         }
     }
 
-    /// Same as [`Symbol::validity`].
-    #[deprecated(
-        since = "0.3.0",
-        note = "use `Symbol::validity`, which now judges the SIDC alone"
-    )]
-    pub fn sidc_validity(&self) -> Validity {
-        self.validity()
-    }
-
     /// The issues milsymbol.js `isValid()` reports: the drawn icon is
     /// judged (hidden icons count as found), text containing `null` is
     /// invalid, and a malformed SIDC is not an issue.

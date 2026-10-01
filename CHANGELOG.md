@@ -17,7 +17,7 @@ Breaking changes for 0.3.
   structs, must go through `RequestBuilder`. `cargo semver-checks` reports
   this as `struct_missing` for both names; it is the only failure it finds.
 - `Symbol::validity()` now judges the SIDC alone (it is the old
-  `sidc_validity()`): the code must parse, every part must be recognised and
+  `sidc_validity()`, which is removed): the code must parse, every part must be recognised and
   the icon must exist whether or not it is drawn. Text containing `null` no
   longer makes a symbol invalid, and `ValidityIssue::MalformedSidc` is
   reported by it. The verdict does not depend on options; the issue list can
@@ -26,7 +26,8 @@ Breaking changes for 0.3.
   `compat::validity(&symbol)` or `compat::is_valid(&symbol)`, which keep the
   `null` rule and the hidden-icon rule and are what the differential corpus
   uses.
-- `Symbol::sidc_validity()` is deprecated: it is identical to `validity()`.
+- `Symbol::sidc_validity()` is removed without a deprecation period; use
+  `Symbol::validity()`, which now has its meaning.
 - `compat::validity` is new; `compat::is_valid` now implements upstream's
   verdict itself instead of calling `Symbol::validity`.
 - `Renderer::check_sidc` shares the strict implementation with `strict()`;

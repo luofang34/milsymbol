@@ -113,7 +113,7 @@ fn strict_parse_checks_the_standard_code_tables() -> TestResult {
 }
 
 #[test]
-fn sidc_validity_does_not_depend_on_icon_visibility() -> TestResult {
+fn validity_does_not_depend_on_icon_visibility() -> TestResult {
     for icon in [true, false] {
         let s = Renderer::default()
             .symbol("10031000009999990000")
@@ -189,7 +189,7 @@ fn strict_parse_accepts_every_icon_the_tables_define() -> TestResult {
 }
 
 #[test]
-fn sidc_validity_requires_a_well_formed_code() -> TestResult {
+fn validity_requires_a_well_formed_code() -> TestResult {
     use milsymbol::sidc::Sidc;
     // milsymbol.js accepts identity 7 and context 3; the strict parser does not.
     for sidc in ["10070100001100000000", "10300100001100000000"] {
@@ -202,16 +202,6 @@ fn sidc_validity_requires_a_well_formed_code() -> TestResult {
                 .issues
                 .contains(&ValidityIssue::MalformedSidc)
         );
-    }
-    Ok(())
-}
-
-#[test]
-#[allow(deprecated)]
-fn sidc_validity_is_the_same_as_validity() -> TestResult {
-    for sidc in [INFANTRY, "10031000009999990000", "10070100001100000000"] {
-        let s = Renderer::default().symbol(sidc).render()?;
-        assert_eq!(s.sidc_validity(), s.validity(), "{sidc}");
     }
     Ok(())
 }
