@@ -54,6 +54,10 @@ jobs:
       - run: cargo build --lib --no-default-features --features serde --target wasm32-unknown-unknown
       - run: cargo build --lib --no-default-features --features serde --target thumbv7em-none-eabihf
       - run: cargo build --lib --no-default-features --features serde --target thumbv6m-none-eabi
+      - run: cargo build --lib --features compact-paths --target wasm32-unknown-unknown
+      - run: cargo build --lib --no-default-features --features compact-paths --target wasm32-unknown-unknown
+      - run: cargo build --lib --no-default-features --features compact-paths --target thumbv7em-none-eabihf
+      - run: cargo build --lib --no-default-features --features compact-paths --target thumbv6m-none-eabi
 
   msrv:
     name: library builds on rust-version (1.85)
@@ -67,6 +71,7 @@ jobs:
       - run: tools/ci/lint.sh default:lib
       - run: cargo build --lib --no-default-features
       - run: cargo build --lib --all-features
+      - run: cargo build --lib --no-default-features --features compact-paths
 
   features:
     name: every feature combination builds
@@ -89,6 +94,10 @@ jobs:
       - uses: obi1kenobi/cargo-semver-checks-action@v2
         with:
           package: milsymbol
+      - uses: obi1kenobi/cargo-semver-checks-action@v2
+        with:
+          package: milsymbol
+          feature-group: all-features
 
   fuzz:
     name: fuzz targets build and run briefly

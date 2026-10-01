@@ -12,13 +12,14 @@ for spec in "${toolchains[@]}"; do
   plus="+$tc"
   [ "$tc" != default ] || plus=""
   if [ "$spec" != "${spec%:lib}" ]; then
-    for features in "--all-features" "--no-default-features"; do
+    for features in "--all-features" "--no-default-features" "--no-default-features --features compact-paths"; do
       cargo $plus clippy -p milsymbol --lib $features -- -D warnings
     done
   else
     cargo $plus clippy --workspace --all-targets -- -D warnings
     cargo $plus clippy -p milsymbol --all-targets --all-features -- -D warnings
     cargo $plus clippy -p milsymbol --all-targets --no-default-features -- -D warnings
+    cargo $plus clippy -p milsymbol --all-targets --no-default-features --features compact-paths -- -D warnings
     (cd fuzz && cargo $plus clippy -- -D warnings)
   fi
 done
