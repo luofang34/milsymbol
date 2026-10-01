@@ -14,7 +14,9 @@ use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 use std::vec::Vec;
 
+mod hash;
 mod key;
+use hash::KeyHasherBuilder;
 use key::{KeyBuf, write_key};
 
 /// A renderer with a bounded cache of rendered symbols.
@@ -66,7 +68,7 @@ struct Slot {
 #[derive(Default)]
 struct Clock {
     slots: Vec<Slot>,
-    index: HashMap<Arc<[u8]>, usize>,
+    index: HashMap<Arc<[u8]>, usize, KeyHasherBuilder>,
     hand: usize,
 }
 
