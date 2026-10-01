@@ -13,7 +13,9 @@ mod letter;
 mod number;
 mod parse;
 
-pub use parse::{LetterSidc, ModifierCode, NumericSidc, Sidc, SidcCheckError, SidcError};
+pub use parse::{
+    LetterSidc, ModifierCode, NumericSidc, Sidc, SidcCheckError, SidcError, SidcModifyError,
+};
 
 /// Dash arrays used for not-present frames.
 #[derive(Debug, Clone, Copy)]

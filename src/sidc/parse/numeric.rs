@@ -1,8 +1,8 @@
 //! Numeric SIDCs (MIL-STD-2525D/E, APP-6D/E).
 
-use super::{Code, SidcError, invalid};
+use super::{Code, SidcError, SidcModifyError, invalid};
 use crate::catalog;
-use crate::domain::{Context, StandardIdentity, Status};
+use crate::domain::{Affiliation, Context, StandardIdentity, Status};
 
 /// Symbol sets the standards define, plus those milsymbol.js interprets
 /// (`12` and `39`). Whether a renderer has icons for them is separate.
@@ -198,5 +198,66 @@ impl NumericSidc {
     /// The SIDC text.
     pub fn as_str(&self) -> &str {
         self.0.as_str()
+    }
+
+    /// The same SIDC with another status.
+    #[must_use]
+    pub fn with_status(&self, status: Status) -> Self {
+        let digit = match status {
+            Status::Present => '0',
+            Status::Planned => '1',
+            Status::FullyCapable => '2',
+            Status::Damaged => '3',
+            Status::Destroyed => '4',
+            Status::FullToCapacity => '5',
+        };
+        NumericSidc(self.0.with_char(7, digit))
+    }
+
+    /// The same SIDC in another context (reality, exercise or simulation).
+    /// The identity digit is kept, so Suspect and Hostile become Joker and
+    /// Faker in an exercise and back.
+    #[must_use]
+    pub fn with_context(&self, context: Context) -> Self {
+        let digit = match context {
+            Context::Reality => '0',
+            Context::Exercise => '1',
+            Context::Simulation => '2',
+        };
+        NumericSidc(self.0.with_char(3, digit))
+    }
+
+    /// The same SIDC with another standard identity; fails when the SIDC's
+    /// context has no code for it (see [`SidcModifyError`]).
+    pub fn with_standard_identity(
+        &self,
+        identity: StandardIdentity,
+    ) -> Result<Self, SidcModifyError> {
+        let context = self.context();
+        let exercise = context == Context::Exercise;
+        let digit = match (identity, exercise) {
+            (StandardIdentity::Pending, _) => '0',
+            (StandardIdentity::Unknown, _) => '1',
+            (StandardIdentity::AssumedFriend, _) => '2',
+            (StandardIdentity::Friend, _) => '3',
+            (StandardIdentity::Neutral, _) => '4',
+            (StandardIdentity::Suspect, false) | (StandardIdentity::Joker, true) => '5',
+            (StandardIdentity::Hostile, false) | (StandardIdentity::Faker, true) => '6',
+            _ => return Err(SidcModifyError::Unrepresentable { identity, context }),
+        };
+        Ok(NumericSidc(self.0.with_char(4, digit)))
+    }
+
+    /// The same SIDC with another affiliation, using the identity code of
+    /// its context (Hostile in an exercise is Faker).
+    #[must_use]
+    pub fn with_affiliation(&self, affiliation: Affiliation) -> Self {
+        let digit = match affiliation {
+            Affiliation::Unknown => '1',
+            Affiliation::Friend => '3',
+            Affiliation::Neutral => '4',
+            Affiliation::Hostile => '6',
+        };
+        NumericSidc(self.0.with_char(4, digit))
     }
 }

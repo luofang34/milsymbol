@@ -1,8 +1,8 @@
 //! Letter SIDCs (MIL-STD-2525B/C, APP-6B).
 
-use super::{Code, SidcError, invalid};
+use super::{Code, SidcError, SidcModifyError, invalid};
 use crate::catalog;
-use crate::domain::{Context, StandardIdentity, Status};
+use crate::domain::{Affiliation, Context, StandardIdentity, Status};
 
 /// Battle dimensions (or categories) each coding scheme defines.
 fn dimensions(scheme: char) -> &'static str {
@@ -32,6 +32,28 @@ fn modifier_ok(scheme: char, m11: char, m12: char) -> bool {
         // METOC: position 11 is the geometry (point, line or area).
         _ => matches!(m11, '-' | 'P' | 'L' | 'A') && m12 == '-',
     }
+}
+
+/// The identity letter of position 2, which also carries the context.
+fn identity_letter(identity: StandardIdentity, exercise: bool) -> Option<char> {
+    Some(match (identity, exercise) {
+        (StandardIdentity::Pending, false) => 'P',
+        (StandardIdentity::Unknown, false) => 'U',
+        (StandardIdentity::AssumedFriend, false) => 'A',
+        (StandardIdentity::Friend, false) => 'F',
+        (StandardIdentity::Neutral, false) => 'N',
+        (StandardIdentity::Suspect, false) => 'S',
+        (StandardIdentity::Hostile, false) => 'H',
+        (StandardIdentity::NoneSpecified, false) => 'O',
+        (StandardIdentity::Pending, true) => 'G',
+        (StandardIdentity::Unknown, true) => 'W',
+        (StandardIdentity::AssumedFriend, true) => 'M',
+        (StandardIdentity::Friend, true) => 'D',
+        (StandardIdentity::Neutral, true) => 'L',
+        (StandardIdentity::Joker, true) => 'J',
+        (StandardIdentity::Faker, true) => 'K',
+        _ => return None,
+    })
 }
 
 /// A letter SIDC of 10 to 15 characters (upper-cased, `*` read as `-`).
@@ -150,5 +172,82 @@ impl LetterSidc {
     /// The SIDC text.
     pub fn as_str(&self) -> &str {
         self.0.as_str()
+    }
+
+    /// The same SIDC with another status. A SIDC that already has the
+    /// requested status is returned unchanged, because `-` and `P` both mean
+    /// present; present is otherwise written as `P`.
+    #[must_use]
+    pub fn with_status(&self, status: Status) -> Self {
+        if self.status() == status {
+            return *self;
+        }
+        let letter = match status {
+            Status::Present => 'P',
+            Status::Planned => 'A',
+            Status::FullyCapable => 'C',
+            Status::Damaged => 'D',
+            Status::Destroyed => 'X',
+            Status::FullToCapacity => 'F',
+        };
+        LetterSidc(self.0.with_char(4, letter))
+    }
+
+    /// The same SIDC with another standard identity; fails when the SIDC's
+    /// context has no letter for it (see [`SidcModifyError`]).
+    pub fn with_standard_identity(
+        &self,
+        identity: StandardIdentity,
+    ) -> Result<Self, SidcModifyError> {
+        let context = self.context();
+        self.with_standard_identity_in(identity, context, context == Context::Exercise)
+    }
+
+    /// The same SIDC with another affiliation, using the identity letter of
+    /// its context (Hostile in an exercise is Faker).
+    #[must_use]
+    pub fn with_affiliation(&self, affiliation: Affiliation) -> Self {
+        let exercise = self.context() == Context::Exercise;
+        let identity = match (affiliation, exercise) {
+            (Affiliation::Friend, _) => StandardIdentity::Friend,
+            (Affiliation::Neutral, _) => StandardIdentity::Neutral,
+            (Affiliation::Unknown, _) => StandardIdentity::Unknown,
+            (Affiliation::Hostile, false) => StandardIdentity::Hostile,
+            (Affiliation::Hostile, true) => StandardIdentity::Faker,
+        };
+        match identity_letter(identity, exercise) {
+            Some(letter) => LetterSidc(self.0.with_char(2, letter)),
+            None => *self,
+        }
+    }
+
+    /// The same SIDC in reality or exercise context; the identity keeps its
+    /// meaning (Suspect and Hostile become Joker and Faker). Letter SIDCs have
+    /// no simulation context, and "none specified" has no exercise form.
+    pub fn with_context(&self, context: Context) -> Result<Self, SidcModifyError> {
+        let exercise = match context {
+            Context::Reality => false,
+            Context::Exercise => true,
+            Context::Simulation => return Err(SidcModifyError::UnsupportedContext { context }),
+        };
+        let identity = match (self.standard_identity(), exercise) {
+            (StandardIdentity::Suspect, true) => StandardIdentity::Joker,
+            (StandardIdentity::Hostile, true) => StandardIdentity::Faker,
+            (StandardIdentity::Joker, false) => StandardIdentity::Suspect,
+            (StandardIdentity::Faker, false) => StandardIdentity::Hostile,
+            (other, _) => other,
+        };
+        self.with_standard_identity_in(identity, context, exercise)
+    }
+
+    fn with_standard_identity_in(
+        &self,
+        identity: StandardIdentity,
+        context: Context,
+        exercise: bool,
+    ) -> Result<Self, SidcModifyError> {
+        let letter = identity_letter(identity, exercise)
+            .ok_or(SidcModifyError::Unrepresentable { identity, context })?;
+        Ok(LetterSidc(self.0.with_char(2, letter)))
     }
 }

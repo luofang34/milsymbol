@@ -7,6 +7,7 @@
 //! separate question, answered by
 //! [`Renderer::check_sidc`](crate::Renderer::check_sidc).
 
+use crate::domain::{Affiliation, Context, StandardIdentity, Status};
 use alloc::string::String;
 use core::fmt;
 use core::str::FromStr;
@@ -65,6 +66,42 @@ impl fmt::Display for SidcError {
 }
 
 impl core::error::Error for SidcError {}
+
+/// Why a SIDC field cannot be changed to the requested value.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[non_exhaustive]
+pub enum SidcModifyError {
+    /// The coding scheme has no code for this identity in this context, for
+    /// example Joker outside exercises, Suspect or Hostile inside exercises
+    /// (use Joker and Faker there), or "none specified" in a numeric SIDC.
+    Unrepresentable {
+        /// The requested identity.
+        identity: StandardIdentity,
+        /// The context the SIDC would have.
+        context: Context,
+    },
+    /// The coding scheme does not have this context (letter SIDCs have no
+    /// simulation context).
+    UnsupportedContext {
+        /// The requested context.
+        context: Context,
+    },
+}
+
+impl fmt::Display for SidcModifyError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            SidcModifyError::Unrepresentable { identity, context } => {
+                write!(f, "no code for {identity:?} in the {context:?} context")
+            }
+            SidcModifyError::UnsupportedContext { context } => {
+                write!(f, "the {context:?} context is not available in this SIDC")
+            }
+        }
+    }
+}
+
+impl core::error::Error for SidcModifyError {}
 
 /// Why a renderer cannot draw a SIDC as a fully recognised symbol.
 #[derive(Debug)]
@@ -151,6 +188,20 @@ impl<const N: usize> Code<N> {
         Ok(code)
     }
 
+    /// A copy with the character at `position` (1-based) replaced. The
+    /// callers pass only codes their field allows, so the result stays valid.
+    fn with_char(mut self, position: usize, c: char) -> Self {
+        let in_code = position >= 1 && position <= usize::from(self.len);
+        if let (true, true, Some(slot)) = (
+            in_code,
+            c.is_ascii(),
+            self.bytes.get_mut(position.wrapping_sub(1)),
+        ) {
+            *slot = c as u8;
+        }
+        self
+    }
+
     fn as_str(&self) -> &str {
         self.bytes
             .get(..usize::from(self.len))
@@ -206,6 +257,103 @@ impl Sidc {
         match self {
             Sidc::Numeric(n) => n.as_str(),
             Sidc::Letter(l) => l.as_str(),
+        }
+    }
+
+    /// The same SIDC with another status. A letter SIDC whose status is
+    /// already the requested one is returned unchanged (`-` and `P` both
+    /// mean present); present is otherwise written as `P`.
+    ///
+    /// ```
+    /// use milsymbol::domain::Status;
+    /// use milsymbol::sidc::Sidc;
+    ///
+    /// let sidc = Sidc::parse("10031000001211000000")?;
+    /// assert_eq!(sidc.with_status(Status::Damaged).as_str(), "10031030001211000000");
+    /// # Ok::<(), milsymbol::sidc::SidcError>(())
+    /// ```
+    #[must_use]
+    pub fn with_status(&self, status: Status) -> Sidc {
+        match self {
+            Sidc::Numeric(n) => Sidc::Numeric(n.with_status(status)),
+            Sidc::Letter(l) => Sidc::Letter(l.with_status(status)),
+        }
+    }
+
+    /// The same SIDC with another affiliation, written with the identity code
+    /// of its context: Hostile in an exercise becomes Faker. A Faker (or
+    /// Joker) is a friendly force playing the hostile role, so it is drawn
+    /// with a friendly frame and a marker: `metadata().affiliation` is
+    /// `Friend` and `base_affiliation` is `Hostile`.
+    ///
+    /// ```
+    /// use milsymbol::domain::Affiliation;
+    /// use milsymbol::sidc::Sidc;
+    ///
+    /// let numeric = Sidc::parse("10031000001211000000")?;
+    /// assert_eq!(numeric.with_affiliation(Affiliation::Hostile).as_str(), "10061000001211000000");
+    /// let letter = Sidc::parse("SFGPUCI----D")?;
+    /// assert_eq!(letter.with_affiliation(Affiliation::Hostile).as_str(), "SHGPUCI----D");
+    /// # Ok::<(), milsymbol::sidc::SidcError>(())
+    /// ```
+    #[must_use]
+    pub fn with_affiliation(&self, affiliation: Affiliation) -> Sidc {
+        match self {
+            Sidc::Numeric(n) => Sidc::Numeric(n.with_affiliation(affiliation)),
+            Sidc::Letter(l) => Sidc::Letter(l.with_affiliation(affiliation)),
+        }
+    }
+
+    /// The same SIDC with another standard identity. Fails when the coding
+    /// scheme has no code for the identity in the SIDC's context; the
+    /// result's [`standard_identity`](NumericSidc::standard_identity) is
+    /// always the requested one.
+    ///
+    /// ```
+    /// use milsymbol::domain::StandardIdentity;
+    /// use milsymbol::sidc::{Sidc, SidcModifyError};
+    ///
+    /// let sidc = Sidc::parse("10031000001211000000")?;
+    /// assert_eq!(
+    ///     sidc.with_standard_identity(StandardIdentity::Suspect)?.as_str(),
+    ///     "10051000001211000000"
+    /// );
+    /// assert!(matches!(
+    ///     sidc.with_standard_identity(StandardIdentity::Joker),
+    ///     Err(SidcModifyError::Unrepresentable { .. })
+    /// ));
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    pub fn with_standard_identity(
+        &self,
+        identity: StandardIdentity,
+    ) -> Result<Sidc, SidcModifyError> {
+        match self {
+            Sidc::Numeric(n) => n.with_standard_identity(identity).map(Sidc::Numeric),
+            Sidc::Letter(l) => l.with_standard_identity(identity).map(Sidc::Letter),
+        }
+    }
+
+    /// The same SIDC in another context. The identity keeps its meaning:
+    /// Suspect and Hostile become Joker and Faker in an exercise, and back.
+    /// The drawn frame changes with it: Joker and Faker are drawn with a
+    /// friendly frame (`metadata().affiliation` is `Friend`, `base_affiliation`
+    /// keeps the hostile role).
+    /// Fails for a letter SIDC asked for the simulation context, or whose
+    /// identity has no exercise form.
+    ///
+    /// ```
+    /// use milsymbol::domain::Context;
+    /// use milsymbol::sidc::Sidc;
+    ///
+    /// let letter = Sidc::parse("SHGPUCI----D")?;
+    /// assert_eq!(letter.with_context(Context::Exercise)?.as_str(), "SKGPUCI----D");
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    pub fn with_context(&self, context: Context) -> Result<Sidc, SidcModifyError> {
+        match self {
+            Sidc::Numeric(n) => Ok(Sidc::Numeric(n.with_context(context))),
+            Sidc::Letter(l) => l.with_context(context).map(Sidc::Letter),
         }
     }
 }
