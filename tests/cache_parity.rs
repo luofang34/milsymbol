@@ -124,6 +124,7 @@ proptest! {
         extended in any::<bool>(),
         size in prop::sample::select(vec![20.0, 35.0, 100.0]),
         text in "[ -~]{0,6}",
+        icon in any::<bool>(),
         capacity in prop::sample::select(vec![0usize, 1, 16]),
     ) {
         let renderer = if extended {
@@ -133,8 +134,8 @@ proptest! {
         };
         let cache = CachedRenderer::new(renderer.clone(), capacity);
         for _ in 0..2 {
-            let mut plain = renderer.symbol(&sidc).size(size).text(TextField::UniqueDesignation, text.clone());
-            let mut cached = cache.symbol(&sidc).size(size).text(TextField::UniqueDesignation, text.clone());
+            let mut plain = renderer.symbol(&sidc).with(|o| o.style.icon = icon).size(size).text(TextField::UniqueDesignation, text.clone());
+            let mut cached = cache.symbol(&sidc).with(|o| o.style.icon = icon).size(size).text(TextField::UniqueDesignation, text.clone());
             if strict {
                 plain = plain.strict();
                 cached = cached.strict();

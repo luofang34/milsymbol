@@ -171,7 +171,10 @@ impl CachedRenderer {
 
     /// Strict and lenient requests have separate entries, and only a
     /// successful strict render is stored, so a hit on a strict key is
-    /// already validated and a failure is never cached.
+    /// already validated and a failure is never cached. Strictness needs the
+    /// rendered symbol (the icon lookup goes through the renderer's
+    /// extensions), so validating before the lookup would render on every
+    /// call and a hit would no longer be free.
     pub(crate) fn render_checked(
         &self,
         sidc: &str,
