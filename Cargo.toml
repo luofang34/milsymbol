@@ -1,6 +1,6 @@
 [package]
 name = "milsymbol"
-version = "0.2.1"
+version = "0.3.0"
 authors = ["Fang Luo"]
 edition = "2024"
 rust-version = "1.85"

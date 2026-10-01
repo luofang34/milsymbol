@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.3.0 — Unreleased
 
 Breaking changes for 0.3. `cargo semver-checks --baseline-rev v0.2.1
 --release-type minor` reports four failures, all listed here:
