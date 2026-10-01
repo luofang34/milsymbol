@@ -1,7 +1,22 @@
 # Changelog
 
-## Unreleased
+## 0.2.1 — 2026-10-01
 
+Additive release; SVG output is unchanged.
+
+- `Sidc`, `NumericSidc` and `LetterSidc` change status, affiliation, standard
+  identity and context with `with_status`, `with_affiliation`,
+  `with_standard_identity` and `with_context`, covering the differences
+  between numeric and letter codes (Hostile is Faker in an exercise; letter
+  codes have no simulation context). Results are valid by construction;
+  identities a scheme cannot encode in the SIDC's context return the new
+  `SidcModifyError`.
+- `SymbolBuilder::font`, `CachedSymbolBuilder::font` and
+  `SymbolOptions::set_font` draw all text, including the text inside built-in
+  icons, in one font family. The default still preserves milsymbol.js output.
+- Documentation of the size, padding, anchor and pixel-density conventions for
+  map use, checked by doctests, and a `map_marker` example that places symbols
+  by their anchors.
 - Smaller static footprint: the generated icon tables use packed node records,
   interned paths, deduplicated text payloads and bit-packed row tables.
   `.rodata` of a Cortex-M4F build shrinks from 2.29 MB to 0.95 MB. Output is
