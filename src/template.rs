@@ -126,13 +126,21 @@ pub(crate) struct Kids {
     pub len: u32,
 }
 
+/// How a path node refers to its path data.
+#[cfg(not(feature = "compact-paths"))]
+type PathRef = &'static str;
+
+/// How a path node refers to its path data: the index of its packed bytes.
+#[cfg(feature = "compact-paths")]
+type PathRef = u32;
+
 /// A node template.
 // Variants unused by the current tables stay: regenerated tables may use them.
 #[allow(dead_code)]
 #[derive(Debug, Clone, Copy)]
 pub(crate) enum TNode {
     Path {
-        d: &'static str,
+        d: PathRef,
         style: u16,
     },
     Circle {
@@ -200,10 +208,13 @@ const PALETTE_ABSENT: u16 = u16::MAX;
 pub(crate) fn node_at(index: u32) -> Option<TNode> {
     let &PNode(tag, a, b) = pool::NODES.get(index as usize)?;
     Some(match tag {
+        #[cfg(not(feature = "compact-paths"))]
         T_PATH => TNode::Path {
             d: pool::PATHS.get(a as usize).copied()?,
             style: b,
         },
+        #[cfg(feature = "compact-paths")]
+        T_PATH => TNode::Path { d: a, style: b },
         T_TEXT => TNode::Text { text: a, style: b },
         T_GROUP => TNode::Group(Kids {
             start: a,
@@ -212,6 +223,15 @@ pub(crate) fn node_at(index: u32) -> Option<TNode> {
         T_REF => TNode::Ref(u16::try_from(a).ok()?),
         _ => pool::WIDE.get(a as usize).copied()?,
     })
+}
+
+/// Packed path data of path `index` (see `ir::path::codec`).
+#[cfg(feature = "compact-paths")]
+pub(crate) fn path_bytes(index: u32) -> Option<&'static [u8]> {
+    let at = index as usize;
+    let start = *pool::PATH_OFFSETS.get(at)? as usize;
+    let end = *pool::PATH_OFFSETS.get(at.checked_add(1)?)? as usize;
+    pool::PATH_BYTES.get(start..end)
 }
 
 /// `bits` bits (at most 16) of `data` starting at bit `pos`, LSB first.

@@ -188,3 +188,44 @@ fn every_generated_path_parses() {
     }
     assert!(PATHS.len() > 900, "{}", PATHS.len());
 }
+
+#[cfg(feature = "compact-paths")]
+mod compact {
+    use super::*;
+    use crate::generated::pool::{PATH_BYTES, PATH_OFFSETS, PATHS};
+    use crate::template::path_bytes;
+    use alloc::boxed::Box;
+    use alloc::format;
+    use alloc::string::String;
+
+    #[test]
+    fn offsets_cover_the_blob() {
+        assert_eq!(PATH_OFFSETS.len(), PATHS.len() + 1);
+        assert_eq!(
+            PATH_OFFSETS.last().map(|&o| o as usize),
+            Some(PATH_BYTES.len())
+        );
+        assert!(PATH_OFFSETS.is_sorted());
+    }
+
+    #[test]
+    fn every_packed_path_decodes_to_its_text() -> Result<(), Box<dyn core::error::Error>> {
+        for (i, d) in PATHS.iter().enumerate() {
+            let bytes = path_bytes(i as u32).ok_or("missing path")?;
+            let packed = PathData::from_packed(bytes);
+            assert_eq!(packed.source(), *d, "path {i}");
+            let text = PathData::new(*d);
+            let (a, b) = (packed.segments()?, text.segments()?);
+            assert_eq!(format!("{:?}", &*a), format!("{:?}", &*b), "path {i}");
+        }
+        Ok(())
+    }
+
+    proptest::proptest! {
+        #[test]
+        fn decoding_arbitrary_bytes_never_panics(bytes in proptest::collection::vec(0u8..=255, 0..64)) {
+            let mut out = String::new();
+            super::super::path::codec::write_text(&bytes, &mut out).ok();
+        }
+    }
+}

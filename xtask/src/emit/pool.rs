@@ -146,7 +146,7 @@ impl Pools {
                     .map(super::literals::field_s)
                     .transpose()?
                     .unwrap_or("");
-                let path = intern(&mut self.paths, &mut self.path_index, rstr(d));
+                let path = intern(&mut self.paths, &mut self.path_index, d.to_string());
                 Packed::Path { path, style }
             }
             Some("circle") => wide(format!(

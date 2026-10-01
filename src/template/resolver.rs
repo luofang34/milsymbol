@@ -120,10 +120,19 @@ impl Resolver<'_> {
             return Node::Missing;
         };
         match t {
+            #[cfg(not(feature = "compact-paths"))]
             TNode::Path { d, style } => Node::Path(ir::PathNode {
                 d: ir::PathData::new(d),
                 style: self.style(style),
             }),
+            #[cfg(feature = "compact-paths")]
+            TNode::Path { d, style } => match super::path_bytes(d) {
+                Some(bytes) => Node::Path(ir::PathNode {
+                    d: ir::PathData::from_packed(bytes),
+                    style: self.style(style),
+                }),
+                None => Node::Missing,
+            },
             TNode::Circle { cx, cy, r, style } => Node::Circle(ir::CircleNode {
                 cx: num(cx),
                 cy: num(cy),

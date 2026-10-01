@@ -10,6 +10,7 @@ use std::path::Path;
 mod files;
 mod literals;
 mod pack;
+mod pathcodec;
 mod pool;
 
 use literals::rstr;

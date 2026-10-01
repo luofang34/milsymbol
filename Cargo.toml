@@ -42,6 +42,9 @@ default = ["std"]
 std = []
 # Serialize and deserialize options, configuration and the drawing view.
 serde = ["dep:serde"]
+# Embed path data in a packed form (about a third of the text size) and
+# decode it when a symbol is composed, trading CPU and heap for flash.
+compact-paths = []
 
 [package.metadata.docs.rs]
 all-features = true

@@ -2,6 +2,7 @@
 
 use super::literals::{rcow, rf64, ropt, rstr};
 use super::pack::{pack_nodes, pack_rows};
+use super::pathcodec::{byte_literal, pack_paths};
 use super::{Emitted, Keyed, array};
 use crate::Error;
 use serde_json::Value;
@@ -104,6 +105,14 @@ pub(crate) static GEOMETRIES: [&str; {}] = [{}];
 fn pool_rs(e: &Emitted) -> Result<String, Error> {
     let p = &e.pools;
     let packed = pack_nodes(p)?;
+    let blob = pack_paths(&p.paths)?;
+    tracing::info!(
+        "paths: {} unique, {} text bytes -> {} packed bytes, {} raw",
+        p.paths.len(),
+        p.paths.iter().map(String::len).sum::<usize>(),
+        blob.bytes.len(),
+        blob.raw_paths
+    );
     let kids: Vec<String> = p.kids.iter().map(ToString::to_string).collect();
     if p.kids.iter().any(|&k| u16::try_from(k).is_err()) {
         return Err("node index exceeds u16 in KIDS".into());
@@ -126,9 +135,18 @@ pub(crate) static WIDE: [TNode; {}] = [
 ];
 
 /// Path data of path nodes.
+#[cfg(any(test, not(feature = \"compact-paths\")))]
 pub(crate) static PATHS: [&str; {}] = [
 {}
 ];
+
+/// Packed path data (see `ir::path::codec`), the paths back to back.
+#[cfg(feature = \"compact-paths\")]
+pub(crate) static PATH_BYTES: [u8; {}] = *{};
+
+/// Offset of each packed path in `PATH_BYTES`, plus the total length.
+#[cfg(feature = \"compact-paths\")]
+pub(crate) static PATH_OFFSETS: [u32; {}] = [{}];
 
 /// Child lists of group-like nodes, as indices into `NODES`.
 pub(crate) static KIDS: [u16; {}] = [{}];
@@ -148,7 +166,15 @@ pub(crate) static STYLES: [TStyle; {}] = [
         packed.wide.len(),
         lines(&packed.wide),
         p.paths.len(),
-        lines(&p.paths),
+        lines(&p.paths.iter().map(|d| rstr(d)).collect::<Vec<_>>()),
+        blob.bytes.len(),
+        byte_literal(&blob.bytes),
+        blob.offsets.len(),
+        blob.offsets
+            .iter()
+            .map(ToString::to_string)
+            .collect::<Vec<_>>()
+            .join(", "),
         kids.len(),
         kids.join(", "),
         p.texts.len(),

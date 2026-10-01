@@ -108,6 +108,17 @@ impl PathData {
         }
     }
 
+    /// A path from its packed form in the generated tables, decoded into an
+    /// exactly sized string.
+    #[cfg(feature = "compact-paths")]
+    pub(crate) fn from_packed(bytes: &[u8]) -> Self {
+        let mut size = Length(0);
+        codec::write_text(bytes, &mut size).ok();
+        let mut d = alloc::string::String::with_capacity(size.0);
+        codec::write_text(bytes, &mut d).ok();
+        PathData::new(d)
+    }
+
     /// Wraps and parses SVG path-data text, caching the segments.
     pub fn parse(d: impl Into<Str>) -> Result<Self, PathParseError> {
         PathData::new(d).into_parsed()
@@ -220,5 +231,19 @@ fn write_segment(d: &mut alloc::string::String, seg: &Segment) {
     }
 }
 
+/// A sink that only counts the bytes written.
+#[cfg(feature = "compact-paths")]
+struct Length(usize);
+
+#[cfg(feature = "compact-paths")]
+impl fmt::Write for Length {
+    fn write_str(&mut self, s: &str) -> fmt::Result {
+        self.0 = self.0.wrapping_add(s.len());
+        Ok(())
+    }
+}
+
+#[cfg(feature = "compact-paths")]
+pub(crate) mod codec;
 mod parse;
 use parse::Parser;

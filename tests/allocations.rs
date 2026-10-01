@@ -3,7 +3,8 @@
 //! The target sets `harness = false`: the allocator counts every thread, and
 //! libtest's main thread allocates bookkeeping while the test thread runs, so
 //! under the harness a measured window can pick up blocks that are not ours.
-//! Without it this process has one thread and the counts are exact.
+//! Without it this process has one thread and the counts are exact. The
+//! budgets are the exact counts of the default build.
 
 use milsymbol::compat;
 use milsymbol::domain::Affiliation;
@@ -126,15 +127,18 @@ fn unused_label_definitions_do_not_add_allocations() -> Result<(), Box<dyn std::
 
 fn direction_rendering_stays_within_allocation_budgets() -> Result<(), Box<dyn std::error::Error>> {
     let renderer = Renderer::default();
-    for (sidc, budgets) in [
-        ("10031000001211000000", [26, 38, 21, 28]),
-        ("10031002161211000000", [38, 54, 38, 50]),
-        ("10030100001100000000", [20, 30, 21, 28]),
-        ("SFGPUCI----D", [28, 43, 22, 32]),
+    // `compact-paths` decodes each path node into an owned string: one more
+    // block per symbol whose icon has a path (the third symbol has none).
+    let decoded = u64::from(cfg!(feature = "compact-paths"));
+    for (sidc, paths, budgets) in [
+        ("10031000001211000000", decoded, [26, 38, 21, 28]),
+        ("10031002161211000000", decoded, [38, 54, 38, 50]),
+        ("10030100001100000000", 0, [20, 30, 21, 28]),
+        ("SFGPUCI----D", decoded, [28, 43, 22, 32]),
     ] {
         for ((speed, outline), budget) in [(0.0, 0.0), (0.0, 3.0), (60.0, 0.0), (60.0, 3.0)]
             .into_iter()
-            .zip(budgets)
+            .zip(budgets.map(|b| b + paths))
         {
             let mut options = SymbolOptions::default();
             options.direction = Some(45.0);
