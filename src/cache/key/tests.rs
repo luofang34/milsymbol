@@ -27,9 +27,9 @@ fn mode() -> Option<ColorChoice> {
     ))))
 }
 
-#[test]
-fn every_option_changes_the_key() {
-    let changes: [Change; 38] = [
+/// One change per option field.
+fn changes() -> [Change; 38] {
+    [
         ("text", |o| {
             o.set_text("uniqueDesignation", "A");
         }),
@@ -84,9 +84,13 @@ fn every_option_changes_the_key() {
         ("stroke_width", |o| o.style.stroke_width = 2.0),
         ("style_fill", |o| o.style.style_fill = true),
         ("negative zero", |o| o.style.padding = -0.0),
-    ];
+    ]
+}
+
+#[test]
+fn every_option_changes_the_key() {
     let base = key(&SymbolOptions::default());
-    for (name, change) in changes {
+    for (name, change) in changes() {
         let mut o = SymbolOptions::default();
         change(&mut o);
         assert_ne!(key(&o), base, "{name}");
@@ -122,24 +126,34 @@ fn strict_marks_the_key_without_touching_the_lenient_encoding() {
 }
 
 /// A strict key is its lenient key plus a marker, so two requests can only
-/// collide if one lenient key is a prefix of another's.
+/// collide if one lenient key is a prefix of another's. Every option field and
+/// the SIDC vary across the requests.
 #[test]
 fn no_lenient_key_is_a_prefix_of_another_request_s() {
-    let mut keys: Vec<Vec<u8>> = Vec::new();
+    let mut keys: Vec<(String, Vec<u8>)> = Vec::new();
+    let mut push = |name: String, sidc: &str, o: &SymbolOptions| {
+        let mut k = KeyBuf::default();
+        write_key(&mut k, sidc, o, false);
+        keys.push((name, k.as_slice().to_vec()));
+    };
     for sidc in ["", "1", "10031000001211000000", "10031000001211000000 "] {
-        for text in ["", "a", "ab"] {
+        push(format!("{sidc:?} default"), sidc, &SymbolOptions::default());
+        for (name, change) in changes() {
+            let mut o = SymbolOptions::default();
+            change(&mut o);
+            push(format!("{sidc:?} {name}"), sidc, &o);
+        }
+        for text in ["a", "ab"] {
             let mut o = SymbolOptions::default();
             o.set_text("uniqueDesignation", text);
-            let mut k = KeyBuf::default();
-            write_key(&mut k, sidc, &o, false);
-            keys.push(k.as_slice().to_vec());
+            push(format!("{sidc:?} text {text:?}"), sidc, &o);
         }
     }
-    for (i, a) in keys.iter().enumerate() {
-        for (j, b) in keys.iter().enumerate() {
+    for (i, (na, a)) in keys.iter().enumerate() {
+        for (j, (nb, b)) in keys.iter().enumerate() {
             assert!(
-                i == j || !b.starts_with(a),
-                "key {i} is a prefix of key {j}"
+                i == j || (a != b && !b.starts_with(a.as_slice())),
+                "{na} is a prefix of, or equals, {nb}"
             );
         }
     }

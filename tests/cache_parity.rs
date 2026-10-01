@@ -193,3 +193,16 @@ fn concurrent_strict_and_lenient_requests_match_uncached() -> Result<(), Box<dyn
     assert!(cache.len() <= 3);
     Ok(())
 }
+
+#[test]
+fn a_strict_and_a_lenient_request_occupy_two_entries() -> Result<(), Box<dyn std::error::Error>> {
+    let cache = CachedRenderer::new(Renderer::default(), 8);
+    cache.symbol(INFANTRY).render()?;
+    assert_eq!(cache.len(), 1);
+    cache.symbol(INFANTRY).strict().render()?;
+    assert_eq!(cache.len(), 2);
+    cache.symbol(INFANTRY).render()?;
+    cache.symbol(INFANTRY).strict().render()?;
+    assert_eq!(cache.len(), 2);
+    Ok(())
+}

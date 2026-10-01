@@ -18,24 +18,28 @@ fn equal_keys_hash_equally_and_builders_are_keyed() {
     );
 }
 
+/// Fixed seeds keep the outcome deterministic: collisions depend on the seed,
+/// and these are inputs that must not collide under any of them.
 #[test]
 fn distinct_keys_do_not_collide() {
-    let b = KeyHasherBuilder::default();
-    let mut seen = HashSet::new();
-    assert!(seen.insert(hash(&b, &[])));
-    for len in 1..40usize {
-        for byte in [0u8, 1, 0x80, 0xff] {
+    for seed in [0, 1, 0x9E37_79B9_7F4A_7C15, u64::MAX] {
+        let b = KeyHasherBuilder { seed };
+        let mut seen = HashSet::new();
+        assert!(seen.insert(hash(&b, &[])));
+        for len in 1..40usize {
+            for byte in [0u8, 1, 0x80, 0xff] {
+                assert!(
+                    seen.insert(hash(&b, &vec![byte; len])),
+                    "seed {seed} len {len} byte {byte}"
+                );
+            }
+        }
+        for i in 0..50_000u32 {
             assert!(
-                seen.insert(hash(&b, &vec![byte; len])),
-                "len {len} byte {byte}"
+                seen.insert(hash(&b, format!("10031000001211000000-{i}").as_bytes())),
+                "seed {seed} {i}"
             );
         }
-    }
-    for i in 0..100_000u32 {
-        assert!(
-            seen.insert(hash(&b, format!("10031000001211000000-{i}").as_bytes())),
-            "{i}"
-        );
     }
 }
 
