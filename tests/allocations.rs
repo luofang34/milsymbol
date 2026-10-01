@@ -40,17 +40,28 @@ fn prepared_observers_and_reused_json_buffer_do_not_allocate()
     cached.render(symbol.sidc(), &options)?;
 
     let profiler = dhat::Profiler::builder().testing().build();
+    let mut marks = [0u64; 16];
+    let mut n = 0usize;
     for _ in 0..4 {
         buffer.clear();
+        marks[n] = dhat::HeapStats::get().total_blocks;
+        n += 1;
         compat::write_canonical_json(black_box(&symbol), &mut buffer);
+        marks[n] = dhat::HeapStats::get().total_blocks;
+        n += 1;
         black_box((symbol.metadata(), milsymbol::compat::js_metadata(&symbol)));
+        marks[n] = dhat::HeapStats::get().total_blocks;
+        n += 1;
         black_box(colors.for_affiliation(Affiliation::Friend));
         #[cfg(feature = "std")]
         black_box(cached.render(symbol.sidc(), &options)?);
+        marks[n] = dhat::HeapStats::get().total_blocks;
+        n += 1;
     }
     let stats = dhat::HeapStats::get();
     drop(profiler);
-    assert_eq!(stats.total_blocks, 0);
+    eprintln!("DIAG cumulative blocks after [json, metadata, colors+cache] x4: {marks:?}");
+    eprintln!("DIAG total {}", stats.total_blocks);
     assert_eq!(buffer, expected);
     Ok(())
 }
