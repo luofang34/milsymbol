@@ -282,6 +282,19 @@ adds the cache. It builds for `wasm32` and bare-metal targets; the only
 dependency is `libm`. No JavaScript runs at build or run time: the upstream
 icon tables are generated Rust data, and every composition rule is ported.
 
+# Compact path data
+
+The icon tables embed their path strings as plain text. The `compact-paths`
+feature (off by default) embeds them packed, about a third of the size, and
+decodes a path into an owned string each time a symbol that uses it is
+composed. Output is byte-identical and no public signature changes. Use it
+when flash or download size matters more than composing speed: it saves about
+195 KB of flash on thumbv7em and about 190 KB of a raw `wasm32` module (5%
+gzipped), and costs one extra allocation per path node, heap equal to the
+decoded path text (median 41 bytes per symbol, 12.6 KB at most) and some CPU
+on symbols with long paths. Rendering a symbol that is already composed, the
+cache and the zero-allocation observers are unaffected.
+
 # Compatibility
 
 The baseline is milsymbol.js 3.0.4 (commit `b05f2d7`), each symbol rendered as
