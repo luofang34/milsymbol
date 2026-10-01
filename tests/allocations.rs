@@ -41,7 +41,11 @@ fn prepared_observers_and_reused_json_buffer_do_not_allocate()
 
     let cpu = std::fs::read_to_string("/proc/cpuinfo")
         .ok()
-        .and_then(|t| t.lines().find(|l| l.starts_with("model name")).map(String::from))
+        .and_then(|t| {
+            t.lines()
+                .find(|l| l.starts_with("model name"))
+                .map(String::from)
+        })
         .unwrap_or_default();
     let mut marks: Vec<u64> = Vec::with_capacity(64);
     let profiler = dhat::Profiler::builder().testing().build();
