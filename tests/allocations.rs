@@ -39,26 +39,18 @@ fn prepared_observers_and_reused_json_buffer_do_not_allocate()
     #[cfg(feature = "std")]
     cached.render(symbol.sidc(), &options)?;
 
-    let mut marks: Vec<u64> = Vec::with_capacity(32);
     let profiler = dhat::Profiler::builder().testing().build();
     for _ in 0..4 {
         buffer.clear();
-        marks.push(dhat::HeapStats::get().total_blocks);
         compat::write_canonical_json(black_box(&symbol), &mut buffer);
-        marks.push(dhat::HeapStats::get().total_blocks);
         black_box((symbol.metadata(), milsymbol::compat::js_metadata(&symbol)));
-        marks.push(dhat::HeapStats::get().total_blocks);
         black_box(colors.for_affiliation(Affiliation::Friend));
         #[cfg(feature = "std")]
         black_box(cached.render(symbol.sidc(), &options)?);
-        marks.push(dhat::HeapStats::get().total_blocks);
     }
     let stats = dhat::HeapStats::get();
     drop(profiler);
-    assert_eq!(
-        stats.total_blocks, 0,
-        "DIAG cumulative blocks after [json, metadata, colors+cache] x4: {marks:?}"
-    );
+    assert_eq!(stats.total_blocks, 0);
     assert_eq!(buffer, expected);
     Ok(())
 }
