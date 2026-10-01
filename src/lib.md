@@ -72,6 +72,10 @@ unknown names or wrongly typed values, for configuration read from text.
 Numbers that cannot appear in an SVG (NaN, infinities) are rejected with
 [`RenderError::InvalidOption`].
 
+[`SymbolBuilder::font`] draws all text in one font family. Built-in icons
+otherwise keep the font of their template, as milsymbol.js draws them, and the
+option's `font_family` alone only affects the information fields.
+
 A [`Symbol`] is immutable. [`Symbol::to_svg`] returns a document identical
 to milsymbol.js `asSVG()`; [`Symbol::write_svg`] appends to a reused buffer,
 and [`Symbol::write_svg_with`] takes [`SvgOptions`] (an id prefix for
@@ -117,6 +121,43 @@ judges it, quirks included; [`Symbol::sidc_validity`] judges the code alone.
 [`SymbolBuilder::strict`] makes rendering fail instead of drawing a question
 mark.
 
+# Editing SIDCs
+
+A parsed [`sidc::Sidc`] changes status, affiliation, identity and context
+without string surgery, handling the differences between numeric and letter
+codes. The result is always a valid SIDC whose identity, status and context
+getters return what was set:
+
+```
+use milsymbol::Renderer;
+use milsymbol::domain::{Affiliation, Context, Status};
+use milsymbol::sidc::Sidc;
+
+let friendly = Sidc::parse("10031000001211000000")?;
+let hostile_damaged = friendly
+    .with_affiliation(Affiliation::Hostile)
+    .with_status(Status::Damaged);
+assert_eq!(hostile_damaged.as_str(), "10061030001211000000");
+
+// In an exercise, Hostile is written as Faker; letter codes carry the
+// context in the identity letter.
+let exercise = friendly.with_context(Context::Exercise)?.with_affiliation(Affiliation::Hostile);
+assert_eq!(exercise.as_str(), "10161000001211000000");
+let letter = Sidc::parse("SFGPUCI----D")?.with_context(Context::Exercise)?;
+assert_eq!(letter.as_str(), "SDGPUCI----D");
+
+let symbol = Renderer::default().symbol(&hostile_damaged).render()?;
+assert_eq!(symbol.metadata().affiliation, Some(Affiliation::Hostile));
+# Ok::<(), Box<dyn std::error::Error>>(())
+```
+
+An exercise Joker or Faker stands for a friendly force playing the suspect or
+hostile role, so it is drawn with a friendly frame and a marker:
+`metadata().affiliation` is `Friend` and `base_affiliation` is the role played.
+[`sidc::Sidc::with_standard_identity`] sets the exact identity and fails with
+[`sidc::SidcModifyError`] where the scheme has no code for it (Joker outside an
+exercise, or Hostile inside one). Letter codes have no simulation context.
+
 # Drawing
 
 [`Symbol::drawing`] is the picture as data for renderers other than SVG:
@@ -151,6 +192,53 @@ and [`Symbol::size`] give the layout.
 [`Symbol::instructions`] is the tree exactly as milsymbol.js builds it
 ([`ir::Node`]: nested transforms, cascading styles, values that may be
 numbers or strings), which the SVG writer and the differential tests use.
+
+# Placing symbols on a map
+
+Pixel values come from symbol units (the 0–200 reference box) scaled by
+`size / 100`, so at the default size one unit is one pixel and every pixel
+value scales linearly with [`SymbolBuilder::size`]. The image is larger than
+the frame: [`Symbol::size`] covers the bounding box (including padding, text
+fields, the direction arrow and a headquarters staff) plus the stroke and
+outline width on every side. Do not assume the frame fills the image.
+
+[`Symbol::anchor`] is the pixel offset, from the image's top-left, to put on
+the map position: the frame centre, or the foot of a headquarters staff.
+[`Symbol::octagon_anchor`] is always the frame centre, for attaching labels.
+`style.square` makes the image a square centred on the anchor.
+
+```
+use milsymbol::Renderer;
+
+let renderer = Renderer::default();
+let render = |sidc: &str, size: f64| renderer.symbol(sidc).size(size).render();
+
+// Image size: bounding box plus stroke and outline on both sides.
+let infantry = render("10031000001211000000", 100.0)?;
+let (stroke, outline) = (infantry.options().style.stroke_width, infantry.options().style.outline_width);
+let bbox = infantry.bounding_box();
+assert_eq!(infantry.size().width, bbox.width() + 2.0 * (stroke + outline));
+
+// High-density screens: render at size * pixel_ratio and divide by the
+// ratio when laying out; every pixel value scales exactly.
+let dense = render("10031000001211000000", 200.0)?;
+assert_eq!(dense.size().width, 2.0 * infantry.size().width);
+assert_eq!(dense.anchor().x, 2.0 * infantry.anchor().x);
+
+// Placing a headquarters symbol so its staff foot is on the map position.
+let hq = render("10031002001211000000", 100.0)?;
+let map = (400.0, 300.0);
+let (left, top) = (map.0 - hq.anchor().x, map.1 - hq.anchor().y);
+assert!(top < map.1 - hq.octagon_anchor().y); // the frame is above the staff foot
+assert!(left < map.0);
+# Ok::<(), milsymbol::RenderError>(())
+```
+
+[`Symbol::to_svg`] and [`Symbol::drawing`] describe the same region: the
+`viewBox` starts at the bounding box corner minus the stroke and outline
+width. When inlining several SVG symbols in one page, give each a distinct
+[`SvgOptions`] id prefix. Font loading, texture atlases and pixel-density
+caches belong in the adapter that draws the symbols.
 
 # Extensions
 
