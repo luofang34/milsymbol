@@ -11,11 +11,13 @@ Breaking changes for 0.3.
   `CachedSymbolBuilder::strict()` is new and behaves as
   `SymbolBuilder::strict()`: same errors, same checks, extension icons
   included. Strict and lenient requests have separate cache entries and a
-  strict failure is never cached; hits still allocate nothing. Migration:
+  strict failure is never cached; hits still allocate nothing for requests whose key fits in 1 KiB. Migration:
   code that names `SymbolBuilder`/`CachedSymbolBuilder` as types keeps
   compiling; code that was generic over the two, or matched on them as
   structs, must go through `RequestBuilder`. `cargo semver-checks` reports
-  this as `struct_missing` for both names; it is the only failure it finds.
+  this as `struct_missing` for both names, and `inherent_method_missing` for
+  the removed `Symbol::sidc_validity`; those are the only failures it finds
+  (`cargo semver-checks --baseline-rev v0.2.1 --release-type minor`).
 - `Symbol::validity()` now judges the SIDC alone (it is the old
   `sidc_validity()`, which is removed): the code must parse, every part must be recognised and
   the icon must exist whether or not it is drawn. Text containing `null` no

@@ -28,7 +28,8 @@ use key::{KeyBuf, write_key};
 ///
 /// A strict request ([`CachedSymbolBuilder::strict`](RequestBuilder::strict))
 /// and a lenient one for the same SIDC and options occupy two cache entries,
-/// and a strict request that fails stores nothing.
+/// and a strict request that fails stores nothing. A hit allocates nothing
+/// for requests whose key fits in 1 KiB.
 ///
 /// ```
 /// use milsymbol::{Renderer, cache::CachedRenderer, options::SymbolOptions};

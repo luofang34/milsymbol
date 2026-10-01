@@ -2,7 +2,8 @@
 //!
 //! Keys are a few hundred bytes the caller does not control, and SipHash
 //! spends most of a cache hit on them. This folds 8 bytes per multiply and is
-//! seeded per cache, so a caller cannot choose keys that collide.
+//! randomly keyed per cache, so keys cannot be chosen to collide without
+//! knowing the seed.
 
 use std::hash::{BuildHasher, Hasher, RandomState};
 

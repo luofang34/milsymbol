@@ -10,7 +10,9 @@ only verify authentication and never publish.
 1. Update `version` in `Cargo.toml` and the `CHANGELOG.md` entry, replacing
    `Unreleased` in its heading with the release date. The release job runs
    `tools/ci/changelog.sh --release` and refuses an undated entry.
-2. Run `tools/ci/lint.sh stable 1.85:lib` and `cargo semver-checks` locally.
+2. Run `tools/ci/lint.sh stable 1.85:lib` and
+   `cargo semver-checks --release-type minor` locally (the default run skips
+   every check on a 0.x major bump, so it would verify nothing).
    A breaking change needs a new minor version while the crate is 0.x.
 3. Make sure CI on `main` is green (it includes `cargo publish --dry-run`).
    The release job refuses a tag whose commit is not on `main` or has no

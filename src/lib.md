@@ -270,7 +270,7 @@ A built renderer never changes, and cloning it shares its configuration.
 
 With the default `std` feature, `cache::CachedRenderer` memoizes rendered
 symbols by SIDC and options and shares them as `Arc<Symbol>`; a hit
-allocates nothing. Its builder is the same type as [`Renderer::symbol`]'s,
+allocates nothing for requests whose key fits in 1 KiB. Its builder is the same type as [`Renderer::symbol`]'s,
 so it has every setter and `strict()`. A strict request is cached apart from
 a lenient one, and a strict failure is never cached.
 
