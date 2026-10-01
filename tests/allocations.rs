@@ -39,18 +39,32 @@ fn prepared_observers_and_reused_json_buffer_do_not_allocate()
     #[cfg(feature = "std")]
     cached.render(symbol.sidc(), &options)?;
 
+    // Reserved up front so recording inside the measured window allocates nothing.
+    let mut marks: Vec<(&str, u64)> = Vec::with_capacity(32);
+    let mut mark = |what| marks.push((what, dhat::HeapStats::get().total_blocks));
     let profiler = dhat::Profiler::builder().testing().build();
     for _ in 0..4 {
         buffer.clear();
         compat::write_canonical_json(black_box(&symbol), &mut buffer);
-        black_box((symbol.metadata(), milsymbol::compat::js_metadata(&symbol)));
+        mark("canonical json");
+        black_box(symbol.metadata());
+        mark("metadata");
+        black_box(milsymbol::compat::js_metadata(&symbol));
+        mark("js metadata");
         black_box(colors.for_affiliation(Affiliation::Friend));
+        mark("colours");
         #[cfg(feature = "std")]
-        black_box(cached.render(symbol.sidc(), &options)?);
+        {
+            black_box(cached.render(symbol.sidc(), &options)?);
+            mark("cache hit");
+        }
     }
     let stats = dhat::HeapStats::get();
     drop(profiler);
-    assert_eq!(stats.total_blocks, 0);
+    assert_eq!(
+        stats.total_blocks, 0,
+        "cumulative allocations after each operation: {marks:?}"
+    );
     assert_eq!(buffer, expected);
     Ok(())
 }
