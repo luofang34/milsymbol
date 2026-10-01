@@ -2,36 +2,41 @@
 
 ## Unreleased
 
-Breaking changes for 0.3.
+Breaking changes for 0.3. `cargo semver-checks --baseline-rev v0.2.1
+--release-type minor` reports four failures, all listed here:
+`struct_missing`, `inherent_method_missing`, `enum_variant_missing` and
+`enum_no_repr_variant_discriminant_changed`.
 
-- Cached and uncached builders are one type. `SymbolBuilder<'a>` is now
-  `RequestBuilder<'a, Renderer>` and `CachedSymbolBuilder<'a>` is
+- Cached and uncached builders are one type (`struct_missing` for
+  `SymbolBuilder` and `cache::CachedSymbolBuilder`). `SymbolBuilder<'a>` is
+  now `RequestBuilder<'a, Renderer>` and `CachedSymbolBuilder<'a>` is
   `RequestBuilder<'a, &'a CachedRenderer>` (new, with the sealed `Backend`
-  trait), so every setter, `font()` included, exists on both.
+  marker trait), so every setter, `font()` included, exists on both.
   `CachedSymbolBuilder::strict()` is new and behaves as
   `SymbolBuilder::strict()`: same errors, same checks, extension icons
   included. Strict and lenient requests have separate cache entries and a
-  strict failure is never cached; hits still allocate nothing for requests whose key fits in 1 KiB. Migration:
-  code that names `SymbolBuilder`/`CachedSymbolBuilder` as types keeps
-  compiling; code that was generic over the two, or matched on them as
-  structs, must go through `RequestBuilder`. `cargo semver-checks` reports
-  this as `struct_missing` for both names, and `inherent_method_missing` for
-  the removed `Symbol::sidc_validity`; those are the only failures it finds
-  (`cargo semver-checks --baseline-rev v0.2.1 --release-type minor`).
-- `Symbol::validity()` now judges the SIDC alone (it is the old
-  `sidc_validity()`, which is removed): the code must parse, every part must be recognised and
-  the icon must exist whether or not it is drawn. Text containing `null` no
-  longer makes a symbol invalid, and `ValidityIssue::MalformedSidc` is
-  reported by it. The verdict does not depend on options; the issue list can
-  differ with `style.icon`. `cargo semver-checks` does not model this change
-  of meaning. Migration: for milsymbol.js `isValid()` use
-  `compat::validity(&symbol)` or `compat::is_valid(&symbol)`, which keep the
-  `null` rule and the hidden-icon rule and are what the differential corpus
+  strict failure is never cached; hits still allocate nothing for requests
+  whose key fits in 1 KiB. Migration: code that names
+  `SymbolBuilder`/`CachedSymbolBuilder` as types keeps compiling; code that
+  was generic over the two, or matched on them as structs, must go through
+  `RequestBuilder`.
+- `Symbol::validity()` is removed (`inherent_method_missing`), so no call
+  silently changes meaning. Migration: `Symbol::sidc_validity()`, unchanged,
+  judges the SIDC (it parses, every part is recognised, the icon exists
+  whether or not it is drawn; the verdict does not depend on options, the
+  issue list can differ with `style.icon`); `compat::validity(&symbol)` and
+  `compat::is_valid(&symbol)` are milsymbol.js `isValid()`, with its
+  `null`-text and hidden-icon rules, and are what the differential corpus
   uses.
-- `Symbol::sidc_validity()` is removed without a deprecation period; use
-  `Symbol::validity()`, which now has its meaning.
-- `compat::validity` is new; `compat::is_valid` now implements upstream's
-  verdict itself instead of calling `Symbol::validity`.
+- `ValidityIssue` is the SIDC verdict only: `NullInDrawing` moves to the new
+  `compat::UpstreamIssue` (`enum_variant_missing`), and `MalformedSidc`'s
+  discriminant changes from 6 to 5 (`enum_no_repr_variant_discriminant_changed`;
+  the enum is `non_exhaustive`, so match on variants, not numbers).
+  `compat::validity` is new and returns `compat::UpstreamValidity`;
+  `compat::is_valid` implements upstream's verdict itself.
+- Cache hits are about 17% faster (137 ns to 113 ns median on an Apple M3
+  Max, 11 of 11 paired rounds): the index uses a fast hasher seeded per cache
+  instead of SipHash.
 - `Renderer::check_sidc` shares the strict implementation with `strict()`;
   its results are unchanged.
 
