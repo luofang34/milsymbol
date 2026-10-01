@@ -38,7 +38,7 @@ pub enum RenderError {
     /// The SIDC is well formed, but this renderer does not recognise all of
     /// it, for example the icon (strict mode only).
     UnsupportedSidc {
-        /// Every reason, as [`Symbol::validity`](crate::Symbol::validity) lists them.
+        /// Every reason, as [`Symbol::sidc_validity`](crate::Symbol::sidc_validity) lists them.
         issues: alloc::vec::Vec<crate::ValidityIssue>,
     },
     /// A custom symbol part failed.

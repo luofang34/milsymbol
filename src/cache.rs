@@ -164,7 +164,7 @@ impl CachedRenderer {
     ///
     /// let cache = CachedRenderer::new(Renderer::default(), 64);
     /// let symbol = cache.symbol("10031000001211000000").size(50.0).render()?;
-    /// assert!(symbol.validity().is_valid());
+    /// assert!(symbol.sidc_validity().is_valid());
     /// # Ok::<(), milsymbol::RenderError>(())
     /// ```
     pub fn symbol<'a>(&'a self, sidc: impl Into<SidcInput<'a>>) -> CachedSymbolBuilder<'a> {

@@ -138,7 +138,7 @@ fn direction_rendering_stays_within_allocation_budgets() -> Result<(), Box<dyn s
             options.speed_leader = Some(speed);
             options.style.outline_width = outline;
             let (symbol, stats) = measured_render(&renderer, sidc, options)?;
-            assert!(symbol.validity().is_valid());
+            assert!(symbol.sidc_validity().is_valid());
             assert!(
                 stats.total_blocks <= budget,
                 "{sidc} speed={speed} outline={outline}: {} allocations exceeds {budget}",

@@ -1,8 +1,9 @@
 //! `compat::validity` is the verdict the oracle records as `valid` and
 //! `validExtended`, which the differential corpus compares with milsymbol.js.
 
+use milsymbol::compat::{self, UpstreamIssue};
 use milsymbol::options::TextField;
-use milsymbol::{Renderer, Symbol, ValidityIssue, compat};
+use milsymbol::{Renderer, Symbol};
 use serde_json::Value;
 
 type TestResult = Result<(), Box<dyn std::error::Error>>;
@@ -53,12 +54,12 @@ fn compat_validity_matches_the_corpus_fields() -> TestResult {
         let extended = field(&record, "validExtended");
         assert_eq!(
             field(extended, "drawInstructions"),
-            !has(ValidityIssue::MissingInstruction) && !has(ValidityIssue::NullInDrawing),
+            !has(UpstreamIssue::MissingInstruction) && !has(UpstreamIssue::NullInDrawing),
             "{name}"
         );
         assert_eq!(
             field(extended, "icon"),
-            !has(ValidityIssue::UnknownIcon),
+            !has(UpstreamIssue::UnknownIcon),
             "{name}"
         );
     }
@@ -77,9 +78,9 @@ fn compat_keeps_the_upstream_rules() -> TestResult {
         return Err("missing case".into());
     };
     assert!(!compat::is_valid(null));
-    assert!(null.validity().is_valid());
+    assert!(null.sidc_validity().is_valid());
     assert!(compat::is_valid(hidden));
-    assert!(!hidden.validity().is_valid());
+    assert!(!hidden.sidc_validity().is_valid());
     assert!(!compat::is_valid(unknown));
     Ok(())
 }

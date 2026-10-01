@@ -70,16 +70,16 @@ fn typed_info_and_validity_issues() -> TestResult {
         .text(TextField::UniqueDesignation, "null value")
         .render()?;
     assert!(!milsymbol::compat::is_valid(&s));
-    assert!(s.validity().is_valid());
+    assert!(s.sidc_validity().is_valid());
     assert_eq!(
         milsymbol::compat::validity(&s).issues,
-        vec![ValidityIssue::NullInDrawing]
+        vec![milsymbol::compat::UpstreamIssue::NullInDrawing]
     );
     let s = Renderer::default()
         .symbol("10031000009999000000")
         .render()?;
-    assert_eq!(s.validity().issues, vec![ValidityIssue::UnknownIcon]);
-    assert!(!s.validity().is_valid());
+    assert_eq!(s.sidc_validity().issues, vec![ValidityIssue::UnknownIcon]);
+    assert!(!s.sidc_validity().is_valid());
     Ok(())
 }
 
@@ -113,13 +113,13 @@ fn strict_parse_checks_the_standard_code_tables() -> TestResult {
 }
 
 #[test]
-fn validity_does_not_depend_on_icon_visibility() -> TestResult {
+fn sidc_validity_does_not_depend_on_icon_visibility() -> TestResult {
     for icon in [true, false] {
         let s = Renderer::default()
             .symbol("10031000009999990000")
             .with(|o| o.style.icon = icon)
             .render()?;
-        assert!(!s.validity().is_valid(), "icon={icon}");
+        assert!(!s.sidc_validity().is_valid(), "icon={icon}");
     }
     let hidden = Renderer::default()
         .symbol("10031000009999990000")
@@ -129,7 +129,7 @@ fn validity_does_not_depend_on_icon_visibility() -> TestResult {
         milsymbol::compat::is_valid(&hidden),
         "upstream treats hidden icons as found"
     );
-    assert!(!hidden.validity().is_valid());
+    assert!(!hidden.sidc_validity().is_valid());
     Ok(())
 }
 
@@ -149,7 +149,7 @@ fn sidc_validation_checks_icons_without_an_icon_stage() -> TestResult {
                     .symbol(sidc)
                     .with(|o| o.style.icon = icon)
                     .render()?;
-                assert!(!s.validity().is_valid(), "{sidc}, icon={icon}");
+                assert!(!s.sidc_validity().is_valid(), "{sidc}, icon={icon}");
             }
             assert!(matches!(renderer.check_sidc(sidc),
                 Err(SidcCheckError::Unsupported { issues })
@@ -189,16 +189,15 @@ fn strict_parse_accepts_every_icon_the_tables_define() -> TestResult {
 }
 
 #[test]
-fn validity_requires_a_well_formed_code() -> TestResult {
+fn sidc_validity_requires_a_well_formed_code() -> TestResult {
     use milsymbol::sidc::Sidc;
     // milsymbol.js accepts identity 7 and context 3; the strict parser does not.
     for sidc in ["10070100001100000000", "10300100001100000000"] {
         let s = Renderer::default().symbol(sidc).render()?;
         assert!(Sidc::parse(sidc).is_err());
-        assert!(!s.validity().is_valid(), "{sidc}");
-        assert!(s.validity().issues.contains(&ValidityIssue::MalformedSidc));
+        assert!(!s.sidc_validity().is_valid(), "{sidc}");
         assert!(
-            !milsymbol::compat::validity(&s)
+            s.sidc_validity()
                 .issues
                 .contains(&ValidityIssue::MalformedSidc)
         );
@@ -265,19 +264,19 @@ fn malformed_letter_sidc_verdict_does_not_depend_on_icon_visibility() -> TestRes
             .symbol(sidc)
             .with(|o| o.style.icon = false)
             .render()?;
-        assert!(!drawn.validity().is_valid(), "{sidc}");
+        assert!(!drawn.sidc_validity().is_valid(), "{sidc}");
         assert_eq!(
-            drawn.validity().is_valid(),
-            hidden.validity().is_valid(),
+            drawn.sidc_validity().is_valid(),
+            hidden.sidc_validity().is_valid(),
             "{sidc}"
         );
         assert_eq!(
-            drawn.validity().issues,
+            drawn.sidc_validity().issues,
             [UnknownAffiliation, MissingInstruction, MalformedSidc],
             "{sidc}"
         );
         assert_eq!(
-            hidden.validity().issues,
+            hidden.sidc_validity().issues,
             [UnknownAffiliation, UnknownIcon, MalformedSidc],
             "{sidc}"
         );

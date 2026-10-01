@@ -25,7 +25,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             "{:24} {:32} valid={}",
             item.name,
             item.sidc,
-            symbol.validity().is_valid()
+            symbol.sidc_validity().is_valid()
         );
     }
     Ok(())

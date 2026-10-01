@@ -53,7 +53,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         profile_symbol(&r, name, sidc, options)?;
     }
     let infantry = r.render("10031000001211000000", SymbolOptions::default())?;
-    measure("is_valid: infantry", || infantry.validity().is_valid());
+    measure("is_valid: infantry", || infantry.sidc_validity().is_valid());
     let mut buf = String::with_capacity(4096);
     measure("write_svg into a reused buffer", || {
         infantry.write_svg(&mut buf);

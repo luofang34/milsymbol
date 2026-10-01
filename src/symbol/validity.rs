@@ -1,6 +1,7 @@
 //! Symbol validity, with typed reasons.
 
 use super::Symbol;
+use crate::compat::UpstreamIssue;
 use crate::ir::{Node, Num, Paint, Style};
 use alloc::vec::Vec;
 
@@ -19,12 +20,7 @@ pub enum ValidityIssue {
     UnknownAmplifier,
     /// An icon references a part that does not exist.
     MissingInstruction,
-    /// A text or attribute contains `null`, or a coordinate is not finite.
-    /// milsymbol.js counts this as invalid even when the SIDC is fine.
-    /// Reported by [`compat::validity`](crate::compat::validity) only.
-    NullInDrawing,
-    /// The SIDC fails [`Sidc::parse`](crate::sidc::Sidc::parse). Reported by
-    /// [`Symbol::validity`](crate::Symbol::validity) only; milsymbol.js
+    /// The SIDC fails [`Sidc::parse`](crate::sidc::Sidc::parse). milsymbol.js
     /// renders such codes and may count them as valid.
     MalformedSidc,
 }
@@ -45,42 +41,58 @@ impl Validity {
     }
 }
 
-/// Which icon lookup an issue list reports.
-#[derive(Clone, Copy)]
-pub(super) enum IconCheck {
-    /// Upstream: the drawn icon (always found when icons are hidden).
-    Drawn,
-    /// The SIDC's icon, whether or not it is drawn.
-    Sidc,
+/// The conditions both verdicts are built from.
+struct Flags {
+    affiliation: bool,
+    dimension: bool,
+    icon: bool,
+    amplifier: bool,
+    instruction: bool,
 }
 
-/// The reasons `s` is not valid, in declaration order. Allocates only when
-/// there is at least one.
-pub(super) fn issues(s: &Symbol, icon: IconCheck) -> Vec<ValidityIssue> {
+/// `icon_found` differs between the verdicts: upstream judges the drawn icon
+/// (always found when icons are hidden), the SIDC verdict the SIDC's own.
+fn flags(s: &Symbol, icon_found: bool) -> Flags {
     let md = &s.metadata;
-    let icon_found = match icon {
-        IconCheck::Drawn => s.valid_icon,
-        IconCheck::Sidc => s.icon_known,
-    };
+    Flags {
+        affiliation: md.affiliation == crate::metadata::Field::Undefined,
+        dimension: md.dimension == crate::metadata::Field::Undefined && !md.control_measure(),
+        icon: !icon_found,
+        amplifier: md.mobility == crate::metadata::Field::Missing,
+        instruction: crate::ir::contains_missing(&s.instructions),
+    }
+}
+
+/// The issues of the SIDC verdict, in declaration order. Allocates only when
+/// there is at least one.
+pub(super) fn sidc_issues(s: &Symbol) -> Vec<ValidityIssue> {
+    let f = flags(s, s.icon_known);
     [
+        (f.affiliation, ValidityIssue::UnknownAffiliation),
+        (f.dimension, ValidityIssue::UnknownDimension),
+        (f.icon, ValidityIssue::UnknownIcon),
+        (f.amplifier, ValidityIssue::UnknownAmplifier),
+        (f.instruction, ValidityIssue::MissingInstruction),
         (
-            md.affiliation == crate::metadata::Field::Undefined,
-            ValidityIssue::UnknownAffiliation,
+            crate::sidc::Sidc::parse(&s.sidc).is_err(),
+            ValidityIssue::MalformedSidc,
         ),
-        (
-            md.dimension == crate::metadata::Field::Undefined && !md.control_measure(),
-            ValidityIssue::UnknownDimension,
-        ),
-        (!icon_found, ValidityIssue::UnknownIcon),
-        (
-            md.mobility == crate::metadata::Field::Missing,
-            ValidityIssue::UnknownAmplifier,
-        ),
-        (
-            crate::ir::contains_missing(&s.instructions),
-            ValidityIssue::MissingInstruction,
-        ),
-        (contains_null(&s.instructions), ValidityIssue::NullInDrawing),
+    ]
+    .into_iter()
+    .filter_map(|(present, issue)| present.then_some(issue))
+    .collect()
+}
+
+/// The issues of milsymbol.js `isValid()`, in declaration order.
+pub(super) fn upstream_issues(s: &Symbol) -> Vec<UpstreamIssue> {
+    let f = flags(s, s.valid_icon);
+    [
+        (f.affiliation, UpstreamIssue::UnknownAffiliation),
+        (f.dimension, UpstreamIssue::UnknownDimension),
+        (f.icon, UpstreamIssue::UnknownIcon),
+        (f.amplifier, UpstreamIssue::UnknownAmplifier),
+        (f.instruction, UpstreamIssue::MissingInstruction),
+        (contains_null(&s.instructions), UpstreamIssue::NullInDrawing),
     ]
     .into_iter()
     .filter_map(|(present, issue)| present.then_some(issue))

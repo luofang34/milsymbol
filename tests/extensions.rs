@@ -93,7 +93,7 @@ impl IconExtension for Custom {
 fn icon_extension_adds_sidc_with_builtin_parts() -> TestResult {
     let r = Renderer::builder().icons(Custom).build();
     let s = r.symbol("10031000009999000000").render()?;
-    assert!(s.validity().is_valid());
+    assert!(s.sidc_validity().is_valid());
     let svg = s.to_svg();
     assert!(svg.contains("d=\"M80,80 L120,120\""), "{svg}");
     assert!(
@@ -104,7 +104,7 @@ fn icon_extension_adds_sidc_with_builtin_parts() -> TestResult {
         !Renderer::default()
             .symbol("10031000009999000000")
             .render()?
-            .validity()
+            .sidc_validity()
             .is_valid()
     );
     Ok(())
@@ -123,7 +123,7 @@ fn extension_icons_are_recognised_without_an_icon_stage() -> TestResult {
             r.symbol(sidc)
                 .with(|o| o.style.icon = icon)
                 .render()?
-                .validity()
+                .sidc_validity()
                 .is_valid()
         );
     }
@@ -160,7 +160,7 @@ fn incomplete_extension_icons_fail_sidc_validation_even_when_not_drawn() -> Test
                 .symbol(sidc)
                 .with(|o| o.style.icon = icon)
                 .render()?;
-            assert!(!symbol.validity().is_valid(), "icon={icon}");
+            assert!(!symbol.sidc_validity().is_valid(), "icon={icon}");
         }
     }
     Ok(())
@@ -437,7 +437,7 @@ fn named_builtin_lookup_queries_each_extension_once() -> TestResult {
         .build()
         .symbol("10031000009999000000")
         .render()?;
-    assert!(symbol.validity().is_valid());
+    assert!(symbol.sidc_validity().is_valid());
     assert!(symbol.to_svg().contains("M25,50 L175,150"));
     Ok(())
 }

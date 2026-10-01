@@ -45,7 +45,7 @@ proptest! {
     #[test]
     fn letter_sidcs_never_panic(sidc in letter_sidc()) {
         let s = Renderer::default().symbol(&sidc).render().map_err(fail)?;
-        s.validity().is_valid();
+        s.sidc_validity().is_valid();
         prop_assert!(s.to_svg().ends_with("</svg>"));
     }
 

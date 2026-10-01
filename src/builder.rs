@@ -11,7 +11,7 @@ use alloc::string::String;
 /// A SIDC as the input of [`Renderer::symbol`]: text, or one already parsed.
 ///
 /// Malformed text is not an error here; milsymbol.js draws it with a `?`
-/// icon and reports it through [`Symbol::validity`]. Use
+/// icon and reports it through [`Symbol::sidc_validity`]. Use
 /// [`SymbolBuilder::strict`] to fail instead.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct SidcInput<'a>(Cow<'a, str>);

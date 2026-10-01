@@ -259,7 +259,7 @@ pub(super) fn validity<'a>(s: &'a crate::Symbol, o: &mut Object<'a, 6>) {
     let md = crate::compat::js_metadata(s);
     let issues = s.upstream_issues();
     let has = |i| issues.contains(&i);
-    use crate::ValidityIssue::{MissingInstruction, NullInDrawing, UnknownIcon};
+    use crate::compat::UpstreamIssue::{MissingInstruction, NullInDrawing, UnknownIcon};
     o.opt("affiliation", md.affiliation.map(Value::Str))
         .put("dimension", Value::Str(md.dimension))
         .put("dimensionUnknown", Value::Bool(md.dimension_unknown))

@@ -11,7 +11,6 @@ use alloc::string::String;
 use alloc::vec::Vec;
 
 mod validity;
-use validity::IconCheck;
 pub use validity::{Validity, ValidityIssue};
 
 /// Pixel size of a rendered symbol.
@@ -113,46 +112,39 @@ impl Symbol {
 
     /// Whether the symbol is what its SIDC says, and every reason it is not.
     ///
-    /// This is the recommended judgement. The verdict depends on the SIDC and
-    /// the renderer, never on options; the issue list can differ with
-    /// `style.icon` (a symbol drawn without its icon reports an unknown icon
-    /// rather than a missing instruction). The SIDC must be well formed
+    /// This is the recommended judgement. The SIDC must be well formed
     /// ([`Sidc::parse`](crate::sidc::Sidc::parse)) and fully recognised by the
     /// renderer: every code is known and the icon exists (an icon added by an
-    /// extension counts), whether or not icons are drawn. Text amplifiers
-    /// never affect it. Upstream's own verdict, with its `null`-text
-    /// heuristic, is [`compat::validity`](crate::compat::validity).
+    /// extension counts), whether or not icons are drawn. The verdict depends
+    /// on the SIDC and the renderer, never on options; the issue list can
+    /// differ with `style.icon` (a symbol drawn without its icon reports an
+    /// unknown icon rather than a missing instruction). Text never affects it.
+    /// milsymbol.js `isValid()`, with its `null`-text rule, is
+    /// [`compat::validity`](crate::compat::validity).
     ///
     /// ```
     /// use milsymbol::{Renderer, ValidityIssue};
     ///
     /// let r = Renderer::default();
-    /// assert!(r.symbol("10031000161211000000").render()?.validity().is_valid());
+    /// assert!(r.symbol("10031000161211000000").render()?.sidc_validity().is_valid());
     /// let unknown = r.symbol("10031000009999990000").render()?;
-    /// assert_eq!(unknown.validity().issues, [ValidityIssue::UnknownIcon]);
+    /// assert_eq!(unknown.sidc_validity().issues, [ValidityIssue::UnknownIcon]);
     /// # Ok::<(), milsymbol::RenderError>(())
     /// ```
-    pub fn validity(&self) -> Validity {
+    pub fn sidc_validity(&self) -> Validity {
         Validity {
             issues: self.sidc_issues(),
         }
     }
 
-    /// The issues milsymbol.js `isValid()` reports: the drawn icon is
-    /// judged (hidden icons count as found), text containing `null` is
-    /// invalid, and a malformed SIDC is not an issue.
-    pub(crate) fn upstream_issues(&self) -> Vec<ValidityIssue> {
-        validity::issues(self, IconCheck::Drawn)
+    /// The issues milsymbol.js `isValid()` reports.
+    pub(crate) fn upstream_issues(&self) -> Vec<crate::compat::UpstreamIssue> {
+        validity::upstream_issues(self)
     }
 
-    /// The issues [`Symbol::validity`] reports.
+    /// The issues [`Symbol::sidc_validity`] reports.
     pub(crate) fn sidc_issues(&self) -> Vec<ValidityIssue> {
-        let mut issues = validity::issues(self, IconCheck::Sidc);
-        issues.retain(|i| *i != ValidityIssue::NullInDrawing);
-        if crate::sidc::Sidc::parse(&self.sidc).is_err() {
-            issues.push(ValidityIssue::MalformedSidc);
-        }
-        issues
+        validity::sidc_issues(self)
     }
 
     /// Renders the symbol as an SVG document identical to milsymbol.js `asSVG()`.

@@ -7,12 +7,14 @@
 //! writes for a symbol. Rendering does not need this module.
 
 use crate::json::Value;
-use crate::symbol::{Symbol, Validity};
+use crate::symbol::Symbol;
 use alloc::string::String;
 
 pub use crate::json::Json;
 mod metadata;
+mod validity;
 pub use metadata::{Metadata as JsMetadata, OptionalFlags};
+pub use validity::{UpstreamIssue, UpstreamValidity};
 
 /// The symbol's metadata in milsymbol.js's representation, with its string
 /// values and `"undefined"` sentinels. [`Symbol::metadata`] has typed values.
@@ -22,12 +24,12 @@ pub fn js_metadata(symbol: &Symbol) -> JsMetadata<'_> {
 
 /// milsymbol.js `isValid()`, with typed reasons.
 ///
-/// Unlike [`Symbol::validity`], this reproduces upstream's quirks: any text
-/// containing `null` (for example the unique designation `"null value"`) or a
-/// non-finite number makes the symbol invalid
-/// ([`ValidityIssue::NullInDrawing`](crate::ValidityIssue::NullInDrawing)), a hidden icon counts as found, and a
+/// Unlike [`Symbol::sidc_validity`], this reproduces upstream's quirks: any
+/// text containing `null` (for example the unique designation `"null value"`)
+/// or a non-finite number makes the symbol invalid
+/// ([`UpstreamIssue::NullInDrawing`]), a hidden icon counts as found, and a
 /// malformed SIDC is not reported unless the drawing itself is broken. Use it
-/// to compare with milsymbol.js; use [`Symbol::validity`] to judge input.
+/// to compare with milsymbol.js; use [`Symbol::sidc_validity`] to judge input.
 ///
 /// ```
 /// use milsymbol::options::TextField;
@@ -37,12 +39,12 @@ pub fn js_metadata(symbol: &Symbol) -> JsMetadata<'_> {
 ///     .symbol("10031000161211000000")
 ///     .text(TextField::UniqueDesignation, "null value")
 ///     .render()?;
-/// assert!(s.validity().is_valid());
+/// assert!(s.sidc_validity().is_valid());
 /// assert!(!compat::is_valid(&s));
 /// # Ok::<(), milsymbol::RenderError>(())
 /// ```
-pub fn validity(symbol: &Symbol) -> Validity {
-    Validity {
+pub fn validity(symbol: &Symbol) -> UpstreamValidity {
+    UpstreamValidity {
         issues: symbol.upstream_issues(),
     }
 }

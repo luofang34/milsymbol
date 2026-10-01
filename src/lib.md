@@ -12,7 +12,7 @@ let symbol = renderer
     .render()?;
 let svg = symbol.to_svg();
 assert!(svg.starts_with("<svg"));
-assert!(symbol.validity().is_valid());
+assert!(symbol.sidc_validity().is_valid());
 # Ok::<(), milsymbol::RenderError>(())
 ```
 
@@ -112,7 +112,7 @@ assert!(matches!(
 // A rendered symbol describes itself with typed values.
 let symbol = renderer.symbol("10031000161211000000").render()?;
 assert_eq!(symbol.metadata().echelon, Some(Echelon::BattalionSquadron));
-assert!(symbol.validity().is_valid());
+assert!(symbol.sidc_validity().is_valid());
 # Ok::<(), Box<dyn std::error::Error>>(())
 ```
 
@@ -123,14 +123,15 @@ Which call to use:
 | Check that text is a well-formed SIDC, without a renderer | [`Sidc::parse`](sidc::Sidc::parse) |
 | Check that a SIDC is well formed and that your renderer, extensions included, can draw all of it | [`Renderer::check_sidc`] |
 | Draw, but fail on a malformed or unrecognised SIDC instead of drawing `?` | [`SymbolBuilder::strict`], on the cached builder too |
-| Draw anything and inspect the verdict afterwards | [`Symbol::validity`] |
+| Draw anything and inspect the verdict afterwards (the recommended call) | [`Symbol::sidc_validity`] |
 | Compare with milsymbol.js `isValid()`, quirks included | [`compat::validity`] / [`compat::is_valid`] |
 
-[`Symbol::validity`] lists every [`ValidityIssue`] for the SIDC alone: it
+[`Symbol::sidc_validity`] lists every [`ValidityIssue`] for the SIDC alone: it
 must be well formed and fully recognised, whether or not the icon is drawn.
 `strict()` and `check_sidc` apply the same test before returning a symbol.
 [`compat::validity`] reproduces upstream, including its rule that text
-containing `null` makes a symbol invalid.
+containing `null` makes a symbol invalid; it returns its own
+[`compat::UpstreamIssue`] list.
 
 # Editing SIDCs
 

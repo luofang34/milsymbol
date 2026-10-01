@@ -13,7 +13,7 @@ const INFANTRY: &str = "10031000001211000000";
 #[test]
 fn renders_valid_infantry_with_expected_frame() -> TestResult {
     let s = Renderer::default().symbol(INFANTRY).render()?;
-    assert!(s.validity().is_valid());
+    assert!(s.sidc_validity().is_valid());
     let svg = s.to_svg();
     assert!(svg.starts_with(
         "<svg xmlns=\"http://www.w3.org/2000/svg\" version=\"1.2\" baseProfile=\"tiny\""
@@ -156,7 +156,9 @@ fn catalog_lists_renderable_icons() -> TestResult {
     for e in entities.iter().take(50) {
         let s = r.render(&format!("1003100000{e}0000"), SymbolOptions::default())?;
         assert!(
-            !s.validity().issues.contains(&ValidityIssue::UnknownIcon),
+            !s.sidc_validity()
+                .issues
+                .contains(&ValidityIssue::UnknownIcon),
             "{e}"
         );
     }
