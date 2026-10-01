@@ -123,7 +123,7 @@ fn extension_icons_are_recognised_without_an_icon_stage() -> TestResult {
             r.symbol(sidc)
                 .with(|o| o.style.icon = icon)
                 .render()?
-                .sidc_validity()
+                .validity()
                 .is_valid()
         );
     }
@@ -160,7 +160,7 @@ fn incomplete_extension_icons_fail_sidc_validation_even_when_not_drawn() -> Test
                 .symbol(sidc)
                 .with(|o| o.style.icon = icon)
                 .render()?;
-            assert!(!symbol.sidc_validity().is_valid(), "icon={icon}");
+            assert!(!symbol.validity().is_valid(), "icon={icon}");
         }
     }
     Ok(())

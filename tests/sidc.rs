@@ -69,14 +69,17 @@ fn typed_info_and_validity_issues() -> TestResult {
         .symbol(INFANTRY)
         .text(TextField::UniqueDesignation, "null value")
         .render()?;
-    assert!(!s.validity().is_valid());
-    assert!(s.sidc_validity().is_valid());
-    assert_eq!(s.validity().issues, vec![ValidityIssue::NullInDrawing]);
+    assert!(!milsymbol::compat::is_valid(&s));
+    assert!(s.validity().is_valid());
+    assert_eq!(
+        milsymbol::compat::validity(&s).issues,
+        vec![ValidityIssue::NullInDrawing]
+    );
     let s = Renderer::default()
         .symbol("10031000009999000000")
         .render()?;
     assert_eq!(s.validity().issues, vec![ValidityIssue::UnknownIcon]);
-    assert!(!s.sidc_validity().is_valid());
+    assert!(!s.validity().is_valid());
     Ok(())
 }
 
@@ -116,16 +119,17 @@ fn sidc_validity_does_not_depend_on_icon_visibility() -> TestResult {
             .symbol("10031000009999990000")
             .with(|o| o.style.icon = icon)
             .render()?;
-        assert!(!s.sidc_validity().is_valid(), "icon={icon}");
+        assert!(!s.validity().is_valid(), "icon={icon}");
     }
     let hidden = Renderer::default()
         .symbol("10031000009999990000")
         .with(|o| o.style.icon = false)
         .render()?;
     assert!(
-        hidden.validity().is_valid(),
+        milsymbol::compat::is_valid(&hidden),
         "upstream treats hidden icons as found"
     );
+    assert!(!hidden.validity().is_valid());
     Ok(())
 }
 
@@ -145,7 +149,7 @@ fn sidc_validation_checks_icons_without_an_icon_stage() -> TestResult {
                     .symbol(sidc)
                     .with(|o| o.style.icon = icon)
                     .render()?;
-                assert!(!s.sidc_validity().is_valid(), "{sidc}, icon={icon}");
+                assert!(!s.validity().is_valid(), "{sidc}, icon={icon}");
             }
             assert!(matches!(renderer.check_sidc(sidc),
                 Err(SidcCheckError::Unsupported { issues })
@@ -191,7 +195,23 @@ fn sidc_validity_requires_a_well_formed_code() -> TestResult {
     for sidc in ["10070100001100000000", "10300100001100000000"] {
         let s = Renderer::default().symbol(sidc).render()?;
         assert!(Sidc::parse(sidc).is_err());
-        assert!(!s.sidc_validity().is_valid(), "{sidc}");
+        assert!(!s.validity().is_valid(), "{sidc}");
+        assert!(s.validity().issues.contains(&ValidityIssue::MalformedSidc));
+        assert!(
+            !milsymbol::compat::validity(&s)
+                .issues
+                .contains(&ValidityIssue::MalformedSidc)
+        );
+    }
+    Ok(())
+}
+
+#[test]
+#[allow(deprecated)]
+fn sidc_validity_is_the_same_as_validity() -> TestResult {
+    for sidc in [INFANTRY, "10031000009999990000", "10070100001100000000"] {
+        let s = Renderer::default().symbol(sidc).render()?;
+        assert_eq!(s.sidc_validity(), s.validity(), "{sidc}");
     }
     Ok(())
 }

@@ -1,4 +1,4 @@
-//! Symbol validity (upstream `isValid`), with typed reasons.
+//! Symbol validity, with typed reasons.
 
 use super::Symbol;
 use crate::ir::{Node, Num, Paint, Style};
@@ -21,10 +21,11 @@ pub enum ValidityIssue {
     MissingInstruction,
     /// A text or attribute contains `null`, or a coordinate is not finite.
     /// milsymbol.js counts this as invalid even when the SIDC is fine.
+    /// Reported by [`compat::validity`](crate::compat::validity) only.
     NullInDrawing,
     /// The SIDC fails [`Sidc::parse`](crate::sidc::Sidc::parse). Reported by
-    /// [`Symbol::sidc_validity`](crate::Symbol::sidc_validity) only;
-    /// milsymbol.js renders such codes and may count them as valid.
+    /// [`Symbol::validity`](crate::Symbol::validity) only; milsymbol.js
+    /// renders such codes and may count them as valid.
     MalformedSidc,
 }
 
@@ -33,8 +34,7 @@ pub enum ValidityIssue {
 #[derive(Debug, Clone, PartialEq, Eq)]
 #[non_exhaustive]
 pub struct Validity {
-    /// Every reason the symbol is not valid (as milsymbol.js `isValid()`
-    /// judges it); empty for a valid symbol.
+    /// Every reason the symbol is not valid; empty for a valid symbol.
     pub issues: Vec<ValidityIssue>,
 }
 

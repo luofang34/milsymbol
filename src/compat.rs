@@ -7,7 +7,7 @@
 //! writes for a symbol. Rendering does not need this module.
 
 use crate::json::Value;
-use crate::symbol::Symbol;
+use crate::symbol::{Symbol, Validity};
 use alloc::string::String;
 
 pub use crate::json::Json;
@@ -20,11 +20,36 @@ pub fn js_metadata(symbol: &Symbol) -> JsMetadata<'_> {
     (&symbol.metadata).into()
 }
 
-/// milsymbol.js `isValid()`: the same verdict as
-/// [`Symbol::validity`]`().is_valid()`, including upstream's heuristic that
-/// any text containing `null` makes a symbol invalid.
+/// milsymbol.js `isValid()`, with typed reasons.
+///
+/// Unlike [`Symbol::validity`], this reproduces upstream's quirks: any text
+/// containing `null` (for example the unique designation `"null value"`) or a
+/// non-finite number makes the symbol invalid
+/// ([`ValidityIssue::NullInDrawing`](crate::ValidityIssue::NullInDrawing)), a hidden icon counts as found, and a
+/// malformed SIDC is not reported unless the drawing itself is broken. Use it
+/// to compare with milsymbol.js; use [`Symbol::validity`] to judge input.
+///
+/// ```
+/// use milsymbol::options::TextField;
+/// use milsymbol::{Renderer, compat};
+///
+/// let s = Renderer::default()
+///     .symbol("10031000161211000000")
+///     .text(TextField::UniqueDesignation, "null value")
+///     .render()?;
+/// assert!(s.validity().is_valid());
+/// assert!(!compat::is_valid(&s));
+/// # Ok::<(), milsymbol::RenderError>(())
+/// ```
+pub fn validity(symbol: &Symbol) -> Validity {
+    Validity {
+        issues: symbol.upstream_issues(),
+    }
+}
+
+/// Whether [`validity`] has no issues.
 pub fn is_valid(symbol: &Symbol) -> bool {
-    symbol.validity().is_valid()
+    symbol.upstream_issues().is_empty()
 }
 
 /// Canonical JSON of the symbol's observable state, in the same shape as

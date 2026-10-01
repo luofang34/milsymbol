@@ -250,14 +250,14 @@ pub(super) fn symbol<'a>(s: &'a crate::Symbol, o: &mut Object<'a, 10>) {
         .put("size", Value::Size(s.size()))
         .put("anchor", Value::Point(s.anchor()))
         .put("octagonAnchor", Value::Point(s.octagon_anchor()))
-        .put("valid", Value::Bool(s.validity().is_valid()))
+        .put("valid", Value::Bool(crate::compat::is_valid(s)))
         .put("validExtended", Value::Validity(s))
         .put("options", Value::Options(s));
 }
 
 pub(super) fn validity<'a>(s: &'a crate::Symbol, o: &mut Object<'a, 6>) {
     let md = crate::compat::js_metadata(s);
-    let issues = s.validity().issues;
+    let issues = s.upstream_issues();
     let has = |i| issues.contains(&i);
     use crate::ValidityIssue::{MissingInstruction, NullInDrawing, UnknownIcon};
     o.opt("affiliation", md.affiliation.map(Value::Str))

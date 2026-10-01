@@ -111,30 +111,47 @@ impl Symbol {
         self.octagon_anchor
     }
 
-    /// Every reason milsymbol.js `isValid()` would reject the symbol.
+    /// Whether the symbol is what its SIDC says, and every reason it is not.
     ///
-    /// This mirrors upstream exactly, including its heuristic that treats
-    /// any text containing `null` (e.g. a unique designation `"null value"`)
-    /// or a non-finite number as invalid, and its treatment of hidden icons
-    /// as found. To judge the SIDC alone, use [`Symbol::sidc_validity`] or
-    /// [`Renderer::check_sidc`](crate::Renderer::check_sidc).
+    /// This is the recommended judgement. The SIDC must be well formed
+    /// ([`Sidc::parse`](crate::sidc::Sidc::parse)) and fully recognised by the
+    /// renderer: every code is known and the icon exists (an icon added by an
+    /// extension counts), whether or not icons are drawn. Text amplifiers
+    /// never affect it. Upstream's own verdict, with its `null`-text
+    /// heuristic, is [`compat::validity`](crate::compat::validity).
+    ///
+    /// ```
+    /// use milsymbol::{Renderer, ValidityIssue};
+    ///
+    /// let r = Renderer::default();
+    /// assert!(r.symbol("10031000161211000000").render()?.validity().is_valid());
+    /// let unknown = r.symbol("10031000009999990000").render()?;
+    /// assert_eq!(unknown.validity().issues, [ValidityIssue::UnknownIcon]);
+    /// # Ok::<(), milsymbol::RenderError>(())
+    /// ```
     pub fn validity(&self) -> Validity {
-        Validity {
-            issues: validity::issues(self, IconCheck::Drawn),
-        }
-    }
-
-    /// Whether the SIDC is well formed ([`Sidc::parse`](crate::sidc::Sidc::parse))
-    /// and fully recognised: every code is known and the icon exists,
-    /// whether or not icons are drawn, and without upstream's `null`-text
-    /// heuristic. [`Symbol::validity`] gives upstream's own verdict.
-    pub fn sidc_validity(&self) -> Validity {
         Validity {
             issues: self.sidc_issues(),
         }
     }
 
-    /// The issues [`Symbol::sidc_validity`] reports.
+    /// Same as [`Symbol::validity`].
+    #[deprecated(
+        since = "0.3.0",
+        note = "use `Symbol::validity`, which now judges the SIDC alone"
+    )]
+    pub fn sidc_validity(&self) -> Validity {
+        self.validity()
+    }
+
+    /// The issues milsymbol.js `isValid()` reports: the drawn icon is
+    /// judged (hidden icons count as found), text containing `null` is
+    /// invalid, and a malformed SIDC is not an issue.
+    pub(crate) fn upstream_issues(&self) -> Vec<ValidityIssue> {
+        validity::issues(self, IconCheck::Drawn)
+    }
+
+    /// The issues [`Symbol::validity`] reports.
     pub(crate) fn sidc_issues(&self) -> Vec<ValidityIssue> {
         let mut issues = validity::issues(self, IconCheck::Sidc);
         issues.retain(|i| *i != ValidityIssue::NullInDrawing);
