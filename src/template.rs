@@ -5,7 +5,7 @@
 //! depends on. [`IconContext`] selects the row; [`Resolver`] turns symbolic
 //! colour/dash slots into concrete values.
 
-use crate::generated::{tables, vars};
+use crate::generated::{pool, tables, vars};
 
 /// Number of context variables.
 pub(crate) const VAR_COUNT: usize = 15;
@@ -170,10 +170,58 @@ pub(crate) enum TNode {
 }
 
 /// A context-keyed table entry.
+///
+/// With `bits == 0` the entry has one value, held in `a`. Otherwise `a` is
+/// the start of its palette in `PALETTE` and `b` the byte offset of its
+/// bit-packed palette indices in `ROW_DATA`.
 #[derive(Debug, Clone, Copy)]
 pub(crate) struct Entry {
     pub deps: u16,
-    pub start: u32,
+    pub bits: u8,
+    pub a: u32,
+    pub b: u32,
+}
+
+/// Packed node record: `PNode(tag, a, b)`, interpreted per tag.
+#[derive(Debug, Clone, Copy)]
+pub(crate) struct PNode(pub u8, pub u32, pub u16);
+
+/// `PNode` tags.
+pub(crate) const T_PATH: u8 = 0;
+pub(crate) const T_TEXT: u8 = 1;
+pub(crate) const T_GROUP: u8 = 2;
+pub(crate) const T_REF: u8 = 3;
+pub(crate) const T_WIDE: u8 = 4;
+
+/// Palette value meaning "upstream defines nothing in this context".
+const PALETTE_ABSENT: u16 = u16::MAX;
+
+/// Decodes packed node `index`.
+pub(crate) fn node_at(index: u32) -> Option<TNode> {
+    let &PNode(tag, a, b) = pool::NODES.get(index as usize)?;
+    Some(match tag {
+        T_PATH => TNode::Path {
+            d: pool::PATHS.get(a as usize).copied()?,
+            style: b,
+        },
+        T_TEXT => TNode::Text { text: a, style: b },
+        T_GROUP => TNode::Group(Kids {
+            start: a,
+            len: u32::from(b),
+        }),
+        T_REF => TNode::Ref(u16::try_from(a).ok()?),
+        _ => pool::WIDE.get(a as usize).copied()?,
+    })
+}
+
+/// `bits` bits (at most 16) of `data` starting at bit `pos`, LSB first.
+fn read_bits(data: &[u8], pos: usize, bits: u32) -> Option<u32> {
+    let first = pos / 8;
+    let mut acc: u32 = 0;
+    for k in 0..3 {
+        acc |= u32::from(data.get(first + k).copied().unwrap_or(0)) << (8 * k);
+    }
+    Some((acc >> (pos % 8)) & ((1u32 << bits) - 1))
 }
 
 /// Values of the context variables for one symbol.
@@ -223,11 +271,21 @@ impl IconContext {
                     .saturating_add(u32::from(value));
             }
         }
-        e.start
-            .checked_add(index)
-            .and_then(|row| tables::ROWS.get(row as usize))
-            .copied()
-            .unwrap_or(ABSENT)
+        if e.bits == 0 {
+            return e.a;
+        }
+        let bit = (e.b as usize)
+            .saturating_mul(8)
+            .saturating_add((index as usize).saturating_mul(usize::from(e.bits)));
+        read_bits(&tables::ROW_DATA, bit, u32::from(e.bits))
+            .and_then(|slot| tables::PALETTE.get((e.a as usize).checked_add(slot as usize)?))
+            .map_or(ABSENT, |&v| {
+                if v == PALETTE_ABSENT {
+                    ABSENT
+                } else {
+                    u32::from(v)
+                }
+            })
     }
 }
 

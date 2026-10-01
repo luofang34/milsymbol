@@ -181,15 +181,10 @@ fn comma_is_a_separator_between_arguments_only() {
 
 #[test]
 fn every_generated_path_parses() {
-    use crate::generated::pool::NODES;
-    use crate::template::TNode;
-    let mut checked = 0;
-    for n in NODES.iter() {
-        if let TNode::Path { d, .. } = n {
-            let parsed = PathData::new(*d).segments().map(|s| s.len());
-            assert!(parsed.is_ok(), "{d}: {parsed:?}");
-            checked += 1;
-        }
+    use crate::generated::pool::PATHS;
+    for d in PATHS.iter() {
+        let parsed = PathData::new(*d).segments().map(|s| s.len());
+        assert!(parsed.is_ok(), "{d}: {parsed:?}");
     }
-    assert!(checked > 3000, "{checked}");
+    assert!(PATHS.len() > 900, "{}", PATHS.len());
 }

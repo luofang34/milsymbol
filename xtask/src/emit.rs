@@ -9,6 +9,7 @@ use std::path::Path;
 
 mod files;
 mod literals;
+mod pack;
 mod pool;
 
 use literals::rstr;

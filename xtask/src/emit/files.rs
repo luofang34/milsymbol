@@ -1,6 +1,7 @@
 //! Writing the generated modules.
 
 use super::literals::{rcow, rf64, ropt, rstr};
+use super::pack::{pack_nodes, pack_rows};
 use super::{Emitted, Keyed, array};
 use crate::Error;
 use serde_json::Value;
@@ -70,8 +71,8 @@ pub(super) fn write_all(
             .map_err(|err| format!("{}: {err}", path.display()).into())
     };
     write("vars.rs", vars_rs(vars, &e.pools.domain_sizes))?;
-    write("pool.rs", pool_rs(e))?;
-    write("tables.rs", tables_rs(e))?;
+    write("pool.rs", pool_rs(e)?)?;
+    write("tables.rs", tables_rs(e)?)?;
     write("misc.rs", misc_rs(misc)?)
 }
 
@@ -100,20 +101,37 @@ pub(crate) static GEOMETRIES: [&str; {}] = [{}];
     )
 }
 
-fn pool_rs(e: &Emitted) -> String {
+fn pool_rs(e: &Emitted) -> Result<String, Error> {
     let p = &e.pools;
+    let packed = pack_nodes(p)?;
     let kids: Vec<String> = p.kids.iter().map(ToString::to_string).collect();
-    format!(
+    if p.kids.iter().any(|&k| u16::try_from(k).is_err()) {
+        return Err("node index exceeds u16 in KIDS".into());
+    }
+    Ok(format!(
         "
-use crate::template::{{Kids, TDash, TNode, TNum, TPaint, TStyle, TText, TAff, Slot}};
+use crate::template::{{
+    Kids, PNode, Slot, T_GROUP, T_PATH, T_REF, T_TEXT, T_WIDE, TAff, TDash, TNode, TNum, TPaint,
+    TStyle, TText,
+}};
 
-/// Template nodes.
-pub(crate) static NODES: [TNode; {}] = [
+/// Packed template nodes.
+pub(crate) static NODES: [PNode; {}] = [
+{}
+];
+
+/// Nodes too large for a packed record.
+pub(crate) static WIDE: [TNode; {}] = [
+{}
+];
+
+/// Path data of path nodes.
+pub(crate) static PATHS: [&str; {}] = [
 {}
 ];
 
 /// Child lists of group-like nodes, as indices into `NODES`.
-pub(crate) static KIDS: [u32; {}] = [{}];
+pub(crate) static KIDS: [u16; {}] = [{}];
 
 /// Text node payloads.
 pub(crate) static TEXTS: [TText; {}] = [
@@ -125,24 +143,24 @@ pub(crate) static STYLES: [TStyle; {}] = [
 {}
 ];
 ",
-        p.nodes.len(),
-        lines(&p.nodes),
+        packed.nodes.len(),
+        lines(&packed.nodes),
+        packed.wide.len(),
+        lines(&packed.wide),
+        p.paths.len(),
+        lines(&p.paths),
         kids.len(),
         kids.join(", "),
         p.texts.len(),
         lines(&p.texts),
         p.styles.len(),
         lines(&p.styles),
-    )
+    ))
 }
 
-fn tables_rs(e: &Emitted) -> String {
+fn tables_rs(e: &Emitted) -> Result<String, Error> {
     let p = &e.pools;
-    let absent = if p.rows.iter().any(|r| r == "ABSENT") {
-        "use crate::template::ABSENT;"
-    } else {
-        ""
-    };
+    let rows = pack_rows(&p.entries)?;
     let number: Vec<String> = e
         .number
         .iter()
@@ -153,20 +171,22 @@ fn tables_rs(e: &Emitted) -> String {
             )
         })
         .collect();
-    format!(
+    Ok(format!(
         "
 use crate::template::Entry;
-{absent}
 
-/// Context-keyed entries: a dependency bitmask and the start of a
-/// mixed-radix block in `ROWS`.
+/// Context-keyed entries: a dependency bitmask and the location of the
+/// mixed-radix row block (see `template::Entry`).
 pub(crate) static ENTRIES: [Entry; {}] = [
 {}
 ];
 
-/// Row values: node indices (or bbox indices for bbox tables), `ABSENT`
-/// where upstream defines no value in that context.
-pub(crate) static ROWS: [u32; {}] = [{}];
+/// Row values referenced by bit-packed palette indices: node indices (or
+/// bbox indices for bbox tables), `u16::MAX` where upstream defines no value.
+pub(crate) static PALETTE: [u16; {}] = [{}];
+
+/// Bit-packed palette indices of the multi-valued entries.
+pub(crate) static ROW_DATA: [u8; {}] = [{}];
 
 /// Special bounding boxes: `[x1, y1, x2, y2]`, `None` where upstream leaves
 /// the coordinate to the default.
@@ -200,10 +220,12 @@ pub(crate) static LETTER_ICONS: &[(&str, u32)] = {};
 pub(crate) static LETTER_BBOX: &[(&str, u32)] = {};
 
 ",
-        p.entries.len(),
-        lines(&p.entries),
-        p.rows.len(),
-        p.rows.join(", "),
+        rows.entries.len(),
+        lines(&rows.entries),
+        rows.palette.len(),
+        join(&rows.palette),
+        rows.data.len(),
+        join(&rows.data),
         p.bboxes.len(),
         lines(&p.bboxes),
         e.part_list.len(),
@@ -219,7 +241,15 @@ pub(crate) static LETTER_BBOX: &[(&str, u32)] = {};
         number.join("\n"),
         sorted_list(&e.letter_icons),
         sorted_list(&e.letter_bbox),
-    )
+    ))
+}
+
+fn join<T: ToString>(items: &[T]) -> String {
+    items
+        .iter()
+        .map(ToString::to_string)
+        .collect::<Vec<_>>()
+        .join(", ")
 }
 
 const LABEL_KEYS: [&str; 8] = [

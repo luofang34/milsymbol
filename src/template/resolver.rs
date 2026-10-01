@@ -1,7 +1,7 @@
 //! Instantiates template entries for one symbol: colour slots, dash
 //! arrays, extension parts and in-place part mutations.
 
-use super::{ABSENT, IconContext, Kids, Slot, TAff, TDash, TNode, TNum, TPaint};
+use super::{ABSENT, IconContext, Kids, Slot, TAff, TDash, TNode, TNum, TPaint, node_at};
 use crate::color::{ColorSet, SlotMode};
 use crate::generated::{pool, tables};
 use crate::ir::{self, Node, Num, Paint, Style};
@@ -110,16 +110,16 @@ impl Resolver<'_> {
             .get(start..end)
             .unwrap_or(&[])
             .iter()
-            .map(|&i| self.node(i))
+            .map(|&i| self.node(u32::from(i)))
             .collect()
     }
 
     /// Instantiates pool node `index`.
     pub(crate) fn node(&self, index: u32) -> Node {
-        let Some(t) = pool::NODES.get(index as usize) else {
+        let Some(t) = node_at(index) else {
             return Node::Missing;
         };
-        match *t {
+        match t {
             TNode::Path { d, style } => Node::Path(ir::PathNode {
                 d: ir::PathData::new(d),
                 style: self.style(style),

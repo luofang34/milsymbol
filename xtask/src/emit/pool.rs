@@ -8,20 +8,48 @@ use crate::Error;
 use serde_json::Value;
 use std::collections::HashMap;
 
+/// A node as stored in the packed `NODES` table.
+pub(super) enum Packed {
+    Path {
+        path: usize,
+        style: usize,
+    },
+    Text {
+        text: usize,
+        style: usize,
+    },
+    Group {
+        start: usize,
+        len: usize,
+    },
+    Ref(usize),
+    /// A full `TNode` literal kept in the wide side table.
+    Wide(String),
+}
+
+/// One table entry: dependency mask and its mixed-radix row values
+/// (`u32::MAX` where upstream defines no value).
+pub(super) struct EntryRec {
+    pub mask: u32,
+    pub vals: Vec<u32>,
+}
+
 /// Accumulated literals of the generated tables.
 #[derive(Default)]
 pub(super) struct Pools {
     pub styles: Vec<String>,
     style_index: HashMap<String, usize>,
     pub texts: Vec<String>,
-    pub nodes: Vec<String>,
+    text_index: HashMap<String, usize>,
+    pub paths: Vec<String>,
+    path_index: HashMap<String, usize>,
+    pub nodes: Vec<Packed>,
     node_index: HashMap<String, usize>,
     pub kids: Vec<usize>,
     pub bboxes: Vec<String>,
     bbox_index: HashMap<String, usize>,
-    pub entries: Vec<String>,
+    pub entries: Vec<EntryRec>,
     entry_index: HashMap<String, usize>,
-    pub rows: Vec<String>,
     /// Part name → index in the byte-sorted part list.
     pub part_ids: HashMap<String, usize>,
     /// Referenced names upstream never defines, in first-use order; their
@@ -61,34 +89,39 @@ impl Pools {
         Ok(intern(&mut self.styles, &mut self.style_index, lit))
     }
 
-    fn kids_of(&mut self, list: &[Value]) -> Result<String, Error> {
+    fn kids_of(&mut self, list: &[Value]) -> Result<(usize, usize), Error> {
         let idx = list
             .iter()
             .map(|t| self.node_of(t))
             .collect::<Result<Vec<_>, _>>()?;
         let start = self.kids.len();
         self.kids.extend(&idx);
-        Ok(format!("Kids {{ start: {start}, len: {} }}", idx.len()))
+        Ok((start, idx.len()))
+    }
+
+    fn kids_lit(&mut self, list: &[Value]) -> Result<String, Error> {
+        let (start, len) = self.kids_of(list)?;
+        Ok(format!("Kids {{ start: {start}, len: {len} }}"))
     }
 
     /// Children of a group-like template (`draw` must be a group).
     fn draw_of(&mut self, t: &Value) -> Result<String, Error> {
         match t.get("draw") {
-            None => self.kids_of(&[]),
+            None => self.kids_lit(&[]),
             Some(d) => match d.get("group").and_then(Value::as_array) {
-                Some(g) => self.kids_of(g),
+                Some(g) => self.kids_lit(g),
                 None => Err(format!("non-array draw in {t}").into()),
             },
         }
     }
 
-    fn text_of(&mut self, t: &Value) -> Result<String, Error> {
+    fn text_of(&mut self, t: &Value) -> Result<usize, Error> {
         let get = |k: &str| t.get(k);
         let text = get("text")
             .map(super::literals::field_s)
             .transpose()?
             .unwrap_or("");
-        self.texts.push(format!(
+        let lit = format!(
             "TText {{ x: {}, y: {}, text: {}, size: {}, family: {}, weight: {}, anchor: {}, baseline: {} }}",
             rnum(get("x").unwrap_or(&Value::Null))?,
             rnum(get("y").unwrap_or(&Value::Null))?,
@@ -98,13 +131,14 @@ impl Pools {
             ropt(get("fontweight"), rs)?,
             ropt(get("textanchor"), rs)?,
             ropt(get("alignmentBaseline"), rs)?,
-        ));
-        Ok((self.texts.len() - 1).to_string())
+        );
+        Ok(intern(&mut self.texts, &mut self.text_index, lit))
     }
 
-    fn shape_of(&mut self, t: &Value) -> Result<String, Error> {
+    fn shape_of(&mut self, t: &Value) -> Result<Packed, Error> {
         let style = self.style_of(t)?;
         let num = |k: &str| rnum(t.get(k).unwrap_or(&Value::Null));
+        let wide = |lit: String| Packed::Wide(lit);
         Ok(match t.get("type").and_then(Value::as_str) {
             Some("path") => {
                 let d = t
@@ -112,41 +146,40 @@ impl Pools {
                     .map(super::literals::field_s)
                     .transpose()?
                     .unwrap_or("");
-                format!("TNode::Path {{ d: {}, style: {style} }}", rstr(d))
+                let path = intern(&mut self.paths, &mut self.path_index, rstr(d));
+                Packed::Path { path, style }
             }
-            Some("circle") => {
-                format!(
-                    "TNode::Circle {{ cx: {}, cy: {}, r: {}, style: {style} }}",
-                    num("cx")?,
-                    num("cy")?,
-                    num("r")?
-                )
-            }
-            Some("text") => format!(
-                "TNode::Text {{ text: {}, style: {style} }}",
-                self.text_of(t)?
-            ),
+            Some("circle") => wide(format!(
+                "TNode::Circle {{ cx: {}, cy: {}, r: {}, style: {style} }}",
+                num("cx")?,
+                num("cy")?,
+                num("r")?
+            )),
+            Some("text") => Packed::Text {
+                text: self.text_of(t)?,
+                style,
+            },
             Some("translate") => {
                 let kids = self.draw_of(t)?;
-                format!(
+                wide(format!(
                     "TNode::Translate {{ x: {}, y: {}, kids: {kids}, style: {style} }}",
                     num("x")?,
                     num("y")?
-                )
+                ))
             }
             Some("rotate") => {
                 let kids = self.draw_of(t)?;
                 let (d, x, y) = (num("degree")?, num("x")?, num("y")?);
-                format!(
+                wide(format!(
                     "TNode::Rotate {{ degree: {d}, x: {x}, y: {y}, kids: {kids}, style: {style} }}"
-                )
+                ))
             }
             Some("scale") => {
                 let kids = self.draw_of(t)?;
-                format!(
+                wide(format!(
                     "TNode::Scale {{ factor: {}, kids: {kids}, style: {style} }}",
                     num("factor")?
-                )
+                ))
             }
             _ => return Err(format!("bad node {t}").into()),
         })
@@ -158,10 +191,10 @@ impl Pools {
         if let Some(&i) = self.node_index.get(&key) {
             return Ok(i);
         }
-        let lit = if t.get("missing").is_some_and(|m| m.as_bool() == Some(true)) {
-            String::from("TNode::Missing")
+        let packed = if t.get("missing").is_some_and(|m| m.as_bool() == Some(true)) {
+            Packed::Wide(String::from("TNode::Missing"))
         } else if let Some(s) = t.get("scalar") {
-            format!("TNode::Scalar({})", rnum(s)?)
+            Packed::Wide(format!("TNode::Scalar({})", rnum(s)?))
         } else if let Some(r) = t.get("ref").and_then(Value::as_str) {
             let id = match self.part_ids.get(r) {
                 Some(&id) => id,
@@ -176,13 +209,14 @@ impl Pools {
                     self.part_ids.len() + pos
                 }
             };
-            format!("TNode::Ref({id})")
+            Packed::Ref(id)
         } else if let Some(g) = t.get("group").and_then(Value::as_array) {
-            format!("TNode::Group({})", self.kids_of(g)?)
+            let (start, len) = self.kids_of(g)?;
+            Packed::Group { start, len }
         } else {
             self.shape_of(t)?
         };
-        self.nodes.push(lit);
+        self.nodes.push(packed);
         self.node_index.insert(key, self.nodes.len() - 1);
         Ok(self.nodes.len() - 1)
     }
@@ -195,16 +229,17 @@ impl Pools {
     }
 
     /// Row value literal of one serialized template (or `"absent"`).
-    fn row_value(&mut self, v: &str) -> Result<String, Error> {
+    fn row_value(&mut self, v: &str) -> Result<u32, Error> {
         if v == "absent" {
-            return Ok(String::from("ABSENT"));
+            return Ok(u32::MAX);
         }
         let t: Value = serde_json::from_str(v)?;
-        Ok(match t.get("bbox") {
-            Some(Value::Null) => String::from("ABSENT"),
-            Some(b) => self.bbox_of(b)?.to_string(),
-            None => self.node_of(&t)?.to_string(),
-        })
+        let index = match t.get("bbox") {
+            Some(Value::Null) => return Ok(u32::MAX),
+            Some(b) => self.bbox_of(b)?,
+            None => self.node_of(&t)?,
+        };
+        u32::try_from(index).map_err(|_| "row index overflow".into())
     }
 
     /// Entry index of a table entry `{key, deps, rows}`.
@@ -254,14 +289,17 @@ impl Pools {
             vals.push(self.row_value(v)?);
         }
         let mask = deps.iter().fold(0u32, |m, &vi| m | (1 << vi));
-        let sig = format!("{mask}|{}", vals.join(","));
+        let sig = format!(
+            "{mask}|{}",
+            vals.iter()
+                .map(ToString::to_string)
+                .collect::<Vec<_>>()
+                .join(",")
+        );
         if let Some(&i) = self.entry_index.get(&sig) {
             return Ok(i);
         }
-        let start = self.rows.len();
-        self.rows.extend(vals);
-        self.entries
-            .push(format!("Entry {{ deps: 0b{mask:b}, start: {start} }}"));
+        self.entries.push(EntryRec { mask, vals });
         self.entry_index.insert(sig, self.entries.len() - 1);
         Ok(self.entries.len() - 1)
     }
