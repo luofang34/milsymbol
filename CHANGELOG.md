@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased
+
+- Smaller static footprint: the generated icon tables use packed node records,
+  interned paths, deduplicated text payloads and bit-packed row tables.
+  `.rodata` of a Cortex-M4F build shrinks from 2.29 MB to 0.95 MB. Output is
+  unchanged (full differential corpus) and render times are within
+  measurement noise.
+
 ## 0.2.0 — 2026-09-30
 
 Breaking API changes toward typed, single-path use; SVG output is unchanged.
