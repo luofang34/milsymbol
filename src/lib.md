@@ -288,12 +288,18 @@ The icon tables embed their path strings as plain text. The `compact-paths`
 feature (off by default) embeds them packed, about a third of the size, and
 decodes a path into an owned string each time a symbol that uses it is
 composed. Output is byte-identical and no public signature changes. Use it
-when flash or download size matters more than composing speed: it saves about
-195 KB of flash on thumbv7em and about 190 KB of a raw `wasm32` module (5%
-gzipped), and costs one extra allocation per path node, heap equal to the
-decoded path text (median 41 bytes per symbol, 12.6 KB at most) and some CPU
-on symbols with long paths. Rendering a symbol that is already composed, the
-cache and the zero-allocation observers are unaffected.
+when flash or download size matters more than composing speed.
+
+Measured on one machine against the build without the feature: the
+thumbv7em-none-eabihf firmware image loses 196,584 bytes of `.rodata` and
+gains 1,784 bytes of `.text` (net 194,800 bytes, 18%), and a raw `wasm32`
+module shrinks by 193,318 bytes (17%). The saving is for storage that is not
+compressed: path text is already repetitive, so a gzipped wasm module shrinks
+by only 5%. The cost is one extra allocation per path node, heap equal to the
+decoded path text (median 41 bytes per symbol, 12,591 bytes at most), and
+about 6% to 21% more time to compose a single symbol (about 70% in bulk).
+Rendering an already composed symbol, the cache and the zero-allocation
+observers are unaffected.
 
 # Compatibility
 

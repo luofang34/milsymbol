@@ -3,17 +3,12 @@
 ## Unreleased
 
 - New Cargo feature `compact-paths` (off by default, additive, no public API
-  or auto-trait change). It embeds the 964 distinct path strings of the icon
-  tables in a packed binary form, 109 KB instead of 302 KB, and decodes a path
-  into an owned string when a symbol is composed. On thumbv7em-none-eabihf
-  that removes about 195 KB of flash (`.rodata` 947,456 to 750,872 bytes,
-  `.text` +1.8 KB) and about 193 KB of a wasm32 module (5% after gzip). The
-  cost is one more allocation per path node, as many bytes of heap per
-  symbol as its path text (median 41 B, at most 12.6 KB), and slower
-  composition of symbols with long paths. Output is byte-identical; builds
-  without the feature compile the same code as before. `xtask emit`
-  regenerates both forms and checks every packed path against the library
-  decoder.
+  or auto-trait change): the icon tables embed their paths packed and decode
+  them when a symbol is composed, trading CPU and heap for flash. Output is
+  byte-identical and builds without the feature compile the same code as
+  before. Figures and trade-offs are in the crate documentation ("Compact
+  path data"). `xtask emit` regenerates both forms and checks every packed
+  path against the library decoder.
 
 ## 0.3.0 — 2026-10-01
 
