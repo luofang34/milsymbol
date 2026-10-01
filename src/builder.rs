@@ -1,7 +1,8 @@
 //! Building a symbol request: the SIDC plus options.
 
+use crate::Standard;
 use crate::error::RenderError;
-use crate::options::SymbolOptions;
+use crate::options::{Color, ColorModeChoice, SymbolOptions, TextField};
 use crate::renderer::Renderer;
 use crate::sidc::Sidc;
 use crate::symbol::Symbol;
@@ -46,111 +47,151 @@ impl<'a> From<&'a Sidc> for SidcInput<'a> {
     }
 }
 
-/// The option setters both builders share.
-macro_rules! option_setters {
-    () => {
-        /// Replaces all options.
-        pub fn options(mut self, options: $crate::options::SymbolOptions) -> Self {
-            self.options = options;
-            self
-        }
+/// Where a [`RequestBuilder`] sends its finished request.
+///
+/// Sealed: every setter lives on [`RequestBuilder`], so a way of rendering
+/// cannot have a different set of options or a different meaning of
+/// `strict`.
+pub trait Backend: sealed::Sealed {
+    /// What rendering produces.
+    type Output;
 
-        /// Edits the options in place, for any option without its own setter.
-        pub fn with(mut self, f: impl FnOnce(&mut $crate::options::SymbolOptions)) -> Self {
-            f(&mut self.options);
-            self
-        }
-
-        /// Sets a text amplifier.
-        pub fn text(
-            mut self,
-            field: impl Into<$crate::options::TextField>,
-            value: impl Into<alloc::string::String>,
-        ) -> Self {
-            self.options.set_text(field, value);
-            self
-        }
-
-        /// Sets the symbol size in pixels.
-        pub fn size(mut self, size: f64) -> Self {
-            self.options.style.size = size;
-            self
-        }
-
-        /// Sets the direction of movement in degrees.
-        pub fn direction(mut self, degrees: f64) -> Self {
-            self.options.direction = Some(degrees);
-            self
-        }
-
-        /// Draws a speed leader of this length in pixels instead of the
-        /// direction arrow.
-        pub fn speed_leader(mut self, length: f64) -> Self {
-            self.options.speed_leader = Some(length);
-            self
-        }
-
-        /// Draws this many stacked frames behind the symbol.
-        pub fn stack(mut self, count: f64) -> Self {
-            self.options.stack = Some(count);
-            self
-        }
-
-        /// Draws all text in this font family, including the text inside
-        /// built-in icons (see [`SymbolOptions::set_font`](
-        /// $crate::options::SymbolOptions::set_font)). Without it, icons keep
-        /// their template font, as milsymbol.js draws them.
-        pub fn font(mut self, family: impl Into<$crate::ir::Str>) -> Self {
-            self.options.set_font(family);
-            self
-        }
-
-        /// Draws the symbol under this standard instead of the renderer's.
-        pub fn standard(mut self, standard: $crate::Standard) -> Self {
-            self.options.style.standard = Some(standard);
-            self
-        }
-
-        /// Selects the fill colour mode.
-        pub fn color_mode(mut self, mode: impl Into<$crate::options::ColorModeChoice>) -> Self {
-            self.options.style.color_mode = mode.into();
-            self
-        }
-
-        /// Draws the symbol in one colour.
-        pub fn mono_color(mut self, color: $crate::options::Color) -> Self {
-            self.options.style.mono_color = Some(color);
-            self
-        }
-    };
+    #[doc(hidden)]
+    fn run(
+        &self,
+        sidc: &str,
+        options: SymbolOptions,
+        strict: bool,
+    ) -> Result<Self::Output, RenderError>;
 }
-#[cfg(feature = "std")]
-pub(crate) use option_setters;
 
-/// Builds and renders one symbol; returned by [`Renderer::symbol`].
+mod sealed {
+    pub trait Sealed {}
+    impl Sealed for super::Renderer {}
+    #[cfg(feature = "std")]
+    impl Sealed for &crate::cache::CachedRenderer {}
+}
+
+impl Backend for Renderer {
+    type Output = Symbol;
+
+    fn run(&self, sidc: &str, options: SymbolOptions, strict: bool) -> Result<Symbol, RenderError> {
+        self.render_checked(sidc, options, strict)
+    }
+}
+
+#[cfg(feature = "std")]
+impl Backend for &crate::cache::CachedRenderer {
+    type Output = alloc::sync::Arc<Symbol>;
+
+    fn run(
+        &self,
+        sidc: &str,
+        options: SymbolOptions,
+        strict: bool,
+    ) -> Result<Self::Output, RenderError> {
+        self.render_checked(sidc, &options, strict)
+    }
+}
+
+/// Builds and renders one symbol. [`SymbolBuilder`] (from
+/// [`Renderer::symbol`]) and [`CachedSymbolBuilder`](crate::cache::CachedSymbolBuilder)
+/// (from [`CachedRenderer::symbol`](crate::cache::CachedRenderer::symbol)) are
+/// this one type over different renderers, so they have the same setters and
+/// the same validation.
 ///
 /// The builder holds its own handle on the renderer, so it can be stored and
 /// passed around independently of the renderer it came from.
 #[derive(Debug)]
 #[must_use = "a builder does nothing until it is built or rendered"]
-pub struct SymbolBuilder<'a> {
-    renderer: Renderer,
+pub struct RequestBuilder<'a, B: Backend> {
+    backend: B,
     sidc: SidcInput<'a>,
     options: SymbolOptions,
     strict: bool,
 }
 
-impl<'a> SymbolBuilder<'a> {
-    pub(crate) fn new(renderer: Renderer, sidc: SidcInput<'a>) -> Self {
-        SymbolBuilder {
-            renderer,
+/// Builds and renders one symbol; returned by [`Renderer::symbol`].
+pub type SymbolBuilder<'a> = RequestBuilder<'a, Renderer>;
+
+impl<'a, B: Backend> RequestBuilder<'a, B> {
+    pub(crate) fn new(backend: B, sidc: SidcInput<'a>) -> Self {
+        RequestBuilder {
+            backend,
             sidc,
             options: SymbolOptions::default(),
             strict: false,
         }
     }
 
-    option_setters!();
+    /// Replaces all options.
+    pub fn options(mut self, options: SymbolOptions) -> Self {
+        self.options = options;
+        self
+    }
+
+    /// Edits the options in place, for any option without its own setter.
+    pub fn with(mut self, f: impl FnOnce(&mut SymbolOptions)) -> Self {
+        f(&mut self.options);
+        self
+    }
+
+    /// Sets a text amplifier.
+    pub fn text(mut self, field: impl Into<TextField>, value: impl Into<String>) -> Self {
+        self.options.set_text(field, value);
+        self
+    }
+
+    /// Sets the symbol size in pixels.
+    pub fn size(mut self, size: f64) -> Self {
+        self.options.style.size = size;
+        self
+    }
+
+    /// Sets the direction of movement in degrees.
+    pub fn direction(mut self, degrees: f64) -> Self {
+        self.options.direction = Some(degrees);
+        self
+    }
+
+    /// Draws a speed leader of this length in pixels instead of the
+    /// direction arrow.
+    pub fn speed_leader(mut self, length: f64) -> Self {
+        self.options.speed_leader = Some(length);
+        self
+    }
+
+    /// Draws this many stacked frames behind the symbol.
+    pub fn stack(mut self, count: f64) -> Self {
+        self.options.stack = Some(count);
+        self
+    }
+
+    /// Draws all text in this font family, including the text inside
+    /// built-in icons (see [`SymbolOptions::set_font`]). Without it, icons
+    /// keep their template font, as milsymbol.js draws them.
+    pub fn font(mut self, family: impl Into<crate::ir::Str>) -> Self {
+        self.options.set_font(family);
+        self
+    }
+
+    /// Draws the symbol under this standard instead of the renderer's.
+    pub fn standard(mut self, standard: Standard) -> Self {
+        self.options.style.standard = Some(standard);
+        self
+    }
+
+    /// Selects the fill colour mode.
+    pub fn color_mode(mut self, mode: impl Into<ColorModeChoice>) -> Self {
+        self.options.style.color_mode = mode.into();
+        self
+    }
+
+    /// Draws the symbol in one colour.
+    pub fn mono_color(mut self, color: Color) -> Self {
+        self.options.style.mono_color = Some(color);
+        self
+    }
 
     /// Fails on a SIDC that is malformed or that the renderer does not fully
     /// recognise, instead of drawing a `?` icon.
@@ -170,18 +211,9 @@ impl<'a> SymbolBuilder<'a> {
         self
     }
 
-    /// Renders the symbol.
-    pub fn render(self) -> Result<Symbol, RenderError> {
-        if self.strict {
-            Sidc::parse(self.sidc.as_str()).map_err(RenderError::MalformedSidc)?;
-        }
-        let symbol = self.renderer.render(self.sidc.as_str(), self.options)?;
-        if self.strict {
-            let issues = symbol.sidc_issues();
-            if !issues.is_empty() {
-                return Err(RenderError::UnsupportedSidc { issues });
-            }
-        }
-        Ok(symbol)
+    /// Renders the symbol (or, with a cache, returns the cached one).
+    pub fn render(self) -> Result<B::Output, RenderError> {
+        self.backend
+            .run(self.sidc.as_str(), self.options, self.strict)
     }
 }

@@ -130,7 +130,7 @@ fn put_mode_choice(out: &mut KeyBuf, c: &ColorModeChoice) {
 }
 
 /// Writes the canonical byte encoding of a render request.
-pub(super) fn write_key(k: &mut KeyBuf, sidc: &str, o: &SymbolOptions) {
+pub(super) fn write_key(k: &mut KeyBuf, sidc: &str, o: &SymbolOptions, strict: bool) {
     let SymbolOptions {
         text,
         direction,
@@ -141,6 +141,7 @@ pub(super) fn write_key(k: &mut KeyBuf, sidc: &str, o: &SymbolOptions) {
         signature,
         style,
     } = o;
+    k.push(u8::from(strict));
     put_bytes(k, sidc.as_bytes());
     k.extend_from_slice(&(text.len() as u64).to_le_bytes());
     for (name, value) in text {

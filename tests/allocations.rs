@@ -38,6 +38,8 @@ fn prepared_observers_and_reused_json_buffer_do_not_allocate()
     let options = SymbolOptions::default();
     #[cfg(feature = "std")]
     cached.render(symbol.sidc(), &options)?;
+    #[cfg(feature = "std")]
+    cached.symbol(symbol.sidc()).strict().render()?;
 
     // Reserved up front so recording inside the measured window allocates nothing.
     let mut marks: Vec<(&str, u64)> = Vec::with_capacity(32);
@@ -57,6 +59,8 @@ fn prepared_observers_and_reused_json_buffer_do_not_allocate()
         {
             black_box(cached.render(symbol.sidc(), &options)?);
             mark("cache hit");
+            black_box(cached.symbol(symbol.sidc()).strict().render()?);
+            mark("strict cache hit");
         }
     }
     let stats = dhat::HeapStats::get();

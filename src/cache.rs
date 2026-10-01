@@ -5,7 +5,7 @@
 //! every option, with floats compared by bit pattern (`-0.0` and `0.0` are
 //! different requests).
 
-use crate::builder::{SidcInput, option_setters};
+use crate::builder::{RequestBuilder, SidcInput};
 use crate::error::RenderError;
 use crate::options::SymbolOptions;
 use crate::renderer::Renderer;
@@ -161,26 +161,34 @@ impl CachedRenderer {
     /// # Ok::<(), milsymbol::RenderError>(())
     /// ```
     pub fn symbol<'a>(&'a self, sidc: impl Into<SidcInput<'a>>) -> CachedSymbolBuilder<'a> {
-        CachedSymbolBuilder {
-            cache: self,
-            sidc: sidc.into(),
-            options: SymbolOptions::default(),
-        }
+        RequestBuilder::new(self, sidc.into())
     }
 
     /// Renders `sidc` with `options`, reusing an earlier identical render.
     pub fn render(&self, sidc: &str, options: &SymbolOptions) -> Result<Arc<Symbol>, RenderError> {
+        self.render_checked(sidc, options, false)
+    }
+
+    /// Strict and lenient requests have separate entries, and only a
+    /// successful strict render is stored, so a hit on a strict key is
+    /// already validated and a failure is never cached.
+    pub(crate) fn render_checked(
+        &self,
+        sidc: &str,
+        options: &SymbolOptions,
+        strict: bool,
+    ) -> Result<Arc<Symbol>, RenderError> {
         if self.capacity == 0 {
-            return Ok(Arc::new(self.render_uncached(sidc, options)?));
+            return Ok(Arc::new(self.render_uncached(sidc, options, strict)?));
         }
         let mut key = KeyBuf::default();
-        write_key(&mut key, sidc, options);
+        write_key(&mut key, sidc, options, strict);
         let key = key.as_slice();
         if let Some(hit) = self.entries.lock().ok().and_then(|mut e| e.get(key)) {
             return Ok(hit);
         }
         // Rendering happens outside the lock so concurrent misses do not serialize.
-        let symbol = Arc::new(self.render_uncached(sidc, options)?);
+        let symbol = Arc::new(self.render_uncached(sidc, options, strict)?);
         let inserted = match self.entries.lock() {
             Ok(mut entries) => entries.insert(key, &symbol, self.capacity),
             Err(_) => Ok(None),
@@ -196,30 +204,21 @@ impl CachedRenderer {
         }
     }
 
-    fn render_uncached(&self, sidc: &str, options: &SymbolOptions) -> Result<Symbol, RenderError> {
-        self.renderer.render(sidc, options.clone())
+    fn render_uncached(
+        &self,
+        sidc: &str,
+        options: &SymbolOptions,
+        strict: bool,
+    ) -> Result<Symbol, RenderError> {
+        self.renderer.render_checked(sidc, options.clone(), strict)
     }
 }
 
 /// Builds one symbol for a [`CachedRenderer`]; returned by
-/// [`CachedRenderer::symbol`]. It has the setters of
-/// [`SymbolBuilder`](crate::SymbolBuilder) except `strict`.
-#[derive(Debug)]
-#[must_use = "a builder does nothing until it is built or rendered"]
-pub struct CachedSymbolBuilder<'a> {
-    cache: &'a CachedRenderer,
-    sidc: SidcInput<'a>,
-    options: SymbolOptions,
-}
-
-impl CachedSymbolBuilder<'_> {
-    option_setters!();
-
-    /// Renders the symbol, or returns the cached one.
-    pub fn render(self) -> Result<Arc<Symbol>, RenderError> {
-        self.cache.render(self.sidc.as_str(), &self.options)
-    }
-}
+/// [`CachedRenderer::symbol`]. It is the same builder as
+/// [`SymbolBuilder`](crate::SymbolBuilder), with the same setters, including
+/// `strict`.
+pub type CachedSymbolBuilder<'a> = RequestBuilder<'a, &'a CachedRenderer>;
 
 #[cfg(test)]
 mod tests;

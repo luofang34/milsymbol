@@ -6,7 +6,7 @@ use std::vec::Vec;
 
 fn key(o: &SymbolOptions) -> Vec<u8> {
     let mut k = KeyBuf::default();
-    write_key(&mut k, "10031000001211000000", o);
+    write_key(&mut k, "10031000001211000000", o, false);
     k.as_slice().to_vec()
 }
 

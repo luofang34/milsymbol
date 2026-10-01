@@ -116,15 +116,35 @@ impl Renderer {
     /// ```
     pub fn check_sidc(&self, sidc: &str) -> Result<Sidc, SidcCheckError> {
         let parsed = Sidc::parse(sidc)?;
-        let symbol = self
-            .render(parsed.as_str(), SymbolOptions::default())
-            .map_err(SidcCheckError::Render)?;
-        let issues = symbol.sidc_issues();
-        if issues.is_empty() {
-            Ok(parsed)
-        } else {
-            Err(SidcCheckError::Unsupported { issues })
+        match self.render_checked(parsed.as_str(), SymbolOptions::default(), true) {
+            Ok(_) => Ok(parsed),
+            Err(RenderError::MalformedSidc(e)) => Err(SidcCheckError::Malformed(e)),
+            Err(RenderError::UnsupportedSidc { issues }) => {
+                Err(SidcCheckError::Unsupported { issues })
+            }
+            Err(e) => Err(SidcCheckError::Render(e)),
         }
+    }
+
+    /// The one place `strict` is defined: every builder, cached or not, ends
+    /// here.
+    pub(crate) fn render_checked(
+        &self,
+        sidc: &str,
+        options: SymbolOptions,
+        strict: bool,
+    ) -> Result<Symbol, RenderError> {
+        if strict {
+            Sidc::parse(sidc).map_err(RenderError::MalformedSidc)?;
+        }
+        let symbol = self.render(sidc, options)?;
+        if strict {
+            let issues = symbol.sidc_issues();
+            if !issues.is_empty() {
+                return Err(RenderError::UnsupportedSidc { issues });
+            }
+        }
+        Ok(symbol)
     }
 
     /// Renders a symbol from complete options; a shortcut for
