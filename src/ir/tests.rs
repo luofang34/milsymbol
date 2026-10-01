@@ -221,6 +221,23 @@ mod compact {
         Ok(())
     }
 
+    #[test]
+    fn raw_text_and_raw_number_entries_decode_verbatim() -> Result<(), Box<dyn core::error::Error>>
+    {
+        let text = "M0,0 L1e1,2.50 z";
+        let mut raw = alloc::vec![0x80];
+        raw.extend(text.bytes());
+        let path = PathData::from_packed(&raw);
+        assert_eq!(path.source(), text);
+        assert_eq!(path.segments()?.len(), 3);
+        // Header 0 (no decimals); `m`, then a raw number `-1e-5`, then `2`.
+        let packed = [0x00, 0xC1, 0xD5, 5, b'-', b'1', b'e', b'-', b'5', 4];
+        let path = PathData::from_packed(&packed);
+        assert_eq!(path.source(), "m -1e-5,2");
+        assert_eq!(path, PathData::new("m -1e-5,2"));
+        Ok(())
+    }
+
     proptest::proptest! {
         #[test]
         fn decoding_arbitrary_bytes_never_panics(bytes in proptest::collection::vec(0u8..=255, 0..64)) {

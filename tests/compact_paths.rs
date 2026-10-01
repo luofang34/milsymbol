@@ -52,3 +52,24 @@ fn every_builtin_icon_renders_identically_to_the_plain_path_build() {
     assert!(paths > 3000, "{paths}");
     assert_eq!(digest, EXPECTED_DIGEST, "digest {digest:#018x}");
 }
+
+fn send_sync<T: Send + Sync>() {}
+
+fn unwind_safe<T: std::panic::UnwindSafe + std::panic::RefUnwindSafe>() {}
+
+#[test]
+fn public_types_keep_their_auto_traits() {
+    send_sync::<milsymbol::Renderer>();
+    send_sync::<milsymbol::Symbol>();
+    unwind_safe::<milsymbol::Symbol>();
+    for_path_types();
+}
+
+fn for_path_types() {
+    send_sync::<milsymbol::ir::PathData>();
+    unwind_safe::<milsymbol::ir::PathData>();
+    send_sync::<milsymbol::ir::PathNode>();
+    unwind_safe::<milsymbol::ir::PathNode>();
+    send_sync::<milsymbol::ir::Node>();
+    unwind_safe::<milsymbol::ir::Node>();
+}
