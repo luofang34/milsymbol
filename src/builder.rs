@@ -48,30 +48,35 @@ impl<'a> From<&'a Sidc> for SidcInput<'a> {
 
 /// Where a [`RequestBuilder`] sends its finished request.
 ///
-/// Sealed: every setter lives on [`RequestBuilder`], so a way of rendering
-/// cannot have a different set of options or a different meaning of
-/// `strict`.
-pub trait Backend: sealed::Sealed {
-    /// What rendering produces.
-    type Output;
-
-    #[doc(hidden)]
-    fn run(
-        &self,
-        sidc: &str,
-        options: SymbolOptions,
-        strict: bool,
-    ) -> Result<Self::Output, RenderError>;
-}
+/// Sealed and opaque: every setter lives on [`RequestBuilder`], so a way of
+/// rendering cannot have a different set of options or a different meaning of
+/// `strict`, and nothing can be called through this trait.
+///
+/// ```compile_fail
+/// use milsymbol::{Backend, Renderer};
+///
+/// Renderer::default().run("10031000001211000000", milsymbol::options::SymbolOptions::default(), false);
+/// ```
+pub trait Backend: sealed::Sealed {}
 
 mod sealed {
-    pub trait Sealed {}
-    impl Sealed for super::Renderer {}
-    #[cfg(feature = "std")]
-    impl Sealed for &crate::cache::CachedRenderer {}
+    use crate::error::RenderError;
+    use crate::options::SymbolOptions;
+
+    pub trait Sealed {
+        /// What rendering produces.
+        type Output;
+
+        fn run(
+            &self,
+            sidc: &str,
+            options: SymbolOptions,
+            strict: bool,
+        ) -> Result<Self::Output, RenderError>;
+    }
 }
 
-impl Backend for Renderer {
+impl sealed::Sealed for Renderer {
     type Output = Symbol;
 
     fn run(&self, sidc: &str, options: SymbolOptions, strict: bool) -> Result<Symbol, RenderError> {
@@ -79,8 +84,10 @@ impl Backend for Renderer {
     }
 }
 
+impl Backend for Renderer {}
+
 #[cfg(feature = "std")]
-impl Backend for &crate::cache::CachedRenderer {
+impl sealed::Sealed for &crate::cache::CachedRenderer {
     type Output = alloc::sync::Arc<Symbol>;
 
     fn run(
@@ -92,6 +99,9 @@ impl Backend for &crate::cache::CachedRenderer {
         self.render_checked(sidc, &options, strict)
     }
 }
+
+#[cfg(feature = "std")]
+impl Backend for &crate::cache::CachedRenderer {}
 
 /// The option setters of [`RequestBuilder`]; the one place they are listed.
 macro_rules! option_setters {
@@ -223,8 +233,7 @@ impl<'a, B: Backend> RequestBuilder<'a, B> {
     }
 
     /// Renders the symbol (or, with a cache, returns the cached one).
-    pub fn render(self) -> Result<B::Output, RenderError> {
-        self.backend
-            .run(self.sidc.as_str(), self.options, self.strict)
+    pub fn render(self) -> Result<<B as sealed::Sealed>::Output, RenderError> {
+        sealed::Sealed::run(&self.backend, self.sidc.as_str(), self.options, self.strict)
     }
 }
