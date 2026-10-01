@@ -167,6 +167,15 @@ impl SymbolOptions {
         self.text.get(name).map_or("", String::as_str)
     }
 
+    /// Draws all text in `family`: information fields and the text inside
+    /// built-in icons. The icons keep their template font unless
+    /// [`Style::icon_text_uses_font_family`] is set, which this does.
+    pub fn set_font(&mut self, family: impl Into<Str>) -> &mut Self {
+        self.style.font_family = family.into();
+        self.style.icon_text_uses_font_family = true;
+        self
+    }
+
     /// Sets a text field.
     pub fn set_text(&mut self, field: impl Into<TextField>, value: impl Into<String>) -> &mut Self {
         self.text

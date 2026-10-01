@@ -96,6 +96,15 @@ macro_rules! option_setters {
             self
         }
 
+        /// Draws all text in this font family, including the text inside
+        /// built-in icons (see [`SymbolOptions::set_font`](
+        /// $crate::options::SymbolOptions::set_font)). Without it, icons keep
+        /// their template font, as milsymbol.js draws them.
+        pub fn font(mut self, family: impl Into<$crate::ir::Str>) -> Self {
+            self.options.set_font(family);
+            self
+        }
+
         /// Draws the symbol under this standard instead of the renderer's.
         pub fn standard(mut self, standard: $crate::Standard) -> Self {
             self.options.style.standard = Some(standard);
