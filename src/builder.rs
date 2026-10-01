@@ -173,8 +173,8 @@ macro_rules! option_setters {
 }
 
 /// Builds and renders one symbol. [`SymbolBuilder`] (from
-/// [`Renderer::symbol`]) and [`CachedSymbolBuilder`](crate::cache::CachedSymbolBuilder)
-/// (from [`CachedRenderer::symbol`](crate::cache::CachedRenderer::symbol)) are
+/// [`Renderer::symbol`]) and `CachedSymbolBuilder`
+/// (from `CachedRenderer::symbol`) are
 /// this one type over different renderers, so they have the same setters and
 /// the same validation.
 ///
