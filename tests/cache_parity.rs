@@ -125,6 +125,7 @@ proptest! {
         size in prop::sample::select(vec![20.0, 35.0, 100.0]),
         text in "[ -~]{0,6}",
         icon in any::<bool>(),
+        font in prop::sample::select(vec!["", "Courier New"]),
         capacity in prop::sample::select(vec![0usize, 1, 16]),
     ) {
         let renderer = if extended {
@@ -136,6 +137,10 @@ proptest! {
         for _ in 0..2 {
             let mut plain = renderer.symbol(&sidc).with(|o| o.style.icon = icon).size(size).text(TextField::UniqueDesignation, text.clone());
             let mut cached = cache.symbol(&sidc).with(|o| o.style.icon = icon).size(size).text(TextField::UniqueDesignation, text.clone());
+            if !font.is_empty() {
+                plain = plain.font(font);
+                cached = cached.font(font);
+            }
             if strict {
                 plain = plain.strict();
                 cached = cached.strict();
@@ -150,4 +155,41 @@ proptest! {
             }
         }
     }
+}
+
+#[test]
+fn concurrent_strict_and_lenient_requests_match_uncached() -> Result<(), Box<dyn std::error::Error>>
+{
+    let renderer = Renderer::builder().icons(Extra).build();
+    let cache = Arc::new(CachedRenderer::new(renderer.clone(), 3));
+    let sidcs = [INFANTRY, MALFORMED, NO_ENTITY, EXTENDED];
+    let handles: Vec<_> = (0..8usize)
+        .map(|t| {
+            let (cache, renderer) = (Arc::clone(&cache), renderer.clone());
+            std::thread::spawn(move || -> Result<(), String> {
+                for i in 0..200usize {
+                    let sidc = sidcs
+                        .get((t + i) % sidcs.len())
+                        .copied()
+                        .unwrap_or(INFANTRY);
+                    let strict = (t + i / 2) % 2 == 0;
+                    let (mut plain, mut cached) = (renderer.symbol(sidc), cache.symbol(sidc));
+                    if strict {
+                        (plain, cached) = (plain.strict(), cached.strict());
+                    }
+                    match (plain.render(), cached.render()) {
+                        (Ok(a), Ok(b)) if a.to_svg() == b.to_svg() => {}
+                        (Err(a), Err(b)) if a.to_string() == b.to_string() => {}
+                        _ => return Err(format!("{sidc} strict={strict} differs")),
+                    }
+                }
+                Ok(())
+            })
+        })
+        .collect();
+    for h in handles {
+        h.join().map_err(|_| "thread panicked")??;
+    }
+    assert!(cache.len() <= 3);
+    Ok(())
 }

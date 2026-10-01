@@ -24,6 +24,10 @@ use key::{KeyBuf, write_key};
 /// approximation of least-recently-used). A capacity of zero disables
 /// caching.
 ///
+/// A strict request ([`CachedSymbolBuilder::strict`](RequestBuilder::strict))
+/// and a lenient one for the same SIDC and options occupy two cache entries,
+/// and a strict request that fails stores nothing.
+///
 /// ```
 /// use milsymbol::{Renderer, cache::CachedRenderer, options::SymbolOptions};
 /// use std::sync::Arc;
