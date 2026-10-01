@@ -63,6 +63,10 @@ name = "render"
 harness = false
 required-features = ["std"]
 
+[[test]]
+name = "allocations"
+harness = false
+
 [[example]]
 name = "footprint"
 required-features = ["std"]

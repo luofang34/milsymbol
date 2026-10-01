@@ -1,5 +1,9 @@
-//! Allocation guards for rendering, observers and buffer reuse. This integration test
-//! has its own process so other tests cannot contaminate allocator counts.
+//! Allocation guards for rendering, observers and buffer reuse.
+//!
+//! The target sets `harness = false`: the allocator counts every thread, and
+//! libtest's main thread allocates bookkeeping while the test thread runs, so
+//! under the harness a measured window can pick up blocks that are not ours.
+//! Without it this process has one thread and the counts are exact.
 
 use milsymbol::compat;
 use milsymbol::domain::Affiliation;
@@ -13,8 +17,7 @@ use std::hint::black_box;
 #[global_allocator]
 static ALLOC: dhat::Alloc = dhat::Alloc;
 
-#[test]
-fn allocation_budgets() -> Result<(), Box<dyn std::error::Error>> {
+fn main() -> Result<(), Box<dyn std::error::Error>> {
     prepared_observers_and_reused_json_buffer_do_not_allocate()?;
     unused_label_definitions_do_not_add_allocations()?;
     direction_rendering_stays_within_allocation_budgets()?;
