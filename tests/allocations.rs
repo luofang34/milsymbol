@@ -55,6 +55,10 @@ fn prepared_observers_and_reused_json_buffer_do_not_allocate()
     }
     let stats = dhat::HeapStats::get();
     drop(profiler);
+    assert_eq!(
+        stats.total_blocks, 0,
+        "DIAG cumulative blocks after [json, metadata, colors+cache] x4: {marks:?}"
+    );
     assert_eq!(buffer, expected);
     Ok(())
 }
