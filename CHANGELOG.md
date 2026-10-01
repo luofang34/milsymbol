@@ -1,5 +1,37 @@
 # Changelog
 
+## Unreleased
+
+Breaking changes for 0.3.
+
+- Cached and uncached builders are one type. `SymbolBuilder<'a>` is now
+  `RequestBuilder<'a, Renderer>` and `CachedSymbolBuilder<'a>` is
+  `RequestBuilder<'a, &'a CachedRenderer>` (new, with the sealed `Backend`
+  trait), so every setter, `font()` included, exists on both.
+  `CachedSymbolBuilder::strict()` is new and behaves as
+  `SymbolBuilder::strict()`: same errors, same checks, extension icons
+  included. Strict and lenient requests have separate cache entries and a
+  strict failure is never cached; hits still allocate nothing. Migration:
+  code that names `SymbolBuilder`/`CachedSymbolBuilder` as types keeps
+  compiling; code that was generic over the two, or matched on them as
+  structs, must go through `RequestBuilder`. `cargo semver-checks` reports
+  this as `struct_missing` for both names; it is the only failure it finds.
+- `Symbol::validity()` now judges the SIDC alone (it is the old
+  `sidc_validity()`): the code must parse, every part must be recognised and
+  the icon must exist whether or not it is drawn. Text containing `null` no
+  longer makes a symbol invalid, and `ValidityIssue::MalformedSidc` is
+  reported by it. The verdict does not depend on options; the issue list can
+  differ with `style.icon`. `cargo semver-checks` does not model this change
+  of meaning. Migration: for milsymbol.js `isValid()` use
+  `compat::validity(&symbol)` or `compat::is_valid(&symbol)`, which keep the
+  `null` rule and the hidden-icon rule and are what the differential corpus
+  uses.
+- `Symbol::sidc_validity()` is deprecated: it is identical to `validity()`.
+- `compat::validity` is new; `compat::is_valid` now implements upstream's
+  verdict itself instead of calling `Symbol::validity`.
+- `Renderer::check_sidc` shares the strict implementation with `strict()`;
+  its results are unchanged.
+
 ## 0.2.1 — 2026-10-01
 
 Additive release; SVG output is unchanged.

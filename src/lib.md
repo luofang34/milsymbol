@@ -112,14 +112,25 @@ assert!(matches!(
 // A rendered symbol describes itself with typed values.
 let symbol = renderer.symbol("10031000161211000000").render()?;
 assert_eq!(symbol.metadata().echelon, Some(Echelon::BattalionSquadron));
-assert!(symbol.sidc_validity().is_valid());
+assert!(symbol.validity().is_valid());
 # Ok::<(), Box<dyn std::error::Error>>(())
 ```
 
-[`Symbol::validity`] lists every [`ValidityIssue`] as milsymbol.js `isValid()`
-judges it, quirks included; [`Symbol::sidc_validity`] judges the code alone.
-[`SymbolBuilder::strict`] makes rendering fail instead of drawing a question
-mark.
+Which call to use:
+
+| You want to | Call |
+| --- | --- |
+| Check that text is a well-formed SIDC, without a renderer | [`Sidc::parse`](sidc::Sidc::parse) |
+| Check that a SIDC is well formed and that your renderer, extensions included, can draw all of it | [`Renderer::check_sidc`] |
+| Draw, but fail on a malformed or unrecognised SIDC instead of drawing `?` | [`SymbolBuilder::strict`], on the cached builder too |
+| Draw anything and inspect the verdict afterwards | [`Symbol::validity`] |
+| Compare with milsymbol.js `isValid()`, quirks included | [`compat::validity`] / [`compat::is_valid`] |
+
+[`Symbol::validity`] lists every [`ValidityIssue`] for the SIDC alone: it
+must be well formed and fully recognised, whether or not the icon is drawn.
+`strict()` and `check_sidc` apply the same test before returning a symbol.
+[`compat::validity`] reproduces upstream, including its rule that text
+containing `null` makes a symbol invalid.
 
 # Editing SIDCs
 
@@ -259,7 +270,9 @@ A built renderer never changes, and cloning it shares its configuration.
 
 With the default `std` feature, `cache::CachedRenderer` memoizes rendered
 symbols by SIDC and options and shares them as `Arc<Symbol>`; a hit
-allocates nothing.
+allocates nothing. Its builder is the same type as [`Renderer::symbol`]'s,
+so it has every setter and `strict()`. A strict request is cached apart from
+a lenient one, and a strict failure is never cached.
 
 # `no_std`
 

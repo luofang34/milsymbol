@@ -81,14 +81,14 @@ let svg: String = symbol.to_svg();
 let anchor = symbol.anchor();   // pixel offset of the map position (frame centre or HQ staff foot)
 let size = symbol.size();       // width and height in pixels
 let info = symbol.metadata();   // typed: affiliation, dimension, status, echelon, mobility, …
-let ok = symbol.sidc_validity().is_valid(); // false for unknown codes, which still render with a "?" icon
+let ok = symbol.validity().is_valid(); // false for unknown codes, which still render with a "?" icon
 # Ok::<(), milsymbol::RenderError>(())
 ```
 
-`symbol.validity().issues` lists why a symbol is not valid (unknown
-affiliation, dimension, icon or amplifier code, …) as milsymbol.js's
-`isValid()` judges it, which also rejects any text containing `null`;
-`sidc_validity()` judges the code alone.
+`symbol.validity().issues` lists why a symbol is not valid (malformed SIDC,
+unknown affiliation, dimension, icon or amplifier code, …); it judges the
+code alone. `compat::validity` is milsymbol.js's `isValid()`, which also
+rejects any text containing `null`.
 
 To check a SIDC without rendering it, parse it strictly. `Sidc::parse`
 checks the code against the standards' tables; `Renderer::check_sidc` also
@@ -275,7 +275,7 @@ global calls map to builder methods — `ms.addSymbolPart` →
 `symbol_part`, `ms.addIcons` → `icons`, `ms.setColorMode` → `color_mode`,
 `ms.setStandard`/`setDashArrays`/`setHqStaffLength` →
 `standard`/`dash_arrays`/`hq_staff_length`, `ms.showOctagon` → `octagon`.
-`compat::is_valid` is `isValid()` and `compat::js_metadata` is
+`compat::is_valid` is `isValid()` (the quirks `Symbol::validity` leaves out) and `compat::js_metadata` is
 `symbol.metadata`.
 
 ## Development
