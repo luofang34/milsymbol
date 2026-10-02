@@ -14,7 +14,21 @@ only verify authentication and never publish.
    `cargo semver-checks --release-type minor` locally (the default run skips
    every check on a 0.x major bump, so it would verify nothing).
    A breaking change needs a new minor version while the crate is 0.x.
-3. Make sure CI on `main` is green (it includes `cargo publish --dry-run`).
+   `cargo semver-checks` does not see a changed return type or an auto-trait
+   change, so also diff the public item signatures against the previous tag
+   (rustdoc JSON) by hand.
+3. Performance gate, against the previous release tag with default features:
+   build both and a control (the tag plus one unused `#[inline(never)] pub
+   fn`), run `cargo bench --bench render -- --warm-up-time 1
+   --measurement-time 2 --sample-size 40 --output-format bencher` for each in
+   at least 8 interleaved rounds, and compare the minimum and median of every
+   benchmark, `bulk/drawing_all_number_icons_1431` included. A benchmark
+   passes when the release is inside the control's own spread in both
+   directions; anything outside needs a diagnosis before the release. The
+   machine shows 1% to 3% code-layout noise, so one run of one build proves
+   nothing. Run nothing else on the machine, and discard rounds whose
+   reported variance is large.
+4. Make sure CI on `main` is green (it includes `cargo publish --dry-run`).
    The release job refuses a tag whose commit is not on `main` or has no
    successful CI run; after CI passes, re-run the failed release job.
 

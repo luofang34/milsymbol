@@ -92,6 +92,19 @@ fn bulk(c: &mut Criterion) {
             bytes
         })
     });
+    g.bench_function(format!("drawing_all_number_icons_{}", sidcs.len()), |b| {
+        let symbols: Vec<_> = sidcs
+            .iter()
+            .filter_map(|s| r.render(s, SymbolOptions::default()).ok())
+            .collect();
+        b.iter(|| {
+            let mut items = 0usize;
+            for sym in &symbols {
+                items += sym.drawing().items.len();
+            }
+            items
+        })
+    });
     g.bench_function(
         format!("all_number_icons_{}_reused_buffer", sidcs.len()),
         |b| {
