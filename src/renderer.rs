@@ -148,7 +148,10 @@ impl Renderer {
     }
 
     /// Renders a symbol from complete options; a shortcut for
-    /// [`Renderer::symbol`] with [`SymbolBuilder::options`].
+    /// [`Renderer::symbol`] with [`SymbolBuilder::options`]. The options are
+    /// taken by value because composing adjusts them; the cache's
+    /// `CachedRenderer::render` borrows them instead, since it builds its key
+    /// from a borrow and a hit needs no copy.
     pub fn render(&self, sidc: &str, mut options: SymbolOptions) -> Result<Symbol, RenderError> {
         let c = compose::compose(sidc, &mut options, &self.inner.config, &self.inner.registry)?;
         Ok(Symbol::from_composition(c, options))

@@ -59,7 +59,7 @@ This is figure 13 of MIL-STD-2525C, rendered by this crate.
 
 ```toml
 [dependencies]
-milsymbol = "0.2"
+milsymbol = "0.4"
 ```
 
 Requires Rust 1.85 or later.

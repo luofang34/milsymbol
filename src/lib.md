@@ -282,6 +282,15 @@ adds the cache. It builds for `wasm32` and bare-metal targets; the only
 dependency is `libm`. No JavaScript runs at build or run time: the upstream
 icon tables are generated Rust data, and every composition rule is ported.
 
+# Serialization
+
+With the `serde` feature, [`options::SymbolOptions`], [`options::Style`]
+and [`RendererConfig`] implement `Serialize` and `Deserialize`. Their
+serialized shapes are stable for the 0.4 series. Fields added later are
+tolerated on input, because these three types deserialize missing fields to
+their defaults (`serde(default)`); output from this version keeps
+deserializing. [`Metadata`] is `Serialize` only.
+
 # Compact path data
 
 The icon tables embed their path strings as plain text. The `compact-paths`
