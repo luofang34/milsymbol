@@ -67,13 +67,27 @@ pub enum Segment {
 /// renderers consume; it borrows the cached segments when present (see
 /// [`PathData::parse`], [`PathData::from_segments`] and
 /// [`parse_paths`](crate::ir::parse_paths)) and parses otherwise.
+///
+/// With the `compact-paths` feature a built-in icon's path stays in its packed
+/// form and its text is produced on demand: [`PathData::source`] then builds a
+/// new string on every call, while [`PathData::write_source`] and
+/// [`PathData::segments`] allocate nothing beyond their result. Cloning never
+/// allocates for the path.
 #[derive(Debug, Clone)]
 pub struct PathData {
-    source: Str,
+    source: Source,
     parsed: Option<Vec<Segment>>,
 }
 
+/// Where the path-data text lives: always text, unless `compact-paths` adds
+/// the packed form.
+#[cfg(not(feature = "compact-paths"))]
+type Source = Str;
+#[cfg(feature = "compact-paths")]
+use compact::Source;
+
 /// Two paths are equal when their path data is equal.
+#[cfg(not(feature = "compact-paths"))]
 impl PartialEq for PathData {
     fn eq(&self, other: &Self) -> bool {
         self.source == other.source
@@ -103,20 +117,9 @@ impl PathData {
     /// Wraps SVG path-data text (parsed on demand).
     pub fn new(d: impl Into<Str>) -> Self {
         PathData {
-            source: d.into(),
+            source: Source::from(d.into()),
             parsed: None,
         }
-    }
-
-    /// A path from its packed form in the generated tables, decoded into an
-    /// exactly sized string.
-    #[cfg(feature = "compact-paths")]
-    pub(crate) fn from_packed(bytes: &[u8]) -> Self {
-        let mut size = Length(0);
-        codec::write_text(bytes, &mut size).ok();
-        let mut d = alloc::string::String::with_capacity(size.0);
-        codec::write_text(bytes, &mut d).ok();
-        PathData::new(d)
     }
 
     /// Wraps and parses SVG path-data text, caching the segments.
@@ -135,7 +138,7 @@ impl PathData {
             write_segment(&mut d, seg);
         }
         PathData {
-            source: Str::Owned(d),
+            source: Source::from(Str::Owned(d)),
             parsed: Some(segments),
         }
     }
@@ -151,14 +154,44 @@ impl PathData {
     /// unchanged.
     pub fn cache_segments(&mut self) -> Result<(), PathParseError> {
         if self.parsed.is_none() {
-            self.parsed = Some(Parser::new(&self.source).run()?);
+            self.parsed = Some(self.parse_source()?);
         }
         Ok(())
     }
 
     /// The path-data text as upstream would serialize it.
-    pub fn source(&self) -> &str {
-        &self.source
+    ///
+    /// Always [`Cow::Borrowed`] in the default build. With the
+    /// `compact-paths` feature a path stored packed decodes into a new
+    /// string on every call; writers should use [`PathData::write_source`],
+    /// which never allocates. Call [`Cow::into_owned`] for a `String`:
+    /// `to_owned()` on a `Cow` is another `Cow`.
+    ///
+    /// ```
+    /// use milsymbol::ir::PathData;
+    ///
+    /// let d = PathData::new("M0,0 L10,10");
+    /// let text: String = d.source().into_owned();
+    /// assert_eq!(text, "M0,0 L10,10");
+    /// ```
+    #[must_use = "with `compact-paths` this allocates; use `write_source` to stream the text"]
+    pub fn source(&self) -> Cow<'_, str> {
+        self.source_cow()
+    }
+
+    /// Writes the path-data text of [`PathData::source`] to `out`. It never
+    /// allocates, whatever the feature, so it is the form to use in writers.
+    ///
+    /// ```
+    /// use milsymbol::ir::PathData;
+    ///
+    /// let mut out = String::new();
+    /// PathData::new("M0,0 L10,10").write_source(&mut out)?;
+    /// assert_eq!(out, "M0,0 L10,10");
+    /// # Ok::<(), std::fmt::Error>(())
+    /// ```
+    pub fn write_source<W: fmt::Write>(&self, out: &mut W) -> fmt::Result {
+        self.write_text(out)
     }
 
     /// The path as absolute segments (`H`/`V` become lines, smooth curves get
@@ -176,7 +209,7 @@ impl PathData {
     pub fn segments(&self) -> Result<Cow<'_, [Segment]>, PathParseError> {
         match &self.parsed {
             Some(p) => Ok(Cow::Borrowed(p)),
-            None => Parser::new(&self.source).run().map(Cow::Owned),
+            None => self.parse_source().map(Cow::Owned),
         }
     }
 }
@@ -231,19 +264,55 @@ fn write_segment(d: &mut alloc::string::String, seg: &Segment) {
     }
 }
 
-/// A sink that only counts the bytes written.
-#[cfg(feature = "compact-paths")]
-struct Length(usize);
+/// The text accessors of the default build, where every path is text.
+#[cfg(not(feature = "compact-paths"))]
+impl PathData {
+    #[inline(always)]
+    fn source_cow(&self) -> Cow<'_, str> {
+        Cow::Borrowed(&self.source)
+    }
 
-#[cfg(feature = "compact-paths")]
-impl fmt::Write for Length {
-    fn write_str(&mut self, s: &str) -> fmt::Result {
-        self.0 = self.0.wrapping_add(s.len());
-        Ok(())
+    #[inline(always)]
+    fn write_text<W: fmt::Write>(&self, out: &mut W) -> fmt::Result {
+        out.write_str(&self.source)
+    }
+
+    #[inline(always)]
+    fn parse_source(&self) -> Result<Vec<Segment>, PathParseError> {
+        Parser::new(&self.source).run()
+    }
+
+    /// The path-data text.
+    #[inline(always)]
+    pub(crate) fn text(&self) -> &str {
+        &self.source
+    }
+
+    /// Whether the text contains `null`, which marks an invalid upstream
+    /// symbol.
+    #[inline(always)]
+    pub(crate) fn contains_null(&self) -> bool {
+        self.source.contains("null")
     }
 }
 
 #[cfg(feature = "compact-paths")]
 pub(crate) mod codec;
+#[cfg(feature = "compact-paths")]
+mod compact;
+#[cfg(feature = "compact-paths")]
+pub(crate) mod packed;
+#[cfg_attr(feature = "compact-paths", path = "path/parse_generic.rs")]
 mod parse;
+/// The original text parser, to check the shared grammar against.
+#[cfg(all(test, feature = "compact-paths"))]
+#[path = "path/parse.rs"]
+mod parse_reference;
+#[cfg(not(feature = "compact-paths"))]
 use parse::Parser;
+
+/// Segments of `text` from the text-only parser.
+#[cfg(all(test, feature = "compact-paths"))]
+pub(crate) fn reference_segments(text: &str) -> Result<Vec<Segment>, PathParseError> {
+    parse_reference::Parser::new(text).run()
+}

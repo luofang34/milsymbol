@@ -10,6 +10,18 @@ use crate::options::{ColorChoice, ColorModeChoice, SymbolOptions};
 fn s(v: &str) -> Json<'_> {
     Json::Str(v)
 }
+#[cfg(not(feature = "compact-paths"))]
+#[inline(always)]
+fn clip_value(d: &crate::ir::PathData) -> Json<'_> {
+    s(d.text())
+}
+
+/// A packed path's text streams unescaped: see `PathData::as_text`.
+#[cfg(feature = "compact-paths")]
+fn clip_value(d: &crate::ir::PathData) -> Json<'_> {
+    Json::Path(d)
+}
+
 fn num(n: &Num) -> Json<'_> {
     match n {
         Num::Number(v) => Json::Num(*v),
@@ -64,7 +76,10 @@ pub(super) fn node<'a>(n: &'a Node, o: &mut Object<'a, 24>) {
             o.put("type", s("svg")).put("svg", s(svg));
         }
         Node::Path(p) => {
-            o.put("type", s("path")).put("d", s(p.d.source()));
+            #[cfg(not(feature = "compact-paths"))]
+            o.put("type", s("path")).put("d", s(p.d.text()));
+            #[cfg(feature = "compact-paths")]
+            o.put("type", s("path")).put("d", Json::Path(&p.d));
         }
         Node::Circle(c) => {
             o.put("type", s("circle"))
@@ -103,7 +118,7 @@ pub(super) fn node<'a>(n: &'a Node, o: &mut Object<'a, 24>) {
         }
         Node::Clip(c) => {
             o.put("type", s("clip"))
-                .put("d", s(c.d.source()))
+                .put("d", clip_value(&c.d))
                 .put("draw", Json::Instructions(&c.draw));
             o.opt("clipId", c.clip_id.as_deref().map(s));
         }

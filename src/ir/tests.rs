@@ -1,5 +1,4 @@
 use super::*;
-use alloc::borrow::ToOwned;
 use alloc::vec;
 
 fn p(x: f64, y: f64) -> Point {
@@ -113,7 +112,7 @@ fn from_segments_round_trips_and_borrows() {
         "M25,50 L175.5,50 Q1,2 3,4 C1,2 3,4 -5,6.25 A5,5 0 1 0 10,0 Z"
     );
     assert!(matches!(path.segments(), Ok(alloc::borrow::Cow::Borrowed(s)) if s == segs.as_slice()));
-    let reparsed = PathData::new(path.source().to_owned());
+    let reparsed = PathData::new(path.source().into_owned());
     assert_eq!(reparsed.segments().ok().as_deref(), Some(segs.as_slice()));
 }
 
@@ -190,59 +189,4 @@ fn every_generated_path_parses() {
 }
 
 #[cfg(feature = "compact-paths")]
-mod compact {
-    use super::*;
-    use crate::generated::pool::{PATH_BYTES, PATH_OFFSETS, PATHS};
-    use crate::template::path_bytes;
-    use alloc::boxed::Box;
-    use alloc::format;
-    use alloc::string::String;
-
-    #[test]
-    fn offsets_cover_the_blob() {
-        assert_eq!(PATH_OFFSETS.len(), PATHS.len() + 1);
-        assert_eq!(
-            PATH_OFFSETS.last().map(|&o| o as usize),
-            Some(PATH_BYTES.len())
-        );
-        assert!(PATH_OFFSETS.is_sorted());
-    }
-
-    #[test]
-    fn every_packed_path_decodes_to_its_text() -> Result<(), Box<dyn core::error::Error>> {
-        for (i, d) in PATHS.iter().enumerate() {
-            let bytes = path_bytes(i as u32).ok_or("missing path")?;
-            let packed = PathData::from_packed(bytes);
-            assert_eq!(packed.source(), *d, "path {i}");
-            let text = PathData::new(*d);
-            let (a, b) = (packed.segments()?, text.segments()?);
-            assert_eq!(format!("{:?}", &*a), format!("{:?}", &*b), "path {i}");
-        }
-        Ok(())
-    }
-
-    #[test]
-    fn raw_text_and_raw_number_entries_decode_verbatim() -> Result<(), Box<dyn core::error::Error>>
-    {
-        let text = "M0,0 L1e1,2.50 z";
-        let mut raw = alloc::vec![0x80];
-        raw.extend(text.bytes());
-        let path = PathData::from_packed(&raw);
-        assert_eq!(path.source(), text);
-        assert_eq!(path.segments()?.len(), 3);
-        // Header 0 (no decimals); `m`, then a raw number `-1e-5`, then `2`.
-        let packed = [0x00, 0xC1, 0xD5, 5, b'-', b'1', b'e', b'-', b'5', 4];
-        let path = PathData::from_packed(&packed);
-        assert_eq!(path.source(), "m -1e-5,2");
-        assert_eq!(path, PathData::new("m -1e-5,2"));
-        Ok(())
-    }
-
-    proptest::proptest! {
-        #[test]
-        fn decoding_arbitrary_bytes_never_panics(bytes in proptest::collection::vec(0u8..=255, 0..64)) {
-            let mut out = String::new();
-            super::super::path::codec::write_text(&bytes, &mut out).ok();
-        }
-    }
-}
+mod compact;

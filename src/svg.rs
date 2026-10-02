@@ -1,6 +1,8 @@
 //! SVG serialization (upstream `assvg.js`), including its escaping and
 //! sanitization of attribute values and trusted fragments.
 
+#[cfg(feature = "compact-paths")]
+use crate::ir::PathData;
 use crate::ir::{Node, Num, Paint, Style, TextNode};
 use crate::js::write_number;
 use alloc::string::String;
@@ -80,6 +82,22 @@ fn str_attr(out: &mut String, name: &str, v: &str) {
     out.push_str("=\"");
     escape_attr(out, v);
     out.push('"');
+}
+
+/// ` name="path data"`. A packed path is streamed unescaped: see
+/// `PathData::as_text`.
+#[cfg(feature = "compact-paths")]
+fn path_attr(out: &mut String, name: &str, d: &PathData) {
+    match d.as_text() {
+        Some(text) => str_attr(out, name, text),
+        None => {
+            out.push(' ');
+            out.push_str(name);
+            out.push_str("=\"");
+            d.write_source(out).ok();
+            out.push('"');
+        }
+    }
 }
 
 /// ` transform="name(a,b,…)"`, non-finite arguments replaced by `fallback`.
@@ -173,6 +191,16 @@ impl Writer<'_> {
         self.out.push_str(" /></clipPath>");
     }
 
+    #[cfg(feature = "compact-paths")]
+    fn clip_def_path(&mut self, id: &str, d: &PathData) {
+        self.out.push_str("<clipPath");
+        str_attr(self.out, "id", id);
+        self.out.push_str("><path");
+        path_attr(self.out, "d", d);
+        str_attr(self.out, "clip-rule", "nonzero");
+        self.out.push_str(" /></clipPath>");
+    }
+
     fn node(&mut self, node: &Node) {
         let style = match node {
             Node::Group(list) => return self.list(list),
@@ -215,7 +243,10 @@ impl Writer<'_> {
         match node {
             Node::Path(p) => {
                 o.push_str("<path");
-                str_attr(o, "d", p.d.source());
+                #[cfg(not(feature = "compact-paths"))]
+                str_attr(o, "d", p.d.text());
+                #[cfg(feature = "compact-paths")]
+                path_attr(o, "d", &p.d);
             }
             Node::Circle(c) => {
                 o.push_str("<circle");
@@ -243,7 +274,10 @@ impl Writer<'_> {
                     .as_deref()
                     .and_then(|r| self.clip_ids.request(r))
                     .unwrap_or_else(|| self.clip_ids.generate("custom"));
-                self.clip_def(&id, c.d.source());
+                #[cfg(not(feature = "compact-paths"))]
+                self.clip_def(&id, c.d.text());
+                #[cfg(feature = "compact-paths")]
+                self.clip_def_path(&id, &c.d);
                 self.out.push_str("<g");
                 clip_path_attr(self.out, &id);
             }
