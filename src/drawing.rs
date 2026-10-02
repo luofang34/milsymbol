@@ -136,6 +136,7 @@ pub struct Text {
 /// Horizontal text alignment.
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[non_exhaustive]
 pub enum TextAnchor {
     /// The position is the start of the text.
     Start,
@@ -206,6 +207,7 @@ pub enum Paint {
 /// Stroke line end shape.
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[non_exhaustive]
 pub enum LineCap {
     /// Flat ends at the endpoint.
     Butt,
@@ -218,6 +220,7 @@ pub enum LineCap {
 /// Stroke corner shape.
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[non_exhaustive]
 pub enum LineJoin {
     /// Sharp corners.
     Miter,

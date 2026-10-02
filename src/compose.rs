@@ -169,7 +169,7 @@ pub enum BuiltinPart {
 
 impl BuiltinPart {
     /// The default pipeline.
-    pub const DEFAULT: [BuiltinPart; 9] = [
+    pub const DEFAULT: &'static [BuiltinPart] = &[
         BuiltinPart::Stack,
         BuiltinPart::BaseGeometry,
         BuiltinPart::Icon,

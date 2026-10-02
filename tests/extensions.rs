@@ -148,7 +148,7 @@ impl IconExtension for IncompleteIcon {
 #[test]
 fn incomplete_extension_icons_fail_sidc_validation_even_when_not_drawn() -> TestResult {
     use milsymbol::BuiltinPart;
-    for parts in [&BuiltinPart::DEFAULT[..], &[BuiltinPart::BaseGeometry][..]] {
+    for parts in [BuiltinPart::DEFAULT, &[BuiltinPart::BaseGeometry][..]] {
         let renderer = Renderer::builder()
             .icons(IncompleteIcon)
             .pipeline(parts)

@@ -57,51 +57,53 @@ impl<'a> From<&'a Sidc> for SidcInput<'a> {
 ///
 /// Renderer::default().run("10031000001211000000", milsymbol::options::SymbolOptions::default(), false);
 /// ```
-pub trait Backend: sealed::Sealed {}
+pub trait Backend: sealed::Sealed {
+    /// What rendering produces.
+    type Output;
+}
 
 mod sealed {
     use crate::error::RenderError;
     use crate::options::SymbolOptions;
 
     pub trait Sealed {
-        /// What rendering produces.
-        type Output;
-
         fn run(
             &self,
             sidc: &str,
             options: SymbolOptions,
             strict: bool,
-        ) -> Result<Self::Output, RenderError>;
+        ) -> Result<<Self as super::Backend>::Output, RenderError>
+        where
+            Self: super::Backend;
     }
 }
 
 impl sealed::Sealed for Renderer {
-    type Output = Symbol;
-
     fn run(&self, sidc: &str, options: SymbolOptions, strict: bool) -> Result<Symbol, RenderError> {
         self.render_checked(sidc, options, strict)
     }
 }
 
-impl Backend for Renderer {}
+impl Backend for Renderer {
+    type Output = Symbol;
+}
 
 #[cfg(feature = "std")]
 impl sealed::Sealed for &crate::cache::CachedRenderer {
-    type Output = alloc::sync::Arc<Symbol>;
-
     fn run(
         &self,
         sidc: &str,
         options: SymbolOptions,
         strict: bool,
-    ) -> Result<Self::Output, RenderError> {
+    ) -> Result<<Self as Backend>::Output, RenderError> {
         self.render_checked(sidc, &options, strict)
     }
 }
 
 #[cfg(feature = "std")]
-impl Backend for &crate::cache::CachedRenderer {}
+impl Backend for &crate::cache::CachedRenderer {
+    type Output = alloc::sync::Arc<Symbol>;
+}
 
 /// The option setters of [`RequestBuilder`]; the one place they are listed.
 macro_rules! option_setters {
@@ -188,8 +190,9 @@ macro_rules! option_setters {
 /// this one type over different renderers, so they have the same setters and
 /// the same validation.
 ///
-/// The builder holds its own handle on the renderer, so it can be stored and
-/// passed around independently of the renderer it came from.
+/// A [`SymbolBuilder`] holds its own handle on the renderer, so it can be
+/// stored and passed around independently of the renderer it came from. A
+/// `CachedSymbolBuilder` borrows its `CachedRenderer` and cannot outlive it.
 #[derive(Debug)]
 #[must_use = "a builder does nothing until it is built or rendered"]
 pub struct RequestBuilder<'a, B: Backend> {
@@ -233,7 +236,7 @@ impl<'a, B: Backend> RequestBuilder<'a, B> {
     }
 
     /// Renders the symbol (or, with a cache, returns the cached one).
-    pub fn render(self) -> Result<<B as sealed::Sealed>::Output, RenderError> {
+    pub fn render(self) -> Result<B::Output, RenderError> {
         sealed::Sealed::run(&self.backend, self.sidc.as_str(), self.options, self.strict)
     }
 }
