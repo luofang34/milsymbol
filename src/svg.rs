@@ -82,6 +82,13 @@ fn str_attr(out: &mut String, name: &str, v: &str) {
     out.push('"');
 }
 
+/// The `d` of a clip path: the style's text or a clip node's path.
+#[derive(Clone, Copy)]
+enum ClipData<'a> {
+    Text(&'a str),
+    Path(&'a PathData),
+}
+
 /// ` name="path data"`. A packed path is streamed unescaped: see
 /// `PathData::as_text`.
 fn path_attr(out: &mut String, name: &str, d: &PathData) {
@@ -186,11 +193,14 @@ impl Writer<'_> {
         }
     }
 
-    fn clip_def(&mut self, id: &str, d: impl FnOnce(&mut String)) {
+    fn clip_def(&mut self, id: &str, d: ClipData<'_>) {
         self.out.push_str("<clipPath");
         str_attr(self.out, "id", id);
         self.out.push_str("><path");
-        d(self.out);
+        match d {
+            ClipData::Text(t) => str_attr(self.out, "d", t),
+            ClipData::Path(p) => path_attr(self.out, "d", p),
+        }
         str_attr(self.out, "clip-rule", "nonzero");
         self.out.push_str(" /></clipPath>");
     }
@@ -211,7 +221,7 @@ impl Writer<'_> {
         let mut inline_clip = None;
         if let (Some(clip), false) = (&style.clip_path, matches!(node, Node::Clip(_))) {
             let id = self.clip_ids.generate("inline");
-            self.clip_def(&id, |o| str_attr(o, "d", clip));
+            self.clip_def(&id, ClipData::Text(clip));
             inline_clip = Some(id);
         }
         self.open(node);
@@ -265,7 +275,7 @@ impl Writer<'_> {
                     .as_deref()
                     .and_then(|r| self.clip_ids.request(r))
                     .unwrap_or_else(|| self.clip_ids.generate("custom"));
-                self.clip_def(&id, |o| path_attr(o, "d", &c.d));
+                self.clip_def(&id, ClipData::Path(&c.d));
                 self.out.push_str("<g");
                 clip_path_attr(self.out, &id);
             }
