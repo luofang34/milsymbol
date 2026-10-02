@@ -172,6 +172,7 @@ pub(super) trait Lex {
 
 /// Runs the path grammar over `lex`; the error is the segments parsed before
 /// the first invalid input.
+#[inline(never)]
 pub(super) fn run_with<L: Lex>(lex: &mut L) -> Result<Vec<Segment>, Vec<Segment>> {
     let origin = Point { x: 0.0, y: 0.0 };
     let mut st = State {

@@ -257,7 +257,11 @@ impl PathData {
     pub fn segments(&self) -> Result<Cow<'_, [Segment]>, PathParseError> {
         match &self.parsed {
             Some(p) => Ok(Cow::Borrowed(p)),
-            None => self.parse_source().map(Cow::Owned),
+            None => match &self.source {
+                Source::Text(s) => Parser::new(s).run().map(Cow::Owned),
+                #[cfg(feature = "compact-paths")]
+                Source::Packed(_) => self.parse_source().map(Cow::Owned),
+            },
         }
     }
 }
