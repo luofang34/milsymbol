@@ -1,5 +1,51 @@
 # Changelog
 
+## 0.4.0 — 2026-10-02
+
+Breaking change to one method. Rendered output is unchanged. The default
+build's code is unchanged: a benchmark binary and a thumbv7em firmware image
+built from 0.4.0 and from 0.3.1 with the same flags are byte-identical, because
+nothing uses the new `source` and `write_source` internally.
+
+- `PathData::source()` returns `Cow<'_, str>` instead of `&str`.
+  `cargo semver-checks` does not detect a changed return type, so this is
+  listed here and was found by diffing the public item signatures. It is
+  always `Cow::Borrowed` in the default build and derefs to `&str`, so most
+  callers compile unchanged; code that needs a `String` calls
+  `.into_owned()` (`.to_owned()` on a `Cow` is another `Cow`). The new
+  `PathData::write_source(&mut impl fmt::Write)` streams the text and never
+  allocates; use it in writers. `source()` is `#[must_use]`.
+- With the `compact-paths` feature a composed symbol now keeps each built-in
+  path packed instead of decoding it into a `String` when it is composed:
+  no extra heap per path, and cloning a symbol allocates nothing for its
+  paths. Composing a symbol is about as fast as without the feature and
+  building the drawing view of composed symbols is faster, but the SVG and
+  JSON writers now decode the packed bytes as they write, so composing and
+  writing SVG is still slower than without the feature (a few percent for one
+  symbol, about a fifth over all built-in icons). `PathData::segments`
+  decodes the packed bytes directly. A packed path's `source()` builds a new
+  `String` on every call (documented). The figures, including the small gzip
+  saving, are in the crate documentation ("Compact path data").
+- With `compact-paths` the derived `Debug` output of `PathData` (and so of
+  `PathNode`, `Node` and `Symbol`) prints a built-in path as `Packed([..])`
+  and a path you built as `Text("..")`, instead of the bare text. Do not
+  parse `Debug` output.
+- Other public API changes made now so the 0.4 series can stay stable:
+  `BuiltinPart::DEFAULT` is a `&'static [BuiltinPart]` instead of a
+  `[BuiltinPart; 9]` (its length is no longer part of the type; `.iter()`
+  and indexing keep working); `drawing::LineCap`, `LineJoin` and `TextAnchor`
+  are `#[non_exhaustive]` like the other drawing enums (matches need a
+  wildcard arm); `RequestBuilder::render` returns `Result<B::Output, _>`
+  with `Output` now an associated type of the public, still sealed,
+  `Backend` trait (it was an unnameable item of the private sealed trait;
+  `Backend` is therefore no longer dyn-compatible, which nothing could use
+  before either);
+  with `serde`, `Style`, `SymbolOptions` and `RendererConfig` deserialize
+  missing fields to their defaults, so stored JSON keeps loading when fields
+  are added (serialized output is unchanged and pinned by a test).
+- New benchmark `bulk/drawing_all_number_icons_1431`, and a performance gate
+  in `RELEASING.md`.
+
 ## 0.3.1 — 2026-10-01
 
 Additive release; output and the default build are unchanged (the compiled
