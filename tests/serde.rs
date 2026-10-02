@@ -78,3 +78,43 @@ fn drawing_and_metadata_serialize() -> TestResult {
     assert!(md.get("geometry").is_some_and(serde_json::Value::is_array));
     Ok(())
 }
+
+#[test]
+fn serialized_defaults_are_pinned() -> TestResult {
+    let options = include_str!("data/serde_default_options.txt");
+    let config = include_str!("data/serde_default_config.txt");
+    assert_eq!(serde_json::to_string(&SymbolOptions::default())?, options);
+    assert_eq!(serde_json::to_string(&RendererConfig::default())?, config);
+    assert_eq!(
+        serde_json::from_str::<SymbolOptions>(options)?,
+        SymbolOptions::default()
+    );
+    assert_eq!(
+        serde_json::from_str::<RendererConfig>(config)?,
+        RendererConfig::default()
+    );
+    Ok(())
+}
+
+#[test]
+fn missing_fields_take_their_defaults() -> TestResult {
+    assert_eq!(
+        serde_json::from_str::<SymbolOptions>("{}")?,
+        SymbolOptions::default()
+    );
+    assert_eq!(
+        serde_json::from_str::<RendererConfig>("{}")?,
+        RendererConfig::default()
+    );
+    let partial: SymbolOptions =
+        serde_json::from_str(r#"{"direction":15.0,"style":{"size":42.0}}"#)?;
+    let mut expected = SymbolOptions::default();
+    expected.direction = Some(15.0);
+    expected.style.size = 42.0;
+    assert_eq!(partial, expected);
+    let config: RendererConfig = serde_json::from_str(r#"{"hq_staff_length":50.0}"#)?;
+    let mut expected = RendererConfig::default();
+    expected.hq_staff_length = 50.0;
+    assert_eq!(config, expected);
+    Ok(())
+}

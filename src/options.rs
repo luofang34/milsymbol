@@ -23,6 +23,7 @@ pub use text_field::{CustomField, TextField};
 /// Start from [`Style::default`] and assign fields, or set options by their
 /// milsymbol.js names with [`SymbolOptions::set`].
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(feature = "serde", serde(default))]
 #[derive(Debug, Clone, PartialEq)]
 #[non_exhaustive]
 pub struct Style {
@@ -134,6 +135,7 @@ impl Default for Style {
 /// Start from [`SymbolOptions::default`] and assign fields, or set options
 /// by their milsymbol.js names with [`SymbolOptions::set`].
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(feature = "serde", serde(default))]
 #[derive(Debug, Clone, PartialEq, Default)]
 #[non_exhaustive]
 pub struct SymbolOptions {

@@ -79,6 +79,7 @@ impl Default for DashArrays {
 
 /// Configuration shared by all symbols a [`Renderer`](crate::Renderer) draws.
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(feature = "serde", serde(default))]
 #[derive(Debug, Clone, PartialEq)]
 #[non_exhaustive]
 pub struct RendererConfig {
