@@ -24,7 +24,12 @@ use key::{KeyBuf, write_key};
 /// When the cache is full, a new entry replaces one that has not been used
 /// since the eviction scan last passed it (the clock algorithm, an
 /// approximation of least-recently-used). A capacity of zero disables
-/// caching.
+/// caching. There is no default capacity.
+///
+/// The bound counts entries, not bytes, and one entry can be large: options
+/// such as `stack` and long text fields make a symbol's size grow with its
+/// input. A server that accepts untrusted options should choose the capacity
+/// with that in mind, or validate the options first.
 ///
 /// A strict request ([`CachedSymbolBuilder::strict`](RequestBuilder::strict))
 /// and a lenient one for the same SIDC and options occupy two cache entries,

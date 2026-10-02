@@ -125,7 +125,9 @@ impl TextField {
     }
 
     /// A field outside the standard set, such as `dtg1` for label overrides.
-    /// A standard field's name gives that standard field.
+    /// A standard field's name gives that standard field. The name is a
+    /// `String` or a `&'static str`; a borrowed `&String` does not compile, so
+    /// pass `name.clone()`.
     pub fn custom(name: impl Into<Str>) -> TextField {
         let name = name.into();
         TextField::standard_named(&name).unwrap_or(TextField::Custom(CustomField(name)))

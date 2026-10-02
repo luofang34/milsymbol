@@ -62,7 +62,9 @@ This is figure 13 of MIL-STD-2525C, rendered by this crate.
 milsymbol = "0.4"
 ```
 
-Requires Rust 1.85 or later.
+Requires Rust 1.85 or later. The minimum supported Rust version may be
+raised in a minor release while the crate is 0.x; such a change is announced
+in the CHANGELOG, and CI builds the library on it.
 
 To make a symbol for an infantry platoon:
 

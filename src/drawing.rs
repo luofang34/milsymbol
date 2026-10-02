@@ -7,6 +7,14 @@
 //! adapter: every [`DrawItem`] carries the complete transform, paint and
 //! clip it is drawn with, in plain typed fields.
 //!
+//! Names shared with [`ir`](crate::ir): `drawing::Paint` is the resolved paint
+//! of an item (`Solid` colour or `None`), while `ir::Paint` is a node's paint
+//! in the instruction tree (`Color` string passed through as given, or
+//! `None`); and
+//! `ir::Style` holds optional presentation attributes of a node, which have
+//! nothing to do with the symbol [`options::Style`](crate::options::Style) set
+//! by the caller.
+//!
 //! The view follows the SVG output, including what the serializer drops:
 //! colours, dash arrays, line caps, text anchors, font weights and font
 //! families that the SVG writer rejects are resolved the same way here.

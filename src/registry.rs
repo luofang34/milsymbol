@@ -78,6 +78,9 @@ pub enum IconKey<'k> {
 }
 
 /// Read access to icon parts: extension parts first, then built-ins.
+///
+/// Methods added to this trait later will have default implementations, so
+/// existing implementations keep compiling.
 pub trait PartLookup {
     /// The named icon part, if defined.
     fn part(&self, name: &str) -> Option<Node>;
@@ -88,7 +91,8 @@ pub trait PartLookup {
 ///
 /// Extensions are queried by key while a symbol is drawn, so nothing is
 /// built per symbol for keys they do not define. All methods have empty
-/// defaults. Later registrations take precedence over earlier ones and over
+/// defaults, and methods added later will have defaults too, so existing
+/// implementations keep compiling. Later registrations take precedence over earlier ones and over
 /// the built-in tables, as in upstream.
 ///
 /// Callbacks must return the same result for the same context and registry;

@@ -172,6 +172,12 @@ exercise, or Hostile inside one). Letter codes have no simulation context.
 
 # Drawing
 
+Two names occur twice: `ir::Paint` is a node's paint in the instruction tree
+(`Paint::Color`, a string passed through as given) and `drawing::Paint` is
+the resolved paint of a [`drawing::DrawItem`] (`Paint::Solid`); `ir::Style`
+holds a node's presentation attributes, while `options::Style` is the style
+you set on a symbol.
+
 [`Symbol::drawing`] is the picture as data for renderers other than SVG:
 a flat list of [`drawing::DrawItem`]s (paths, circles and text), each with
 its full transform, typed paint, dash lengths, clip regions and text
@@ -273,7 +279,10 @@ With the default `std` feature, `cache::CachedRenderer` memoizes rendered
 symbols by SIDC and options and shares them as `Arc<Symbol>`; a hit
 allocates nothing for requests whose key fits in 1 KiB. Its builder is the same type as [`Renderer::symbol`]'s,
 so it has every setter and `strict()`. A strict request is cached apart from
-a lenient one, and a strict failure is never cached.
+a lenient one, and a strict failure is never cached. The capacity counts
+entries, not bytes, and there is no default; with untrusted options (large
+`stack`, long text) a big capacity can hold a lot of memory, so size it
+accordingly.
 
 # `no_std`
 
@@ -289,7 +298,8 @@ and [`RendererConfig`] implement `Serialize` and `Deserialize`. Their
 serialized shapes are stable for the 0.4 series. Fields added later are
 tolerated on input, because these three types deserialize missing fields to
 their defaults (`serde(default)`); output from this version keeps
-deserializing. [`Metadata`] is `Serialize` only.
+deserializing. The `text` field of `SymbolOptions` (a map from field name
+to string) is part of the wire format. [`Metadata`] is `Serialize` only.
 
 # Compact path data
 

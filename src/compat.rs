@@ -49,7 +49,9 @@ pub fn validity(symbol: &Symbol) -> UpstreamValidity {
     }
 }
 
-/// Whether [`validity`] has no issues.
+/// Whether [`validity`] has no issues: `validity(symbol).is_valid()`. It is
+/// the upstream verdict ([`UpstreamValidity`]), not
+/// [`Symbol::sidc_validity`], which judges the SIDC alone.
 pub fn is_valid(symbol: &Symbol) -> bool {
     symbol.upstream_issues().is_empty()
 }

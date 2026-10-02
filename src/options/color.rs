@@ -37,7 +37,8 @@ impl fmt::Display for ColorError {
 impl core::error::Error for ColorError {}
 
 impl Color {
-    /// A colour from CSS text.
+    /// A colour from CSS text, as a `String` or a `&'static str` (a borrowed
+    /// `&String` does not compile; pass `css.clone()`).
     pub fn new(css: impl Into<Str>) -> Result<Self, ColorError> {
         let css = css.into();
         if css.is_empty() {

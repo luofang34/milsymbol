@@ -17,6 +17,8 @@ only verify authentication and never publish.
    `cargo semver-checks` does not see a changed return type or an auto-trait
    change, so also diff the public item signatures against the previous tag
    (rustdoc JSON) by hand.
+   Raising `rust-version` is allowed in a minor release (0.x) if the CHANGELOG
+   says so; the CI job "library builds on rust-version" tests it.
 3. Performance gate, against the previous release tag with default features:
    build both and a control (the tag plus one unused `#[inline(never)] pub
    fn`), run `cargo bench --bench render -- --warm-up-time 1

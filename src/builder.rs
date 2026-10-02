@@ -159,6 +159,10 @@ macro_rules! option_setters {
         /// built-in icons (see [`SymbolOptions::set_font`](
         /// $crate::options::SymbolOptions::set_font)). Without it, icons keep
         /// their template font, as milsymbol.js draws them.
+        ///
+        /// The name is a [`Str`]($crate::ir::Str): pass a `String` or a
+        /// `&'static str`. A borrowed `&String` or non-`'static` `&str` does
+        /// not compile; use `font(name.clone())` or `font(name.to_owned())`.
         pub fn font(mut self, family: impl Into<$crate::ir::Str>) -> Self {
             self.options.set_font(family);
             self

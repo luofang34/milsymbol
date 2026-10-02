@@ -133,6 +133,9 @@ impl PartOutput {
 /// assert!(r.symbol("10031000001211000000").render()?.to_svg().contains("<circle"));
 /// # Ok::<(), milsymbol::RenderError>(())
 /// ```
+///
+/// Methods added to this trait later will have default implementations, so
+/// existing implementations keep compiling.
 pub trait SymbolPart: Send + Sync {
     /// Draws this part for the symbol.
     ///

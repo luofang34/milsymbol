@@ -53,7 +53,9 @@ pub struct DashArrays {
 }
 
 impl DashArrays {
-    /// Dash arrays for pending, anticipated and feint/dummy lines.
+    /// Dash arrays for pending, anticipated and feint/dummy lines, each a
+    /// `String` or a `&'static str` (a borrowed `&String` does not compile;
+    /// pass a clone).
     pub fn new(
         pending: impl Into<Str>,
         anticipated: impl Into<Str>,

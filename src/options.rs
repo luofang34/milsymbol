@@ -172,6 +172,9 @@ impl SymbolOptions {
     /// Draws all text in `family`: information fields and the text inside
     /// built-in icons. The icons keep their template font unless
     /// [`Style::icon_text_uses_font_family`] is set, which this does.
+    ///
+    /// The family is a [`Str`]: pass a `String` or a `&'static str`, not a
+    /// borrowed `&String`; use `name.clone()` or `name.to_owned()`.
     pub fn set_font(&mut self, family: impl Into<Str>) -> &mut Self {
         self.style.font_family = family.into();
         self.style.icon_text_uses_font_family = true;
