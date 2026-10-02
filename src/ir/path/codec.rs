@@ -38,7 +38,7 @@ pub(crate) const OP_RAW_NUMBER: u8 = 0xD5;
 pub(crate) const OP_TAIL: u8 = 0xD6;
 pub(crate) const OP_SEP: u8 = 0xD8;
 
-const POW10: [u32; 7] = [1, 10, 100, 1_000, 10_000, 100_000, 1_000_000];
+pub(crate) const POW10: [u32; 7] = [1, 10, 100, 1_000, 10_000, 100_000, 1_000_000];
 
 /// A number token.
 #[derive(Debug, Clone, Copy, PartialEq)]

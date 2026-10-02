@@ -14,6 +14,7 @@ pub(crate) enum Value<'a> {
     Bool(bool),
     Num(f64),
     Str(&'a str),
+    Path(&'a crate::ir::PathData),
     Node(&'a Node),
     Instructions(&'a [Node]),
     ColorMode(&'a ColorMode),
@@ -103,6 +104,18 @@ fn object<'a, R, const N: usize>(
     visit(obj.fields())
 }
 
+/// A packed path's text is streamed unescaped: see `PathData::as_text`.
+fn write_path(out: &mut String, d: &crate::ir::PathData) {
+    match d.as_text() {
+        Some(text) => write_str(out, text),
+        None => {
+            out.push('"');
+            d.write_source(out).ok();
+            out.push('"');
+        }
+    }
+}
+
 impl<'a> Value<'a> {
     pub(crate) fn write(self, out: &mut String) {
         match self {
@@ -111,6 +124,7 @@ impl<'a> Value<'a> {
             Self::Num(n) if n.is_finite() => crate::js::write_number(out, n),
             Self::Num(_) => out.push_str("null"),
             Self::Str(s) => write_str(out, s),
+            Self::Path(d) => write_path(out, d),
             Self::Instructions(nodes) => {
                 out.push('[');
                 for (i, n) in nodes.iter().enumerate() {
@@ -145,6 +159,7 @@ impl<'a> Value<'a> {
             Self::Bool(b) => Json::Bool(b),
             Self::Num(n) => Json::Num(n),
             Self::Str(s) => Json::Str(String::from(s)),
+            Self::Path(d) => Json::Str(d.source().into_owned()),
             Self::Instructions(nodes) => Json::Arr(
                 nodes
                     .iter()

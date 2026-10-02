@@ -133,7 +133,7 @@ fn node_null(n: &Node) -> bool {
         Node::Scalar(v) => num_null(v),
         Node::TrustedSvg(s) => s.contains("null"),
         Node::Group(v) => return contains_null(v),
-        Node::Path(p) => p.d.source().contains("null"),
+        Node::Path(p) => p.d.contains_null(),
         Node::Circle(c) => num_null(&c.cx) || num_null(&c.cy) || num_null(&c.r),
         Node::Text(t) => {
             num_null(&t.x)
@@ -148,7 +148,7 @@ fn node_null(n: &Node) -> bool {
         Node::Translate(t) => num_null(&t.x) || num_null(&t.y),
         Node::Rotate(r) => num_null(&r.degree) || num_null(&r.x) || num_null(&r.y),
         Node::Scale(s) => num_null(&s.factor),
-        Node::Clip(c) => c.d.source().contains("null") || text(&c.clip_id),
+        Node::Clip(c) => c.d.contains_null() || text(&c.clip_id),
         Node::Bare(_) => false,
     };
     own || n.style().is_some_and(style_null) || n.children().is_some_and(contains_null)

@@ -22,6 +22,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     prepared_observers_and_reused_json_buffer_do_not_allocate()?;
     unused_label_definitions_do_not_add_allocations()?;
     direction_rendering_stays_within_allocation_budgets()?;
+    cloning_does_not_allocate_per_path()?;
     Ok(())
 }
 
@@ -127,18 +128,15 @@ fn unused_label_definitions_do_not_add_allocations() -> Result<(), Box<dyn std::
 
 fn direction_rendering_stays_within_allocation_budgets() -> Result<(), Box<dyn std::error::Error>> {
     let renderer = Renderer::default();
-    // `compact-paths` decodes each path node into an owned string: one more
-    // block per symbol whose icon has a path (the third symbol has none).
-    let decoded = u64::from(cfg!(feature = "compact-paths"));
-    for (sidc, paths, budgets) in [
-        ("10031000001211000000", decoded, [26, 38, 21, 28]),
-        ("10031002161211000000", decoded, [38, 54, 38, 50]),
-        ("10030100001100000000", 0, [20, 30, 21, 28]),
-        ("SFGPUCI----D", decoded, [28, 43, 22, 32]),
+    for (sidc, budgets) in [
+        ("10031000001211000000", [26, 38, 21, 28]),
+        ("10031002161211000000", [38, 54, 38, 50]),
+        ("10030100001100000000", [20, 30, 21, 28]),
+        ("SFGPUCI----D", [28, 43, 22, 32]),
     ] {
         for ((speed, outline), budget) in [(0.0, 0.0), (0.0, 3.0), (60.0, 0.0), (60.0, 3.0)]
             .into_iter()
-            .zip(budgets.map(|b| b + paths))
+            .zip(budgets)
         {
             let mut options = SymbolOptions::default();
             options.direction = Some(45.0);
@@ -153,5 +151,19 @@ fn direction_rendering_stays_within_allocation_budgets() -> Result<(), Box<dyn s
             );
         }
     }
+    Ok(())
+}
+
+/// A packed path is a borrowed slice, so a clone costs what the same tree
+/// with plain path text costs: the blocks are the tree's own vectors.
+fn cloning_does_not_allocate_per_path() -> Result<(), Box<dyn std::error::Error>> {
+    let renderer = Renderer::default();
+    let symbol = renderer.render("10031000001211000000", SymbolOptions::default())?;
+    let profiler = dhat::Profiler::builder().testing().build();
+    let copy = black_box(&symbol).clone();
+    let stats = dhat::HeapStats::get();
+    drop(profiler);
+    drop(copy);
+    assert_eq!(stats.total_blocks, 5, "blocks of a clone");
     Ok(())
 }

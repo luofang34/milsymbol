@@ -1,7 +1,7 @@
 //! SVG serialization (upstream `assvg.js`), including its escaping and
 //! sanitization of attribute values and trusted fragments.
 
-use crate::ir::{Node, Num, Paint, Style, TextNode};
+use crate::ir::{Node, Num, Paint, PathData, Style, TextNode};
 use crate::js::write_number;
 use alloc::string::String;
 
@@ -81,6 +81,28 @@ fn str_attr(out: &mut String, name: &str, v: &str) {
     escape_attr(out, v);
     out.push('"');
 }
+
+/// ` name="path data"`. A packed path is streamed unescaped: see
+/// `PathData::as_text`.
+fn path_attr(out: &mut String, name: &str, d: &PathData) {
+    match d.as_text() {
+        Some(text) => str_attr(out, name, text),
+        None => packed_attr(out, name, d),
+    }
+}
+
+#[cfg(feature = "compact-paths")]
+fn packed_attr(out: &mut String, name: &str, d: &PathData) {
+    out.push(' ');
+    out.push_str(name);
+    out.push_str("=\"");
+    d.write_source(out).ok();
+    out.push('"');
+}
+
+/// Without `compact-paths` every path is text.
+#[cfg(not(feature = "compact-paths"))]
+fn packed_attr(_: &mut String, _: &str, _: &PathData) {}
 
 /// ` transform="name(a,b,…)"`, non-finite arguments replaced by `fallback`.
 /// Numbers contain no characters that attribute escaping would change.
@@ -164,11 +186,11 @@ impl Writer<'_> {
         }
     }
 
-    fn clip_def(&mut self, id: &str, d: &str) {
+    fn clip_def(&mut self, id: &str, d: impl FnOnce(&mut String)) {
         self.out.push_str("<clipPath");
         str_attr(self.out, "id", id);
         self.out.push_str("><path");
-        str_attr(self.out, "d", d);
+        d(self.out);
         str_attr(self.out, "clip-rule", "nonzero");
         self.out.push_str(" /></clipPath>");
     }
@@ -189,7 +211,7 @@ impl Writer<'_> {
         let mut inline_clip = None;
         if let (Some(clip), false) = (&style.clip_path, matches!(node, Node::Clip(_))) {
             let id = self.clip_ids.generate("inline");
-            self.clip_def(&id, clip);
+            self.clip_def(&id, |o| str_attr(o, "d", clip));
             inline_clip = Some(id);
         }
         self.open(node);
@@ -215,7 +237,7 @@ impl Writer<'_> {
         match node {
             Node::Path(p) => {
                 o.push_str("<path");
-                str_attr(o, "d", p.d.source());
+                path_attr(o, "d", &p.d);
             }
             Node::Circle(c) => {
                 o.push_str("<circle");
@@ -243,7 +265,7 @@ impl Writer<'_> {
                     .as_deref()
                     .and_then(|r| self.clip_ids.request(r))
                     .unwrap_or_else(|| self.clip_ids.generate("custom"));
-                self.clip_def(&id, c.d.source());
+                self.clip_def(&id, |o| path_attr(o, "d", &c.d));
                 self.out.push_str("<g");
                 clip_path_attr(self.out, &id);
             }

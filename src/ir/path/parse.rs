@@ -115,169 +115,211 @@ impl<'a> Parser<'a> {
         self.i += 1;
         Some(f)
     }
+}
 
-    fn point(&mut self, rel: bool, cur: Point) -> Option<Point> {
-        let x = self.number()?;
-        let y = self.number()?;
-        Some(if rel {
-            Point {
-                x: cur.x + x,
-                y: cur.y + y,
-            }
-        } else {
-            Point { x, y }
+impl Lex for Parser<'_> {
+    fn next_command(&mut self, first: bool) -> Next {
+        self.skip_ws();
+        let Some(&c) = self.s.get(self.i) else {
+            return Next::End;
+        };
+        if !c.is_ascii_alphabetic() || (first && !matches!(c, b'M' | b'm')) {
+            return Next::Invalid;
+        }
+        self.i += 1;
+        self.first_arg = true;
+        Next::Command(c)
+    }
+
+    fn at_number(&mut self) -> bool {
+        Parser::at_number(self)
+    }
+
+    fn number(&mut self) -> Option<f64> {
+        Parser::number(self)
+    }
+
+    fn flag(&mut self) -> Option<bool> {
+        Parser::flag(self)
+    }
+}
+
+impl Parser<'_> {
+    pub(super) fn run(mut self) -> Result<Vec<Segment>, PathParseError> {
+        run_with(&mut self).map_err(|valid_prefix| PathParseError {
+            offset: self.i,
+            valid_prefix,
         })
     }
+}
 
-    fn err(&self, st: State) -> PathParseError {
-        PathParseError {
-            offset: self.i,
-            valid_prefix: st.out,
-        }
-    }
+/// The next element of a path as a lexer sees it.
+pub(super) enum Next {
+    Command(u8),
+    End,
+    Invalid,
+}
 
-    pub(super) fn run(mut self) -> Result<Vec<Segment>, PathParseError> {
-        let origin = Point { x: 0.0, y: 0.0 };
-        let mut st = State {
-            out: Vec::new(),
-            cur: origin,
-            start: origin,
-            last_ctrl: None,
+/// Token source of the path grammar: SVG text or packed bytes.
+pub(super) trait Lex {
+    /// The next command letter; `first` requires it to be a move-to.
+    fn next_command(&mut self, first: bool) -> Next;
+    /// Whether another argument follows (without consuming anything).
+    fn at_number(&mut self) -> bool;
+    fn number(&mut self) -> Option<f64>;
+    fn flag(&mut self) -> Option<bool>;
+}
+
+/// Runs the path grammar over `lex`; the error is the segments parsed before
+/// the first invalid input.
+pub(super) fn run_with<L: Lex>(lex: &mut L) -> Result<Vec<Segment>, Vec<Segment>> {
+    let origin = Point { x: 0.0, y: 0.0 };
+    let mut st = State {
+        out: Vec::new(),
+        cur: origin,
+        start: origin,
+        last_ctrl: None,
+    };
+    loop {
+        let c = match lex.next_command(st.out.is_empty()) {
+            Next::End => return Ok(st.out),
+            Next::Invalid => return Err(st.out),
+            Next::Command(c) => c,
         };
-        loop {
-            self.skip_ws();
-            let Some(&c) = self.s.get(self.i) else {
-                return Ok(st.out);
-            };
-            if !c.is_ascii_alphabetic() || (st.out.is_empty() && !matches!(c, b'M' | b'm')) {
-                return Err(self.err(st));
-            }
-            self.i += 1;
-            self.first_arg = true;
-            if self.command(c, &mut st).is_none() {
-                return Err(self.err(st));
-            }
+        if command(lex, c, &mut st).is_none() {
+            return Err(st.out);
         }
     }
+}
 
-    fn command(&mut self, c: u8, st: &mut State) -> Option<()> {
-        let rel = c.is_ascii_lowercase();
-        let upper = c.to_ascii_uppercase();
-        if upper == b'Z' {
-            st.out.push(Segment::Close);
-            st.cur = st.start;
-            st.last_ctrl = None;
+fn point<L: Lex>(lex: &mut L, rel: bool, cur: Point) -> Option<Point> {
+    let x = lex.number()?;
+    let y = lex.number()?;
+    Some(if rel {
+        Point {
+            x: cur.x + x,
+            y: cur.y + y,
+        }
+    } else {
+        Point { x, y }
+    })
+}
+
+fn command<L: Lex>(lex: &mut L, c: u8, st: &mut State) -> Option<()> {
+    let rel = c.is_ascii_lowercase();
+    let upper = c.to_ascii_uppercase();
+    if upper == b'Z' {
+        st.out.push(Segment::Close);
+        st.cur = st.start;
+        st.last_ctrl = None;
+        return Some(());
+    }
+    let mut first = true;
+    loop {
+        if !first && !lex.at_number() {
             return Some(());
         }
-        let mut first = true;
-        loop {
-            if !first && !self.at_number() {
-                return Some(());
+        segment(lex, upper, rel, first, st)?;
+        first = false;
+    }
+}
+
+fn segment<L: Lex>(lex: &mut L, upper: u8, rel: bool, first: bool, st: &mut State) -> Option<()> {
+    let cur = st.cur;
+    let (seg, ctrl) = match upper {
+        b'M' => {
+            let p = point(lex, rel, cur)?;
+            if first {
+                st.start = p;
+                (Segment::MoveTo(p), None)
+            } else {
+                (Segment::LineTo(p), None)
             }
-            self.segment(upper, rel, first, st)?;
-            first = false;
         }
-    }
+        b'L' => (Segment::LineTo(point(lex, rel, cur)?), None),
+        b'H' => {
+            let x = lex.number()?;
+            (
+                Segment::LineTo(Point {
+                    x: if rel { cur.x + x } else { x },
+                    y: cur.y,
+                }),
+                None,
+            )
+        }
+        b'V' => {
+            let y = lex.number()?;
+            (
+                Segment::LineTo(Point {
+                    x: cur.x,
+                    y: if rel { cur.y + y } else { y },
+                }),
+                None,
+            )
+        }
+        b'A' => (arc(lex, rel, cur)?, None),
+        _ => curve(lex, upper, rel, cur, st.last_ctrl)?,
+    };
+    st.cur = match seg {
+        Segment::MoveTo(p) | Segment::LineTo(p) => p,
+        Segment::QuadTo { to, .. } | Segment::CubicTo { to, .. } | Segment::ArcTo { to, .. } => to,
+        Segment::Close => st.start,
+    };
+    st.last_ctrl = ctrl;
+    st.out.push(seg);
+    Some(())
+}
 
-    fn segment(&mut self, upper: u8, rel: bool, first: bool, st: &mut State) -> Option<()> {
-        let cur = st.cur;
-        let (seg, ctrl) = match upper {
-            b'M' => {
-                let p = self.point(rel, cur)?;
-                if first {
-                    st.start = p;
-                    (Segment::MoveTo(p), None)
-                } else {
-                    (Segment::LineTo(p), None)
-                }
-            }
-            b'L' => (Segment::LineTo(self.point(rel, cur)?), None),
-            b'H' => {
-                let x = self.number()?;
-                (
-                    Segment::LineTo(Point {
-                        x: if rel { cur.x + x } else { x },
-                        y: cur.y,
-                    }),
-                    None,
-                )
-            }
-            b'V' => {
-                let y = self.number()?;
-                (
-                    Segment::LineTo(Point {
-                        x: cur.x,
-                        y: if rel { cur.y + y } else { y },
-                    }),
-                    None,
-                )
-            }
-            b'A' => (self.arc(rel, cur)?, None),
-            _ => self.curve(upper, rel, cur, st.last_ctrl)?,
-        };
-        st.cur = match seg {
-            Segment::MoveTo(p) | Segment::LineTo(p) => p,
-            Segment::QuadTo { to, .. }
-            | Segment::CubicTo { to, .. }
-            | Segment::ArcTo { to, .. } => to,
-            Segment::Close => st.start,
-        };
-        st.last_ctrl = ctrl;
-        st.out.push(seg);
-        Some(())
-    }
+/// Bézier commands; returns the segment and its reflectable control point.
+fn curve<L: Lex>(
+    lex: &mut L,
+    upper: u8,
+    rel: bool,
+    cur: Point,
+    last: Option<(u8, Point)>,
+) -> Option<(Segment, Option<(u8, Point)>)> {
+    Some(match upper {
+        b'C' => {
+            let ctrl1 = point(lex, rel, cur)?;
+            let ctrl2 = point(lex, rel, cur)?;
+            let to = point(lex, rel, cur)?;
+            (Segment::CubicTo { ctrl1, ctrl2, to }, Some((b'C', ctrl2)))
+        }
+        b'S' => {
+            let ctrl1 = reflect(last, b'C', cur);
+            let ctrl2 = point(lex, rel, cur)?;
+            let to = point(lex, rel, cur)?;
+            (Segment::CubicTo { ctrl1, ctrl2, to }, Some((b'C', ctrl2)))
+        }
+        b'Q' => {
+            let ctrl = point(lex, rel, cur)?;
+            let to = point(lex, rel, cur)?;
+            (Segment::QuadTo { ctrl, to }, Some((b'Q', ctrl)))
+        }
+        b'T' => {
+            let ctrl = reflect(last, b'Q', cur);
+            let to = point(lex, rel, cur)?;
+            (Segment::QuadTo { ctrl, to }, Some((b'Q', ctrl)))
+        }
+        _ => return None,
+    })
+}
 
-    /// Bézier commands; returns the segment and its reflectable control point.
-    fn curve(
-        &mut self,
-        upper: u8,
-        rel: bool,
-        cur: Point,
-        last: Option<(u8, Point)>,
-    ) -> Option<(Segment, Option<(u8, Point)>)> {
-        Some(match upper {
-            b'C' => {
-                let ctrl1 = self.point(rel, cur)?;
-                let ctrl2 = self.point(rel, cur)?;
-                let to = self.point(rel, cur)?;
-                (Segment::CubicTo { ctrl1, ctrl2, to }, Some((b'C', ctrl2)))
-            }
-            b'S' => {
-                let ctrl1 = reflect(last, b'C', cur);
-                let ctrl2 = self.point(rel, cur)?;
-                let to = self.point(rel, cur)?;
-                (Segment::CubicTo { ctrl1, ctrl2, to }, Some((b'C', ctrl2)))
-            }
-            b'Q' => {
-                let ctrl = self.point(rel, cur)?;
-                let to = self.point(rel, cur)?;
-                (Segment::QuadTo { ctrl, to }, Some((b'Q', ctrl)))
-            }
-            b'T' => {
-                let ctrl = reflect(last, b'Q', cur);
-                let to = self.point(rel, cur)?;
-                (Segment::QuadTo { ctrl, to }, Some((b'Q', ctrl)))
-            }
-            _ => return None,
-        })
-    }
-
-    fn arc(&mut self, rel: bool, cur: Point) -> Option<Segment> {
-        let rx = self.number()?;
-        let ry = self.number()?;
-        let rotation = self.number()?;
-        let large_arc = self.flag()?;
-        let sweep = self.flag()?;
-        let to = self.point(rel, cur)?;
-        Some(Segment::ArcTo {
-            rx,
-            ry,
-            rotation,
-            large_arc,
-            sweep,
-            to,
-        })
-    }
+fn arc<L: Lex>(lex: &mut L, rel: bool, cur: Point) -> Option<Segment> {
+    let rx = lex.number()?;
+    let ry = lex.number()?;
+    let rotation = lex.number()?;
+    let large_arc = lex.flag()?;
+    let sweep = lex.flag()?;
+    let to = point(lex, rel, cur)?;
+    Some(Segment::ArcTo {
+        rx,
+        ry,
+        rotation,
+        large_arc,
+        sweep,
+        to,
+    })
 }
 
 fn reflect(last: Option<(u8, Point)>, kind: u8, cur: Point) -> Point {

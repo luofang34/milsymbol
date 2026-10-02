@@ -64,7 +64,7 @@ pub(super) fn node<'a>(n: &'a Node, o: &mut Object<'a, 24>) {
             o.put("type", s("svg")).put("svg", s(svg));
         }
         Node::Path(p) => {
-            o.put("type", s("path")).put("d", s(p.d.source()));
+            o.put("type", s("path")).put("d", Json::Path(&p.d));
         }
         Node::Circle(c) => {
             o.put("type", s("circle"))
@@ -103,7 +103,7 @@ pub(super) fn node<'a>(n: &'a Node, o: &mut Object<'a, 24>) {
         }
         Node::Clip(c) => {
             o.put("type", s("clip"))
-                .put("d", s(c.d.source()))
+                .put("d", Json::Path(&c.d))
                 .put("draw", Json::Instructions(&c.draw));
             o.opt("clipId", c.clip_id.as_deref().map(s));
         }
