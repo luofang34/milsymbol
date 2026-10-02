@@ -1,6 +1,9 @@
 # Changelog
 
-## Unreleased
+## 0.3.1 — 2026-10-01
+
+Additive release; output and the default build are unchanged (the compiled
+library is byte-identical to 0.3.0 without the feature).
 
 - New Cargo feature `compact-paths` (off by default, additive, no public API
   or auto-trait change): the icon tables embed their paths packed and decode
