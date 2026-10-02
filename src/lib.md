@@ -286,20 +286,29 @@ icon tables are generated Rust data, and every composition rule is ported.
 
 The icon tables embed their path strings as plain text. The `compact-paths`
 feature (off by default) embeds them packed, about a third of the size, and
-decodes a path into an owned string each time a symbol that uses it is
-composed. Output is byte-identical and no public signature changes. Use it
-when flash or download size matters more than composing speed.
+keeps them packed: a composed symbol holds a reference to the packed bytes,
+and the SVG and JSON writers and [`ir::PathData::segments`] decode them
+as they go. Output is byte-identical, the feature adds no heap, and cloning
+a symbol allocates nothing for its paths. Enabling the feature changes no
+public signature or auto-trait. Use it when flash or download size matters more than serialization
+speed.
+
+[`ir::PathData::source`] returns a [`Cow`](alloc::borrow::Cow): always
+borrowed in the default build, but with this feature a packed path builds a
+new `String` on every call. Writers should call
+[`ir::PathData::write_source`], which never allocates. `source().to_owned()`
+is a `Cow` again; use `.into_owned()` for a `String`.
 
 Measured on one machine against the build without the feature: the
-thumbv7em-none-eabihf firmware image loses 196,584 bytes of `.rodata` and
-gains 1,784 bytes of `.text` (net 194,800 bytes, 18%), and a raw `wasm32`
-module shrinks by 193,318 bytes (17%). The saving is for storage that is not
-compressed: path text is already repetitive, so a gzipped wasm module shrinks
-by only 5%. The cost is one extra allocation per path node, heap equal to the
-decoded path text (median 41 bytes per symbol, 12,591 bytes at most), and
-about 6% to 21% more time to compose a single symbol (about 70% in bulk).
-Rendering an already composed symbol, the cache and the zero-allocation
-observers are unaffected.
+thumbv7em-none-eabihf firmware image (composing and writing one symbol) loses
+196,584 bytes of `.rodata` and gains 1,680 bytes of `.text` (net 194,904
+bytes, 18%), and a raw `wasm32` module shrinks by 187,766 bytes (16%). The
+saving is for storage that is not compressed: path text is already
+repetitive, so a gzipped wasm module shrinks by only 5%. Composing a single
+symbol and writing its SVG takes about 1% to 6% longer, and composing and
+writing all 1,431 numeric icons about 21% longer; building the drawing view
+of already composed symbols is about 19% faster, and composing alone, cloning,
+the cache and the zero-allocation observers are unaffected.
 
 # Compatibility
 

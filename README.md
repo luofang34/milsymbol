@@ -47,8 +47,9 @@ This is figure 13 of MIL-STD-2525C, rendered by this crate.
   other renderers.
 - No JavaScript at build or run time. `no_std + alloc` core; builds for
   `wasm32` and bare-metal targets. The only dependency is `libm`. The
-  optional `compact-paths` feature embeds path data packed, trading CPU and
-  heap for flash (see "Compact path data" in the crate documentation).
+  optional `compact-paths` feature embeds path data packed, trading some CPU
+  for flash and adding no heap (see "Compact path data" in the crate
+  documentation).
 - No global state: a `Renderer` holds configuration and extensions, is
   `Send + Sync`, and renders deterministically.
 - About 450,000 symbols per second to SVG on one core
