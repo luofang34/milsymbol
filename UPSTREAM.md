@@ -127,6 +127,22 @@ tie-breaking rule. When a double lies exactly halfway between two shortest
 decimal representations, it picks the even digit, which Rust's shortest
 formatter does not (`tests/data/v8_numbers.txt`).
 
+## Upstream issues retained
+
+The SVG output keeps these upstream bytes; the drawing view
+(`Symbol::drawing`) describes what SVG renderers draw from them.
+
+- **Invalid suspect frame colour.** milsymbol.js's `FrameColor` colour mode
+  sets `Suspect: "rbg(255, 188, 1)"` (`src/colormodes.js`). The frame of a
+  2525E/APP-6E mine-warfare symbol (symbol set 36) with standard identity
+  suspect is stroked with it. No CSS reader accepts the value, so browsers
+  ignore the stroke and the frame outline is not drawn. In the corpus this
+  affects 318 symbols.
+- **Colours with control characters.** A colour option is written after
+  removing JavaScript whitespace only, so a value such as `"\u0085red"`
+  reaches the SVG unchanged. CSS strips only space, tab, LF, CR and FF, so
+  browsers ignore it.
+
 ## Known differences
 
 These are deliberate and do not occur in the corpus. The `known` oracle

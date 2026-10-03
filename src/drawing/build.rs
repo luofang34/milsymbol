@@ -51,13 +51,23 @@ fn finite(v: f64, fallback: f64) -> f64 {
     if v.is_finite() { v } else { fallback }
 }
 
-fn paint(p: &crate::ir::Paint) -> Paint {
-    match p {
-        crate::ir::Paint::Color(c) if !c.is_empty() => sanitize::sanitize_color(c)
-            .and_then(|c| Color::new(String::from(c)).ok())
-            .map_or(Paint::None, Paint::Solid),
-        _ => Paint::None,
+/// The paint an SVG reader takes from the `fill` or `stroke` attribute the
+/// SVG writer emits for `p`. `None` when the written value is not a CSS
+/// colour: readers ignore such a value, so the inherited paint stays.
+fn paint(p: &crate::ir::Paint) -> Option<Paint> {
+    let crate::ir::Paint::Color(c) = p else {
+        return Some(Paint::None);
+    };
+    let Some(written) = sanitize::sanitize_color(c) else {
+        return Some(Paint::None);
+    };
+    if written.eq_ignore_ascii_case("none") {
+        return Some(Paint::None);
     }
+    if !super::css::is_color(written) {
+        return None;
+    }
+    Color::new(String::from(written)).ok().map(Paint::Solid)
 }
 
 /// Dash lengths as SVG reads them: an invalid list draws a solid line.
@@ -106,14 +116,19 @@ impl Builder {
                     LineJoin::Miter
                 };
             }
-            a.stroke = paint(stroke);
+            if let Some(p) = paint(stroke) {
+                a.stroke = p;
+            }
         }
         if let Some(fill) = &st.fill {
-            a.fill = if st.style_fill == Some(true) && self.style_fill {
-                Color::new("rgba(255,255,255,0.4)").map_or(Paint::None, Paint::Solid)
+            let resolved = if st.style_fill == Some(true) && self.style_fill {
+                Some(Paint::Solid(Color::from_static("rgba(255,255,255,0.4)")))
             } else {
                 paint(fill)
             };
+            if let Some(p) = resolved {
+                a.fill = p;
+            }
         }
         if let Some(op) = &st.fill_opacity {
             a.fill_opacity = finite(op.value(), 1.0).clamp(0.0, 1.0);

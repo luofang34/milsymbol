@@ -18,6 +18,10 @@
 //! The view follows the SVG output, including what the serializer drops:
 //! colours, dash arrays, line caps, text anchors, font weights and font
 //! families that the SVG writer rejects are resolved the same way here.
+//! It also follows what SVG readers do with the output: a fill or stroke
+//! that is not a CSS colour is ignored, and the item keeps the paint it
+//! inherits, as a browser draws it. `tests/drawing_svg.rs` checks the view
+//! against an independent SVG reader for every symbol of the oracle corpus.
 //!
 //! ```
 //! use milsymbol::Renderer;
@@ -36,6 +40,7 @@ use alloc::string::String;
 use alloc::vec::Vec;
 
 mod build;
+mod css;
 mod transform;
 
 pub use transform::Transform;

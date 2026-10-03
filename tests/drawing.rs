@@ -268,3 +268,51 @@ fn malformed_paths_and_raw_svg_are_reported() -> TestResult {
     assert_eq!(segments.len(), 2, "the valid prefix is drawn");
     Ok(())
 }
+
+/// SVG readers ignore a fill or stroke that is not a CSS colour, so the
+/// item keeps the paint its group gives it; `none` is no paint.
+#[test]
+fn paint_that_is_not_a_colour_is_inherited() -> TestResult {
+    let mut group = Node::translate(0.0, 0.0, Vec::new());
+    if let Some(style) = group.style_mut() {
+        style.fill = Some(IrPaint::color("blue"));
+        style.stroke = Some(IrPaint::color("red"));
+    }
+    let mut children = Vec::new();
+    for (fill, stroke) in [
+        ("rbg(255, 188, 1)", "\u{85}red"),
+        ("none", "NONE"),
+        ("#0f0", "rgb(1 2 3 / 50%)"),
+    ] {
+        let mut path = Node::path("M 0,0 L 10,10");
+        if let Some(style) = path.style_mut() {
+            style.fill = Some(IrPaint::color(fill));
+            style.stroke = Some(IrPaint::color(stroke));
+        }
+        children.push(path);
+    }
+    if let Some(draw) = group.children_mut() {
+        *draw = children;
+    }
+    let drawing = drawing_of(vec![group])?;
+    fn color(p: &Paint) -> Option<&str> {
+        match p {
+            Paint::Solid(c) => Some(c.as_str()),
+            _ => None,
+        }
+    }
+    let paints: Vec<_> = drawing
+        .items
+        .iter()
+        .map(|i| (color(&i.appearance.fill), color(&i.appearance.stroke)))
+        .collect();
+    assert_eq!(
+        paints,
+        [
+            (Some("blue"), Some("red")),
+            (None, None),
+            (Some("#0f0"), Some("rgb(1 2 3 / 50%)")),
+        ]
+    );
+    Ok(())
+}
