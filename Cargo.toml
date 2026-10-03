@@ -12,7 +12,8 @@ keywords = ["milsymbol", "mil-std-2525", "app-6", "symbology", "svg"]
 categories = ["graphics", "rendering", "no-std"]
 documentation = "https://docs.rs/milsymbol"
 homepage = "https://github.com/luofang34/milsymbol"
-# Large differential fixtures and their test target stay in the repository.
+# Large differential fixtures and the test targets that read them stay in the
+# repository.
 # The package includes the other tests and their reference data, examples,
 # benches and documentation; README images use absolute URLs.
 include = [
@@ -20,6 +21,8 @@ include = [
     "/src/lib.md",
     "/tests/**/*.rs",
     "!/tests/corpus.rs",
+    "!/tests/drawing_svg.rs",
+    "!/tests/drawing_svg/**",
     "/tests/data/*.txt",
     "/examples/*.rs",
     "/benches/*.rs",
@@ -60,6 +63,12 @@ flate2 = "1.1.10"
 proptest = "1.11.0"
 criterion = { version = "0.8.2", default-features = false }
 dhat = "0.3.3"
+kurbo = "0.13.1"
+resvg = { version = "0.48.1", default-features = false }
+roxmltree = "0.21.1"
+svgtypes = "0.16.1"
+tiny-skia = "0.12.0"
+usvg = { version = "0.48.1", default-features = false }
 
 [[bench]]
 name = "render"

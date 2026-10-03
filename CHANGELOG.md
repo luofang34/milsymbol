@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.4.1 — Unreleased
+
+SVG output is unchanged.
+
+- `Symbol::drawing` ignores a fill or stroke that is not a CSS colour and
+  keeps the inherited paint, as SVG readers do. Before, such an item
+  carried the invalid colour text. Upstream's own suspect frame colour
+  (`rbg(255, 188, 1)`, see UPSTREAM.md) is one such value.
+- `Symbol::drawing` reports a `fill` or `stroke` of `none` as
+  `drawing::Paint::None` instead of a colour named `none`.
+- New differential test `tests/drawing_svg.rs`: every symbol of the oracle
+  corpus is read back from its SVG with usvg and compared with the drawing
+  view, item by item, and a sample is painted from both and compared.
+
 ## 0.4.0 — 2026-10-02
 
 Breaking change to one method. Rendered output is unchanged. The default
