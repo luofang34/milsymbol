@@ -91,10 +91,23 @@ options) for each case; `cargo test --test corpus` replays them without Node.
 | `fuzz` | 20,000 | random numeric and letter SIDCs, some with options |
 | `config` | 123 | renderer-level standard, dash arrays, HQ staff length |
 | `invalid` | 44 | empty/short/long/malformed SIDCs, unknown colour mode |
+| `layout` | 7,264 | information fields and style on every frame shape: 14 symbol sets × 5 identities, HQ/TF/feint and 12 letter SIDCs, × 6 text-field profiles × 14 style rows (backgrounds, outlines, stack, flags, direction, square, sizes, fonts, monochrome, unframed), and 40 inputs on which milsymbol.js throws |
 
-All 288,489 cases match byte-for-byte (SVG) and exactly (semantic record).
+All 295,753 cases match byte-for-byte (SVG) and exactly (semantic record).
+Where milsymbol.js throws, the port must fail for the same reason: a
+`RenderError::UpstreamException` with upstream's message, or
+`UnknownColorMode` for upstream's crash on a colour mode that does not exist.
 Regenerate fixtures with `node tools/oracle/fixtures.mjs <suite>…` (x64 Node,
-see below); run a live comparison with `tools/oracle/diff.sh <suite>`.
+see below). `tools/oracle/diff.sh <suite>` runs a live comparison and, on x64
+Node, checks the committed fixture against the same oracle records;
+`tools/oracle/check-all.sh` does this for every suite in parallel.
+
+`cargo test --release --test drawing_svg` checks the drawing view against
+the SVG for every corpus symbol: usvg reads each SVG and its visible paths
+are compared item by item with `Symbol::drawing` (geometry, transforms,
+paint, strokes, dashes, clips, and text attributes read with roxmltree), and
+every 25th symbol is painted from both and compared pixel by pixel. Two
+extension cases add clips, which built-in symbols never use.
 
 ## Platform-dependent upstream output
 
@@ -115,7 +128,9 @@ reproduces the arm64 group bit for bit. Other implementations do not: the
 `libm` crate differs on 110 of the 7,136 reference arguments, and a
 correctly rounded reduction of large arguments differs because fdlibm's
 reduced value is not always correctly rounded. `tests/data/v8_trig_*.txt` holds both
-reference sets, and `RendererConfig::reference_platform` selects the one to
+reference sets (`node tools/oracle/vectors.mjs trig` regenerates the one for
+the running Node's architecture; `check` verifies the committed file and
+`tests/data/v8_numbers.txt`, and CI runs it on x64 and arm64), and `RendererConfig::reference_platform` selects the one to
 match (default x64, which is also what WebAssembly engines compute). The
 committed fixtures are generated with x64 Node; on arm64 hosts run
 `fixtures.mjs` with an x64 Node (e.g. under Rosetta). `diff.sh` passes the
@@ -200,6 +215,11 @@ suite and native regression tests check the observable differences.
   `functionid`, which `JSON.stringify` writes as `\udXXX`. Rust strings
   cannot hold a lone surrogate; each half becomes U+FFFD. The SVG is
   unaffected (`tests/data/unicode_oracle.txt`).
+- **JavaScript object keys as colour mode names.** Upstream looks colour
+  modes up on a plain object, so `colorMode: "constructor"` (or another
+  `Object.prototype` property) finds the inherited property and renders
+  without fill colours. Here it is `RenderError::UnknownColorMode`, like any
+  other mode that is not registered. The `known` suite checks this.
 - **JavaScript object keys as option names.** Upstream assigns options onto
   a plain object: a `__proto__` key is swallowed by the prototype setter,
   and a `hasOwnProperty` key shadows the method upstream later calls, so it

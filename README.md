@@ -8,7 +8,7 @@ Military unit symbols per **MIL-STD-2525** and **STANAG APP-6**, in native Rust.
 
 This is a port of [milsymbol.js](https://github.com/spatialillusions/milsymbol)
 3.0.4 by Måns Beckman. It produces the same SVG as milsymbol.js, byte for byte,
-verified on 288,489 symbol/option combinations, and also exposes each symbol as
+verified on 295,753 symbol/option combinations, and also exposes each symbol as
 typed drawing instructions for non-SVG renderers.
 
 ![Figure 13](https://github.com/luofang34/milsymbol/raw/main/docs/images/figure13.svg)
@@ -292,6 +292,7 @@ tools/ci/lint.sh stable 1.85:lib     # clippy with warnings denied on each toolc
 tools/ci/lint-config.sh              # every crate carries the workspace lint table
 cargo run --example readme_images    # regenerates docs/images (or pass an output dir)
 tools/oracle/diff.sh options         # live diff against milsymbol.js (needs Node)
+tools/oracle/check-all.sh            # every suite, in parallel (x64 Node also checks fixtures)
 tools/codegen/regenerate.sh          # regenerate src/generated from upstream (needs Node)
 ```
 

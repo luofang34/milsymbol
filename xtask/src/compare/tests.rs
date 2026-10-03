@@ -47,9 +47,13 @@ fn malformed_records_are_rejected_on_either_side() {
 }
 
 #[test]
-fn valid_error_records_compare_by_outcome() -> TestResult {
+fn valid_error_records_compare_by_failure() -> TestResult {
     let err = r#"{"error":"oracle exception"}"#;
-    assert!(one(err, r#"{"error":"typed Rust error"}"#)?);
+    assert!(one(
+        err,
+        r#"{"error":"input makes milsymbol.js throw: oracle exception"}"#
+    )?);
+    assert!(!one(err, r#"{"error":"another Rust error"}"#)?);
     assert!(!one(err, &record("{}"))?);
     assert!(!one(&record("{}"), err)?);
     Ok(())
@@ -294,4 +298,39 @@ fn malformed_cases_and_incomplete_known_declarations_are_errors() {
     ] {
         assert!(declared(case, &rec, &rec).is_err(), "{case}");
     }
+}
+
+#[test]
+fn prototype_colour_modes_render_upstream_and_fail_in_rust() -> TestResult {
+    let case = r#"{"known":"prototype-color-mode","options":{"colorMode":"toString"}}"#;
+    let oracle = record(r#"{"x":1}"#);
+    let error = r#"{"error":"unknown colour mode \"toString\""}"#;
+    assert!(declared(case, &oracle, error)?.0);
+    let other = r#"{"error":"unknown colour mode \"valueOf\""}"#;
+    assert!(
+        !declared(case, &oracle, other)?.0,
+        "the error names the mode"
+    );
+    assert!(!declared(case, error, error)?.0, "upstream must render");
+    assert!(!declared(case, &oracle, &oracle)?.0, "Rust must fail");
+    let ordinary = r#"{"known":"prototype-color-mode","options":{"colorMode":"Pink"}}"#;
+    assert!(
+        declared(ordinary, &oracle, error).is_err(),
+        "only prototype names"
+    );
+    Ok(())
+}
+
+#[test]
+fn errors_must_be_the_same_failure() {
+    use super::same_failure;
+    let missing = "Cannot read properties of undefined (reading 'Civilian')";
+    assert!(same_failure(missing, "unknown colour mode \"x\""));
+    assert!(!same_failure(missing, "option `size` is not finite"));
+    assert!(same_failure("boom", "input makes milsymbol.js throw: boom"));
+    assert!(!same_failure(
+        "boom",
+        "input makes milsymbol.js throw: other"
+    ));
+    assert!(!same_failure("other", "unknown colour mode \"x\""));
 }

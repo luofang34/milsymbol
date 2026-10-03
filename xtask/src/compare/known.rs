@@ -1,6 +1,9 @@
 //! Only the declared difference may depart from the oracle. Option-key cases
 //! carry an expected record from a safe upstream control render, with the
 //! input option restored. Its SVG and canonical JSON must match byte for byte.
+//! A colour mode named after an `Object.prototype` property renders upstream
+//! (the mode lookup finds the inherited property) and must be Rust's
+//! unknown-colour-mode error.
 
 use super::{Record, first_diff, surrogates};
 use crate::Error;
@@ -11,7 +14,24 @@ enum Known {
     LoneSurrogate,
     ThrowsUpstream,
     ProtoKey,
+    PrototypeColorMode,
 }
+
+/// Names `ms._colorModes[name]` finds on `Object.prototype`.
+const PROTOTYPE_NAMES: [&str; 12] = [
+    "__defineGetter__",
+    "__defineSetter__",
+    "__lookupGetter__",
+    "__lookupSetter__",
+    "__proto__",
+    "constructor",
+    "hasOwnProperty",
+    "isPrototypeOf",
+    "propertyIsEnumerable",
+    "toLocaleString",
+    "toString",
+    "valueOf",
+];
 
 impl Known {
     fn option(self) -> Option<&'static str> {
@@ -19,6 +39,7 @@ impl Known {
             Known::LoneSurrogate => None,
             Known::ThrowsUpstream => Some("hasOwnProperty"),
             Known::ProtoKey => Some("__proto__"),
+            Known::PrototypeColorMode => Some("colorMode"),
         }
     }
 }
@@ -39,6 +60,7 @@ pub(super) fn declared(line: &str) -> Result<Option<Declaration>, Error> {
         Some("lone-surrogate") => Known::LoneSurrogate,
         Some("throws-upstream") => Known::ThrowsUpstream,
         Some("proto-key") => Known::ProtoKey,
+        Some("prototype-color-mode") => Known::PrototypeColorMode,
         _ => return Err(format!("unknown \"known\" value {kind}").into()),
     };
     let option = kind
@@ -51,6 +73,13 @@ pub(super) fn declared(line: &str) -> Result<Option<Declaration>, Error> {
                 .ok_or_else(|| format!("known case requires a string {key} option"))
         })
         .transpose()?;
+    if kind == Known::PrototypeColorMode
+        && !option
+            .as_deref()
+            .is_some_and(|m| PROTOTYPE_NAMES.contains(&m))
+    {
+        return Err(format!("colorMode {option:?} is not an Object.prototype property").into());
+    }
     Ok(Some(Declaration { kind, option }))
 }
 
@@ -60,6 +89,18 @@ pub(super) fn check(
     rust: &Record<'_>,
     expected: Option<&Record<'_>>,
 ) -> Result<(), String> {
+    if declared.kind == Known::PrototypeColorMode {
+        let want = format!(
+            "unknown colour mode {:?}",
+            declared.option.as_deref().unwrap_or("")
+        );
+        return match (oracle, rust) {
+            (Record::Rendered { .. }, Record::Error(e)) if *e == want => Ok(()),
+            _ => Err(format!(
+                "expected upstream to render and Rust to report {want}"
+            )),
+        };
+    }
     let Record::Rendered {
         svg,
         sem,

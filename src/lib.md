@@ -333,7 +333,7 @@ the cache and the zero-allocation observers are unaffected.
 
 The baseline is milsymbol.js 3.0.4 (commit `b05f2d7`), each symbol rendered as
 by a freshly initialised milsymbol. SVG output is byte-identical on a
-288,489-case differential corpus. Upstream's direction arrows depend on the
+295,753-case differential corpus. Upstream's direction arrows depend on the
 last bit of V8's `Math.sin`/`Math.cos`, which differs between x64 and arm64;
 [`RendererConfig::reference_platform`](config::RendererConfig::reference_platform)
 selects which one to reproduce. [`compat`] holds milsymbol.js's own

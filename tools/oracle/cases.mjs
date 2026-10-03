@@ -1,7 +1,7 @@
 // Generates the differential corpus case lists.
 //
 // Usage: node cases.mjs <suite> > cases.jsonl
-// Suites: base, modifiers, options, config, invalid, fuzz, direction, known
+// Suites: base, modifiers, options, config, invalid, fuzz, direction, layout, known
 //
 // Cases are {sidc, options?, cfg?, known?}. `known` names a documented
 // difference (UPSTREAM.md) that `cargo xtask compare` expects exactly. Entity codes are discovered from the
@@ -279,6 +279,47 @@ function direction() {
     }
 }
 
+// Information-field layout and style, the hand-ported part of the
+// renderer: every frame shape and identity, with HQ, task force and feint,
+// crossed with text-field profiles and style rows, plus the inputs on which
+// milsymbol.js throws.
+function layout() {
+  const sidcs = [];
+  const sets = ["01", "05", "10", "11", "15", "20", "25", "27", "30", "35", "36", "40", "50", "60"];
+  for (const ss of sets) {
+    const ents = numberEntities(ss).filter((e) => e !== "000000" && valid("1003" + ss + "0000" + e + "0000"));
+    const e = ents[1] || ents[0] || "000000";
+    for (const si of ["3", "6", "4", "1", "5"]) sidcs.push("100" + si + ss + "0000" + e + "0000");
+  }
+  sidcs.push("10031002161211000000", "10061004151211000000", "10031001151205000000", "10061026001211000000");
+  sidcs.push("SFGPUCI---D-", "SHAPMF------", "SNSPCLCV----", "SUUPSN------", "SFPPS-------", "SFGPEVAT----",
+    "SFGPIRN-----", "GFGPGPP-----", "OFVPMA------", "EFOPA-------", "IFGPSCC-----", "SHGAUCI---B-");
+  const pick = (keys) => Object.fromEntries(keys.map((k) => [k, TEXT_FIELDS[k]]));
+  const profiles = [
+    pick(["uniqueDesignation", "higherFormation"]),
+    pick(["quantity", "specialHeadquarters", "headquartersElement", "reinforcedReduced"]),
+    pick(["dtg", "altitudeDepth", "location", "speed", "type"]),
+    pick(["staffComments", "additionalInformation", "evaluationRating", "combatEffectiveness",
+      "signatureEquipment", "hostile", "iffSif", "sigint"]),
+    TEXT_FIELDS,
+    { uniqueDesignation: "WWWWWWWWWWWWWWWWWWWW", type: "ÅÄÖ 中文 😀", staffComments: "a & b < c", dtg: "" },
+  ];
+  const perAff = { Friend: "rgb(1,2,3)", Hostile: "red", Neutral: "#00ff00", Unknown: "yellow", Civilian: "purple", Suspect: "orange" };
+  const styles = [
+    {}, { infoBackground: "white" }, { infoBackground: perAff, infoColor: perAff }, { outlineWidth: 3 },
+    { infoOutlineWidth: 2, infoOutlineColor: "blue" }, { stack: 2 }, { country_flag: "SE", signature: "!" },
+    { direction: 135, speedLeader: 40 }, { square: true, padding: 5 }, { infoSize: 30, size: 60 },
+    { infoSize: 70, fontfamily: "Courier" }, { monoColor: "black", outlineWidth: 2, infoBackground: "white" },
+    { fill: false, frame: false }, { infoColor: "red", strokeWidth: 2 },
+  ];
+  for (const sidc of sidcs)
+    for (const text of profiles)
+      for (const style of styles) out({ sidc, options: Object.assign({}, text, style) });
+  for (const sidc of sidcs.filter((_, i) => i % 9 === 0))
+    for (const colorMode of ["NoSuchMode", "light", "", "dark"])
+      out({ sidc, options: { colorMode, uniqueDesignation: "A", direction: 30 } });
+}
+
 // Inputs with documented differences (UPSTREAM.md, "Known differences").
 // Only compared live: the checked-in fixtures hold no such cases.
 function known() {
@@ -297,9 +338,13 @@ function known() {
       out({ sidc, options: { ...options, ["__proto__"]: value }, known: "proto-key" });
     }
   }
+  // `ms._colorModes[name]` finds properties of Object.prototype: upstream
+  // renders without a fill colour, Rust reports the unknown colour mode.
+  for (const colorMode of ["constructor", "toString", "valueOf", "hasOwnProperty", "__proto__", "isPrototypeOf"])
+    for (const sidc of [infantry, "SFGPUCI-----"]) out({ sidc, options: { colorMode }, known: "prototype-color-mode" });
 }
 
-const suites = { base, modifiers, options, config, invalid, fuzz, direction, known };
+const suites = { base, modifiers, options, config, invalid, fuzz, direction, layout, known };
 const suite = process.argv[2];
 if (!suites[suite]) {
   console.error(`unknown suite ${suite}; one of ${Object.keys(suites).join(", ")}`);

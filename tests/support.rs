@@ -7,6 +7,19 @@ use milsymbol::options::{OptionError, OptionValue, SymbolOptions};
 use milsymbol::{DashArrays, ReferencePlatform, Renderer, RendererConfig, Standard};
 use serde_json::Value;
 
+/// Whether a Rust error is the typed form of a milsymbol.js exception:
+/// `RenderError::UpstreamException` repeats upstream's message, and the
+/// crash on a colour mode that does not exist is `UnknownColorMode`.
+pub(crate) fn same_failure(oracle: &str, rust: &str) -> bool {
+    match rust.strip_prefix("input makes milsymbol.js throw: ") {
+        Some(message) => message == oracle,
+        None => {
+            oracle == "Cannot read properties of undefined (reading 'Civilian')"
+                && rust.starts_with("unknown colour mode ")
+        }
+    }
+}
+
 /// FNV-1a 64-bit over UTF-8 bytes (mirrors `tools/oracle/oracle.mjs`).
 pub(crate) fn fnv64(s: &str) -> String {
     let mut h: u64 = 0xcbf29ce484222325;

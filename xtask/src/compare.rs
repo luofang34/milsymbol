@@ -28,6 +28,19 @@ fn next_record<R: BufRead>(lines: &mut Lines<R>) -> Result<Option<Value>, Error>
     Ok(None)
 }
 
+/// Whether a Rust error is the typed form of a milsymbol.js exception:
+/// `RenderError::UpstreamException` repeats upstream's message, and the
+/// crash on a colour mode that does not exist is `UnknownColorMode`.
+pub(crate) fn same_failure(oracle: &str, rust: &str) -> bool {
+    match rust.strip_prefix("input makes milsymbol.js throw: ") {
+        Some(message) => message == oracle,
+        None => {
+            oracle == "Cannot read properties of undefined (reading 'Civilian')"
+                && rust.starts_with("unknown colour mode ")
+        }
+    }
+}
+
 fn clip(v: &Value) -> String {
     clip_str(&v.to_string())
 }
@@ -176,8 +189,17 @@ impl Tally {
                     lone_surrogates: l2,
                 },
             ) => (a, b, c, d, e, f, l1 || l2),
-            // Oracle and Rust error messages need not use the same wording.
-            (Record::Error(_), Record::Error(_)) => return None,
+            (Record::Error(a), Record::Error(b)) => {
+                if same_failure(a, b) {
+                    return None;
+                }
+                self.errors += 1;
+                return Some(format!(
+                    "different failures: oracle={} rust={}",
+                    clip_str(a),
+                    clip_str(b)
+                ));
+            }
             (Record::Error(e), _) => {
                 self.errors += 1;
                 return Some(format!(

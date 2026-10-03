@@ -13,6 +13,13 @@ SVG output is unchanged.
 - New differential test `tests/drawing_svg.rs`: every symbol of the oracle
   corpus is read back from its SVG with usvg and compared with the drawing
   view, item by item, and a sample is painted from both and compared.
+- New oracle suite `layout` (7,264 cases): information fields and style on
+  every frame shape, and 40 inputs on which milsymbol.js throws. Where
+  upstream throws, the port must now fail for the same reason, not merely
+  fail.
+- Documented known difference: a colour mode named after an
+  `Object.prototype` property (`constructor`, `toString`, …) renders without
+  fill colours upstream and is `RenderError::UnknownColorMode` here.
 
 ## 0.4.0 — 2026-10-02
 

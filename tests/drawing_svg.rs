@@ -33,10 +33,11 @@ use std::io::{BufRead, BufReader};
 
 type TestResult = Result<(), Box<dyn std::error::Error>>;
 
-const SUITES: [&str; 7] = [
+const SUITES: [&str; 8] = [
     "invalid",
     "config",
     "options",
+    "layout",
     "fuzz",
     "modifiers",
     "direction",
@@ -200,7 +201,7 @@ fn corpus_drawings_match_their_svg() -> TestResult {
         corpus(suite, &mut totals)?;
     }
     totals.finish("corpus");
-    assert!(totals.symbols > 288_000 / STRIDE, "{}", totals.symbols);
+    assert!(totals.symbols > 295_000 / STRIDE, "{}", totals.symbols);
     Ok(())
 }
 
