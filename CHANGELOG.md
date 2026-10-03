@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.4.1 — Unreleased
+## 0.4.1 — 2026-10-03
 
 SVG output is unchanged.
 
@@ -10,6 +10,12 @@ SVG output is unchanged.
   (`rbg(255, 188, 1)`, see UPSTREAM.md) is one such value.
 - `Symbol::drawing` reports a `fill` or `stroke` of `none` as
   `drawing::Paint::None` instead of a colour named `none`.
+- `Symbol::drawing` borrows colours from the built-in tables instead of
+  copying each into a new `String`: an infantry symbol's drawing allocates
+  4 heap blocks instead of 12, a letter SIDC's 5 instead of 26. Against
+  0.4.0 in 8 interleaved rounds, building the drawing of all 1,431 numeric
+  icons is 3.6% faster (minimum) and every other benchmark stays within the
+  control build's spread or the 1–3% code-layout noise of the machine.
 - New differential test `tests/drawing_svg.rs`: every symbol of the oracle
   corpus is read back from its SVG with usvg and compared with the drawing
   view, item by item, and a sample is painted from both and compared.
