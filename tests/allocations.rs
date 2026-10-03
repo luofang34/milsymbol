@@ -23,6 +23,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     unused_label_definitions_do_not_add_allocations()?;
     direction_rendering_stays_within_allocation_budgets()?;
     cloning_does_not_allocate_per_path()?;
+    drawing_allocations_stay_within_budget()?;
     Ok(())
 }
 
@@ -173,3 +174,32 @@ fn cloning_does_not_allocate_per_path() -> Result<(), Box<dyn std::error::Error>
     );
     Ok(())
 }
+
+/// The drawing view borrows colours from the built-in tables and checks
+/// them without allocating, so its blocks are its own vectors and the
+/// colours of options.
+fn drawing_allocations_stay_within_budget() -> Result<(), Box<dyn std::error::Error>> {
+    let renderer = Renderer::default();
+    for (sidc, budget) in [
+        ("10031000001211000000", BUDGET_INFANTRY),
+        ("SFGPUCI----D", BUDGET_LETTER),
+    ] {
+        let symbol = renderer.render(sidc, SymbolOptions::default())?;
+        black_box(symbol.drawing());
+        let profiler = dhat::Profiler::builder().testing().build();
+        let drawing = black_box(&symbol).drawing();
+        let stats = dhat::HeapStats::get();
+        drop(profiler);
+        drop(drawing);
+        assert!(
+            stats.total_blocks <= budget,
+            "drawing {sidc}: {} blocks exceeds {budget}",
+            stats.total_blocks
+        );
+    }
+    Ok(())
+}
+
+/// Upper bounds on the blocks one `drawing()` call allocates.
+const BUDGET_INFANTRY: u64 = 4;
+const BUDGET_LETTER: u64 = 5;

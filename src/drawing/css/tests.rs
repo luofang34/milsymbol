@@ -80,3 +80,19 @@ fn rejects_mixed_separators() {
         assert!(!is_color(s), "{s:?}");
     }
 }
+
+#[test]
+fn names_functions_and_units_ignore_case() {
+    for s in [
+        "Red",
+        "LightGoldenRodYellow",
+        "RGB(1,2,3)",
+        "Hsla(120, 100%, 75%, 0.5)",
+        "hsl(120DEG 100% 50%)",
+    ] {
+        assert!(is_color(s), "{s:?}");
+    }
+    for s in ["Rbg(1,2,3)", "rgb(1,2,3,4,5)", "hsl(120px, 1%, 2%)"] {
+        assert!(!is_color(s), "{s:?}");
+    }
+}

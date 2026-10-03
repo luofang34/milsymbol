@@ -160,11 +160,9 @@ fn is_css_space(c: char) -> bool {
     matches!(c, ' ' | '\t' | '\n' | '\r' | '\u{c}')
 }
 
-/// A CSS `<number>`: optional sign, digits with an optional fraction (or a
-/// fraction alone), optional exponent.
-fn is_number(s: &str) -> bool {
-    let b = s.as_bytes();
-    let mut i = usize::from(matches!(b.first(), Some(b'+' | b'-')));
+/// The end of the CSS `<number>` starting at `i` (optional sign, digits with
+/// an optional fraction or a fraction alone, optional exponent), or `None`.
+fn number_end(b: &[u8], mut i: usize) -> Option<usize> {
     let digits = |i: &mut usize| {
         let start = *i;
         while b.get(*i).is_some_and(u8::is_ascii_digit) {
@@ -172,87 +170,147 @@ fn is_number(s: &str) -> bool {
         }
         *i > start
     };
+    i += usize::from(matches!(b.get(i), Some(b'+' | b'-')));
     let mut any = digits(&mut i);
-    if b.get(i) == Some(&b'.') {
+    if b.get(i) == Some(&b'.') && b.get(i + 1).is_some_and(u8::is_ascii_digit) {
         i += 1;
         any |= digits(&mut i);
+    } else if any && b.get(i) == Some(&b'.') {
+        i += 1;
     }
     if !any {
-        return false;
+        return None;
     }
     if matches!(b.get(i), Some(b'e' | b'E')) {
-        i += 1;
-        i += usize::from(matches!(b.get(i), Some(b'+' | b'-')));
-        if !digits(&mut i) {
-            return false;
+        let mut j = i + 1;
+        j += usize::from(matches!(b.get(j), Some(b'+' | b'-')));
+        if b.get(j).is_some_and(u8::is_ascii_digit) {
+            i = j;
+            digits(&mut i);
         }
     }
-    i == b.len()
+    Some(i)
 }
 
-/// A number or a percentage; for a hue also an angle.
-fn is_component(s: &str, hue: bool) -> bool {
-    let units: &[&str] = if hue {
-        &["deg", "grad", "rad", "turn", ""]
+/// Whether `unit` may follow a number in a colour function: an angle for the
+/// hue, a percentage elsewhere, or nothing.
+fn is_unit(unit: &[u8], hue: bool) -> bool {
+    let allowed: &[&[u8]] = if hue {
+        &[b"", b"deg", b"grad", b"rad", b"turn"]
     } else {
-        &["%", ""]
+        &[b"", b"%"]
     };
-    units
-        .iter()
-        .any(|u| s.strip_suffix(u).is_some_and(is_number))
+    allowed.iter().any(|u| u.eq_ignore_ascii_case(unit))
 }
 
-/// `rgb()`, `rgba()`, `hsl()` and `hsla()` with comma-separated or
-/// space-separated components and an optional alpha.
+fn is_space_byte(b: u8) -> bool {
+    matches!(b, b' ' | b'\t' | b'\n' | b'\r' | 0x0c)
+}
+
+/// How a colour function separates its components.
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum Separator {
+    Unknown,
+    Comma,
+    Space,
+}
+
+/// The arguments of `rgb()`, `rgba()`, `hsl()` or `hsla()`: three
+/// components separated by commas or by spaces, and an optional alpha (a
+/// fourth comma-separated component, or after `/` in the space syntax).
+/// One pass over the bytes, no allocation.
+fn is_arguments(b: &[u8], hue: bool) -> bool {
+    let skip = |i: &mut usize| {
+        let start = *i;
+        while b.get(*i).copied().is_some_and(is_space_byte) {
+            *i += 1;
+        }
+        *i > start
+    };
+    let (mut i, mut count, mut slash) = (0, 0, false);
+    let mut separator = Separator::Unknown;
+    skip(&mut i);
+    loop {
+        let Some(end) = number_end(b, i) else {
+            return false;
+        };
+        let mut unit_end = end;
+        while b
+            .get(unit_end)
+            .is_some_and(|c| c.is_ascii_alphabetic() || *c == b'%')
+        {
+            unit_end += 1;
+        }
+        if !is_unit(b.get(end..unit_end).unwrap_or(&[]), hue && count == 0) {
+            return false;
+        }
+        count += 1;
+        i = unit_end;
+        let spaced = skip(&mut i);
+        let Some(&next) = b.get(i) else { break };
+        let comma = next == b',';
+        if next == b'/' {
+            if separator == Separator::Comma || count != 3 || slash {
+                return false;
+            }
+            slash = true;
+        } else if comma && separator != Separator::Space && !slash {
+            separator = Separator::Comma;
+        } else if spaced && !comma && separator != Separator::Comma && !slash {
+            separator = Separator::Space;
+            continue;
+        } else {
+            return false;
+        }
+        i += 1;
+        skip(&mut i);
+    }
+    match count {
+        3 => !slash,
+        4 => slash || separator == Separator::Comma,
+        _ => false,
+    }
+}
+
+/// `rgb()`, `rgba()`, `hsl()` and `hsla()`, names in any case.
 fn is_function(s: &str) -> bool {
     let Some((name, rest)) = s.split_once('(') else {
         return false;
     };
-    let hue = match name {
-        "rgb" | "rgba" => false,
-        "hsl" | "hsla" => true,
-        _ => return false,
-    };
-    let Some(args) = rest.strip_suffix(')') else {
+    let hue = if name.eq_ignore_ascii_case("rgb") || name.eq_ignore_ascii_case("rgba") {
+        false
+    } else if name.eq_ignore_ascii_case("hsl") || name.eq_ignore_ascii_case("hsla") {
+        true
+    } else {
         return false;
     };
-    let (main, alpha) = match args.split_once('/') {
-        Some((m, a)) if !args.contains(',') => (m, Some(a.trim_matches(is_css_space))),
-        Some(_) => return false,
-        None => (args, None),
-    };
-    let commas = main.contains(',');
-    let parts: alloc::vec::Vec<&str> = if commas {
-        main.split(',')
-            .map(|p| p.trim_matches(is_css_space))
-            .collect()
-    } else {
-        main.split(is_css_space).filter(|p| !p.is_empty()).collect()
-    };
-    // Only the comma syntax takes the alpha as a fourth component.
-    let channels = match (parts.len(), commas) {
-        (3, _) => parts.as_slice(),
-        (4, true) => parts.get(..3).unwrap_or(&[]),
-        _ => return false,
-    };
-    let alpha_ok = alpha
-        .or_else(|| parts.get(3).copied())
-        .is_none_or(|a| is_component(a, false));
-    alpha_ok
-        && channels
-            .iter()
-            .enumerate()
-            .all(|(i, c)| is_component(c, hue && i == 0))
+    rest.strip_suffix(')')
+        .is_some_and(|args| is_arguments(args.as_bytes(), hue))
 }
 
-/// Whether `s` is a CSS colour.
+/// `name` against a lower-case table entry, ignoring ASCII case.
+fn cmp_name(entry: &str, name: &str) -> core::cmp::Ordering {
+    entry
+        .bytes()
+        .cmp(name.bytes().map(|b| b.to_ascii_lowercase()))
+}
+
+fn is_named(t: &str) -> bool {
+    NAMED.binary_search(&t).is_ok()
+        || (t.bytes().any(|b| b.is_ascii_uppercase())
+            && NAMED.binary_search_by(|entry| cmp_name(entry, t)).is_ok())
+}
+
+/// Whether `s` is a CSS colour. Allocates nothing.
 pub(crate) fn is_color(s: &str) -> bool {
     let t = s.trim_matches(is_css_space);
     if let Some(hex) = t.strip_prefix('#') {
-        return matches!(hex.len(), 3 | 4 | 6 | 8) && hex.bytes().all(|b| b.is_ascii_hexdigit());
+        matches!(hex.len(), 3 | 4 | 6 | 8) && hex.bytes().all(|b| b.is_ascii_hexdigit())
+    } else if t.ends_with(')') {
+        is_function(t)
+    } else {
+        is_named(t)
     }
-    let lower = t.to_ascii_lowercase();
-    NAMED.binary_search(&lower.as_str()).is_ok() || is_function(&lower)
 }
 
 #[cfg(test)]

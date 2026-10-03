@@ -1,5 +1,6 @@
 //! Flattening the instruction tree into [`Drawing`] items.
 
+use super::css;
 use super::{
     Appearance, Baseline, ClipRegion, DrawItem, Drawing, FontWeight, LineCap, LineJoin, Paint,
     Shape, Text, TextAnchor, Transform, ViewBox,
@@ -8,6 +9,7 @@ use crate::ir::{Node, Num, Point, Segment, Style};
 use crate::options::Color;
 use crate::svg::sanitize;
 use crate::symbol::Symbol;
+use alloc::borrow::Cow;
 use alloc::string::String;
 use alloc::vec::Vec;
 
@@ -38,13 +40,47 @@ impl Inherited {
     }
 }
 
-struct Builder {
+struct Builder<'a> {
     /// The symbol's stroke width, used where an item sets none.
     stroke_width: f64,
     style_fill: bool,
     items: Vec<DrawItem>,
     omitted_raw_svg: usize,
     invalid_paths: usize,
+    colors: Judged<'a>,
+}
+
+/// Colour texts already judged by [`css::is_color`] in this drawing. A
+/// symbol paints many items with a handful of colours, so most judgements
+/// are repeats.
+struct Judged<'a> {
+    seen: [(&'a str, bool); 8],
+    len: usize,
+    next: usize,
+}
+
+impl<'a> Judged<'a> {
+    fn new() -> Self {
+        Judged {
+            seen: [("", false); 8],
+            len: 0,
+            next: 0,
+        }
+    }
+
+    fn is_color(&mut self, text: &'a str) -> bool {
+        let seen = self.seen.get(..self.len).unwrap_or(&[]);
+        if let Some(&(_, ok)) = seen.iter().find(|(t, _)| *t == text) {
+            return ok;
+        }
+        let ok = css::is_color(text);
+        if let Some(slot) = self.seen.get_mut(self.next) {
+            *slot = (text, ok);
+        }
+        self.next = (self.next + 1) % self.seen.len();
+        self.len = (self.len + 1).min(self.seen.len());
+        ok
+    }
 }
 
 fn finite(v: f64, fallback: f64) -> f64 {
@@ -54,7 +90,7 @@ fn finite(v: f64, fallback: f64) -> f64 {
 /// The paint an SVG reader takes from the `fill` or `stroke` attribute the
 /// SVG writer emits for `p`. `None` when the written value is not a CSS
 /// colour: readers ignore such a value, so the inherited paint stays.
-fn paint(p: &crate::ir::Paint) -> Option<Paint> {
+fn paint<'a>(p: &'a crate::ir::Paint, colors: &mut Judged<'a>) -> Option<Paint> {
     let crate::ir::Paint::Color(c) = p else {
         return Some(Paint::None);
     };
@@ -64,10 +100,20 @@ fn paint(p: &crate::ir::Paint) -> Option<Paint> {
     if written.eq_ignore_ascii_case("none") {
         return Some(Paint::None);
     }
-    if !super::css::is_color(written) {
+    if !colors.is_color(written) {
         return None;
     }
-    Color::new(String::from(written)).ok().map(Paint::Solid)
+    // Colours from the built-in tables are `'static`: keep borrowing them.
+    let text: crate::ir::Str = match c {
+        Cow::Borrowed(source) => {
+            let start = (written.as_ptr() as usize).wrapping_sub(source.as_ptr() as usize);
+            source
+                .get(start..start.saturating_add(written.len()))
+                .map_or_else(|| Cow::Owned(String::from(written)), Cow::Borrowed)
+        }
+        Cow::Owned(_) => Cow::Owned(String::from(written)),
+    };
+    Color::new(text).ok().map(Paint::Solid)
 }
 
 /// Dash lengths as SVG reads them: an invalid list draws a solid line.
@@ -87,8 +133,8 @@ fn dashes(text: &str) -> Vec<f64> {
     }
 }
 
-impl Builder {
-    fn style(&self, ctx: &mut Inherited, st: &Style) {
+impl<'a> Builder<'a> {
+    fn style(&mut self, ctx: &mut Inherited, st: &'a Style) {
         let a = &mut ctx.appearance;
         if let Some(stroke) = &st.stroke {
             let scale = finite(st.non_scaling_stroke.unwrap_or(1.0), 1.0);
@@ -116,7 +162,7 @@ impl Builder {
                     LineJoin::Miter
                 };
             }
-            if let Some(p) = paint(stroke) {
+            if let Some(p) = paint(stroke, &mut self.colors) {
                 a.stroke = p;
             }
         }
@@ -124,7 +170,7 @@ impl Builder {
             let resolved = if st.style_fill == Some(true) && self.style_fill {
                 Some(Paint::Solid(Color::from_static("rgba(255,255,255,0.4)")))
             } else {
-                paint(fill)
+                paint(fill, &mut self.colors)
             };
             if let Some(p) = resolved {
                 a.fill = p;
@@ -163,13 +209,13 @@ impl Builder {
         });
     }
 
-    fn list(&mut self, nodes: &[Node], ctx: &Inherited) {
+    fn list(&mut self, nodes: &'a [Node], ctx: &Inherited) {
         for n in nodes {
             self.node(n, ctx);
         }
     }
 
-    fn node(&mut self, node: &Node, parent: &Inherited) {
+    fn node(&mut self, node: &'a Node, parent: &Inherited) {
         let style = match node {
             Node::Group(list) => return self.list(list, parent),
             Node::Missing | Node::Scalar(_) | Node::Bare(_) => return,
@@ -212,7 +258,7 @@ impl Builder {
         self.leaf_or_group(node, &ctx);
     }
 
-    fn leaf_or_group(&mut self, node: &Node, ctx: &Inherited) {
+    fn leaf_or_group(&mut self, node: &'a Node, ctx: &Inherited) {
         match node {
             Node::Path(p) => {
                 let segments = self.segments(&p.d);
@@ -312,6 +358,7 @@ impl Symbol {
             items: Vec::new(),
             omitted_raw_svg: 0,
             invalid_paths: 0,
+            colors: Judged::new(),
         };
         b.list(&self.instructions, &Inherited::initial());
         let (x, y, width, height) = frame.view_box();
