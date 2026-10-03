@@ -152,8 +152,27 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
       - run: tools/ci/js-guard.sh
 
-  oracle:
-    name: regenerate from pinned milsymbol.js and diff
+  vectors:
+    name: V8 reference vectors on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, ubuntu-24.04-arm]
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 26
+      - run: node tools/oracle/vectors.mjs check
+
+  # The oracle jobs prove that src/generated and the committed fixtures are
+  # what the pinned milsymbol.js produces, and that the port matches it live.
+  # Each is a pure function of the files hashed into its key, so a key that
+  # has passed before is not checked again: a marker is cached only after
+  # the job succeeds.
+  codegen:
+    name: generated tables match pinned milsymbol.js
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
@@ -161,25 +180,70 @@ jobs:
         with:
           node-version: 26
       - uses: dtolnay/rust-toolchain@stable
+      - name: Inputs
+        id: inputs
+        run: echo "key=codegen-$(node --version)-$(rustc --version | cut -d' ' -f2)-${{ hashFiles('tools/codegen/*', 'tools/fetch-upstream.sh', 'tools/oracle/pin.json', 'xtask/**', 'src/generated/**', 'src/ir/path/codec.rs', 'Cargo.lock', '.github/workflows/ci.yml') }}" >> "$GITHUB_OUTPUT"
+      - uses: actions/cache/restore@v4
+        id: verified
+        with:
+          path: .verified
+          key: ${{ steps.inputs.outputs.key }}
+          lookup-only: true
       - uses: Swatinem/rust-cache@v2
+        if: steps.verified.outputs.cache-hit != 'true'
       - name: Regenerate tables
+        if: steps.verified.outputs.cache-hit != 'true'
         run: tools/codegen/regenerate.sh
         env:
           BASELINES: "200"
           CHECKS: "800"
       - name: Generated tables are up to date
-        run: git diff --exit-code -- src/generated
-      - name: Live differential check against the oracle
+        if: steps.verified.outputs.cache-hit != 'true'
+        run: git diff --exit-code -- src/generated && mkdir -p .verified && touch .verified/ok
+      - uses: actions/cache/save@v4
+        if: steps.verified.outputs.cache-hit != 'true'
+        with:
+          path: .verified
+          key: ${{ steps.inputs.outputs.key }}
+      - if: steps.verified.outputs.cache-hit == 'true'
+        run: echo "These inputs already passed (${{ steps.inputs.outputs.key }})." >> "$GITHUB_STEP_SUMMARY"
+
+  oracle:
+    name: live diff and fixtures against milsymbol.js (${{ matrix.job }}/3)
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        job: [1, 2, 3]
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 26
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Inputs
+        id: inputs
+        run: echo "key=oracle-${{ matrix.job }}of3-$(node --version)-$(rustc --version | cut -d' ' -f2)-${{ hashFiles('src/**', 'tests/support.rs', 'tests/corpus/**', 'examples/dump.rs', 'xtask/**', 'tools/oracle/*', 'tools/fetch-upstream.sh', 'Cargo.lock', 'Cargo.toml', '.github/workflows/ci.yml') }}" >> "$GITHUB_OUTPUT"
+      - uses: actions/cache/restore@v4
+        id: verified
+        with:
+          path: .verified
+          key: ${{ steps.inputs.outputs.key }}
+          lookup-only: true
+      - uses: Swatinem/rust-cache@v2
+        if: steps.verified.outputs.cache-hit != 'true'
+      - name: Every suite, this job's share, in parallel
+        if: steps.verified.outputs.cache-hit != 'true'
+        env:
+          REQUIRE_FIXTURE_CHECK: "1"
         run: |
-          for suite in invalid config options fuzz modifiers base direction known; do
-            tools/oracle/diff.sh "$suite" 10
-          done
-      - name: Fixtures are up to date
-        # Compare decompressed content: gzip bytes differ between zlib builds.
-        run: |
-          mkdir -p /tmp/committed
-          cp tests/corpus/*.jsonl.gz /tmp/committed/
-          node tools/oracle/fixtures.mjs invalid config options fuzz modifiers base direction
-          for f in tests/corpus/*.jsonl.gz; do
-            cmp <(gunzip -c "/tmp/committed/$(basename "$f")") <(gunzip -c "$f")
-          done
+          tools/fetch-upstream.sh
+          tools/oracle/check-all.sh ${{ matrix.job }}/3
+          mkdir -p .verified && touch .verified/ok
+      - uses: actions/cache/save@v4
+        if: steps.verified.outputs.cache-hit != 'true'
+        with:
+          path: .verified
+          key: ${{ steps.inputs.outputs.key }}
+      - if: steps.verified.outputs.cache-hit == 'true'
+        run: echo "These inputs already passed (${{ steps.inputs.outputs.key }})." >> "$GITHUB_STEP_SUMMARY"

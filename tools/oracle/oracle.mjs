@@ -116,18 +116,25 @@ export function renderCase(c) {
   return rec;
 }
 
-// Compact record for checked-in fixtures.
-export function fixtureLine(c) {
-  const r = renderCase(c);
+// Compact record for checked-in fixtures, from a comparison record
+// (`{svg, sem}` with `sem` the canonical JSON string, or `{error}`).
+export function fixtureLineFromRecord(c, record) {
   const line = { sidc: c.sidc };
   if (c.options) line.options = c.options;
   if (c.cfg) line.cfg = c.cfg;
-  if (r.error !== undefined) {
-    line.error = r.error;
+  if (record.error !== undefined) {
+    line.error = record.error;
     return line;
   }
-  line.svg = fnv64(r.svg);
-  line.sem = fnv64(canonical(r.sem));
-  line.valid = r.sem.valid;
+  line.svg = fnv64(record.svg);
+  line.sem = fnv64(record.sem);
+  line.valid = JSON.parse(record.sem).valid;
   return line;
+}
+
+// Compact record for checked-in fixtures.
+export function fixtureLine(c) {
+  const r = renderCase(c);
+  const record = r.error !== undefined ? { error: r.error } : { svg: r.svg, sem: canonical(r.sem) };
+  return fixtureLineFromRecord(c, record);
 }
