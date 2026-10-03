@@ -155,7 +155,9 @@ fn direction_rendering_stays_within_allocation_budgets() -> Result<(), Box<dyn s
 }
 
 /// A packed path is a borrowed slice, so a clone costs what the same tree
-/// with plain path text costs: the blocks are the tree's own vectors.
+/// with plain path text costs: the blocks are the tree's own vectors. The
+/// bound is an upper limit so allocator differences between platforms do
+/// not fail it.
 fn cloning_does_not_allocate_per_path() -> Result<(), Box<dyn std::error::Error>> {
     let renderer = Renderer::default();
     let symbol = renderer.render("10031000001211000000", SymbolOptions::default())?;
@@ -164,6 +166,10 @@ fn cloning_does_not_allocate_per_path() -> Result<(), Box<dyn std::error::Error>
     let stats = dhat::HeapStats::get();
     drop(profiler);
     drop(copy);
-    assert_eq!(stats.total_blocks, 5, "blocks of a clone");
+    assert!(
+        stats.total_blocks <= 5,
+        "blocks of a clone: {}",
+        stats.total_blocks
+    );
     Ok(())
 }
