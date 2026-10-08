@@ -1,0 +1,108 @@
+field	code	name	page	table
+version	10	MIL-STD-2525D	59	A-I
+version	10	APP-06(D)(1)	59	A-I
+version	11	MIL-STD-2525D(1)	59	A-I
+version	12	APP-06(D)(2)	59	A-I
+version	13	MIL-STD-2525E	59	A-I
+version	14	APP-06(E)(1)	59	A-I
+version	15	MIL-STD-2525E(1)	59	A-I
+version	16	APP-06(E)(2)	59	A-I
+version	17-3F	Reserved for future Editions/Versions	59	A-I
+version	40-FF	N/A	59	A-I
+context	0	Reality	59	A-II
+context	1	Exercise	59	A-II
+context	2	Simulation	59	A-II
+context	3	Restricted Target – Reality	59	A-II
+context	4	No-Strike Entity – Reality	59	A-II
+context	5	Restricted Target – Exercise	59	A-II
+context	6	No-Strike Entity – Exercise	59	A-II
+context	7	Restricted Target – Simulation	59	A-II
+context	8	No-Strike Entity – Simulation	59	A-II
+standard_identity	0	Pending	59	A-II
+standard_identity	1	Unknown	59	A-II
+standard_identity	2	Assumed Friend	59	A-II
+standard_identity	3	Friend	59	A-II
+standard_identity	4	Neutral	60	A-II
+standard_identity	5	Suspect/Joker	60	A-II
+standard_identity	6	Hostile/Faker	60	A-II
+symbol_set	00	Unknown	60	A-IV
+symbol_set	01	Air	60	A-IV
+symbol_set	02	Air Missile	60	A-IV
+symbol_set	05	Space	60	A-IV
+symbol_set	06	Space Missile	60	A-IV
+symbol_set	10	Land Unit	60	A-IV
+symbol_set	11	Land Civilian Unit/Organization	60	A-IV
+symbol_set	15	Land Equipment	60	A-IV
+symbol_set	20	Land Installation	60	A-IV
+symbol_set	25	Control Measures and Planning Symbols	60	A-IV
+symbol_set	27	Dismounted Individuals	60	A-IV
+symbol_set	30	Sea Surface	61	A-IV
+symbol_set	35	Sea Subsurface	61	A-IV
+symbol_set	36	Mine Warfare	61	A-IV
+symbol_set	40	Activities	61	A-IV
+symbol_set	45	Atmospheric	61	A-IV
+symbol_set	46	Oceanographic	61	A-IV
+symbol_set	47	Meteorological Space	61	A-IV
+symbol_set	50	Signals Intelligence	61	A-IV
+symbol_set	60	Cyberspace - Virtual	61	A-IV
+status	0	Present	62	A-VI
+status	1	Planned/Anticipated/Suspect	62	A-VI
+status	2	Present/Fully capable	62	A-VI
+status	3	Present/Damaged	62	A-VI
+status	4	Present/Destroyed	62	A-VI
+status	5	Present/Full to capacity	62	A-VI
+hq_task_force_dummy	0	Unknown	62	A-VII
+hq_task_force_dummy	1	Feint/Decoy/Dummy	62	A-VII
+hq_task_force_dummy	2	Headquarters	62	A-VII
+hq_task_force_dummy	3	Feint/Dummy Headquarters	62	A-VII
+hq_task_force_dummy	4	Task Force	62	A-VII
+hq_task_force_dummy	5	Feint/Dummy Task Force	62	A-VII
+hq_task_force_dummy	6	Task Force Headquarters	62	A-VII
+hq_task_force_dummy	7	Feint/Dummy Task Force Headquarters	62	A-VII
+amplifying_descriptor	00	Unknown	63	A-VIII
+amplifying_descriptor_group	1	Echelon at brigade and below	63	A-VIII
+amplifying_descriptor	11	Team/Crew	63	A-VIII
+amplifying_descriptor	12	Squad	63	A-VIII
+amplifying_descriptor	13	Section	63	A-VIII
+amplifying_descriptor	14	Platoon/Detachment	63	A-VIII
+amplifying_descriptor	15	Company/Battery/Troop	63	A-VIII
+amplifying_descriptor	16	Battalion/Squadron	63	A-VIII
+amplifying_descriptor	17	Regiment/Group	63	A-VIII
+amplifying_descriptor	18	Brigade	63	A-VIII
+amplifying_descriptor_group	2	Echelon at division and above	63	A-VIII
+amplifying_descriptor	21	Division	63	A-VIII
+amplifying_descriptor	22	Corps/MEF	63	A-VIII
+amplifying_descriptor	23	Army	63	A-VIII
+amplifying_descriptor	24	Army Group/Front	63	A-VIII
+amplifying_descriptor	25	Region/Theater	63	A-VIII
+amplifying_descriptor	26	Command	63	A-VIII
+amplifying_descriptor_group	3	Equipment mobility on land	63	A-VIII
+amplifying_descriptor	31	Wheeled limited cross country	63	A-VIII
+amplifying_descriptor	32	Wheeled cross country	63	A-VIII
+amplifying_descriptor	33	Tracked	63	A-VIII
+amplifying_descriptor	34	Wheeled and tracked combination	63	A-VIII
+amplifying_descriptor	35	Towed	63	A-VIII
+amplifying_descriptor	36	Rail	63	A-VIII
+amplifying_descriptor	37	Pack animals	63	A-VIII
+amplifying_descriptor_group	4	Equipment mobility on snow	63	A-VIII
+amplifying_descriptor	41	Over-snow (prime mover)	63	A-VIII
+amplifying_descriptor	42	Sled	63	A-VIII
+amplifying_descriptor_group	5	Equipment mobility on water	63	A-VIII
+amplifying_descriptor	51	Barge	63	A-VIII
+amplifying_descriptor	52	Amphibious	63	A-VIII
+amplifying_descriptor_group	6	Naval towed array	63	A-VIII
+amplifying_descriptor	61	Short towed array	63	A-VIII
+amplifying_descriptor	62	Long towed Array	64	A-VIII
+amplifying_descriptor_group	7	Leadership Amplifier	64	A-VIII
+amplifying_descriptor	71	Leader Individual	64	A-VIII
+frame_shape	0	Unknown	141	A-LX
+frame_shape	1	Space	141	A-LX
+frame_shape	2	Air	141	A-LX
+frame_shape	3	Land Unit	141	A-LX
+frame_shape	4	Land Equipment	141	A-LX
+frame_shape	5	Land Installation	141	A-LX
+frame_shape	6	Dismounted Individuals	141	A-LX
+frame_shape	7	Sea Subsurface	141	A-LX
+frame_shape	8	Activity/Event	141	A-LX
+frame_shape	9	Cyberspace	141	A-LX
+frame_shape	A	Sea Surface	141	A-LX

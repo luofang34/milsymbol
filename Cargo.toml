@@ -23,6 +23,7 @@ include = [
     "!/tests/corpus.rs",
     "!/tests/drawing_svg.rs",
     "!/tests/drawing_svg/**",
+    "!/tests/standards.rs",
     "/tests/data/*.txt",
     "/examples/*.rs",
     "/benches/*.rs",

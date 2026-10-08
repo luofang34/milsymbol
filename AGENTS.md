@@ -4,7 +4,9 @@ The repository and public library are to be called **`milsymbol`**, not `milsymb
 
 ## Mission
 
-Reimplement the behavior of `spatialillusions/milsymbol` in native Rust, using upstream `milsymbol` v3.0.4, commit `b05f2d7`, as the primary compatibility oracle.
+Reimplement the behavior of `spatialillusions/milsymbol` in native Rust, using upstream `milsymbol` v3.0.4, commit `b05f2d7`, as the compatibility oracle for everything that upstream implements.
+
+From 0.5.x the single source of truth for symbol content is the current published standards: MIL-STD-2525E with Change 1 and NATO APP-6(E) Version 2 (see "Standards source of truth"). Upstream remains the reference for the standard revisions without a pinned document, for presentation details the standards leave open, and, byte for byte, for an explicit milsymbol 3.0.4 mode.
 
 The finished library must generate military symbology without requiring JavaScript at runtime, build time, or in downstream applications.
 
@@ -28,9 +30,41 @@ Do not use mutable process-global rendering state. Configuration must be explici
 
 Do not introduce network access at runtime.
 
+## Standards source of truth
+
+The authoritative documents are:
+
+- MIL-STD-2525E with Change 1, 2 March 2025 (SIDC version `15`), Distribution A, from ASSIST/QuickSearch.
+- NATO APP-6(E) Version 2, October 2025 (SIDC version `16`), promulgated 16 October 2025.
+
+Pin both in machine-readable repository metadata (`tools/standards/pin.json`): title, edition/version, date, SIDC version code, source, page count and SHA-256 of the PDF. Do not commit the PDFs.
+
+Rendering has two modes, chosen by explicit renderer configuration:
+
+- **Standards** (the default): the rules below.
+- **Milsymbol 3.0.4**: byte-identical to upstream for every input. The existing oracle corpus runs in this mode with no exceptions.
+
+In standards mode, decoding and display are separate:
+
+- **Decoding** (what a code means) follows the SIDC version digits, which name the edition the code was written against (MIL-STD-2525E w/Change 1, A.5.3.1): `13` MIL-STD-2525E, `14` APP-6(E) Version 1, `15` MIL-STD-2525E w/Change 1, `16` APP-6(E) Version 2. Versions `15` and `16` use their pinned standard's tables. Versions `13` and `14` keep upstream's edition E tables, which are what those editions mean, except where upstream contradicts a pinned standard on a point that no change record (APP-6(E) Version 2 NSCP list, the 2525E change) explains; such a fix applies to `13`/`14` as well. Codes added by a later version stay unknown under an earlier one. Contexts `3`–`8` (restricted target, no strike entity), symbol set `64` and hexadecimal characters are decoded for every edition E version. Unrecognised codes are handled as MIL-STD-2525E w/Change 1, 4.7.3 allows: draw what is understood (frame from Set A) and mark the rest unknown.
+- **Display** (frames, amplifier and indicator drawing, digit 23) follows the renderer's `standard` setting, using the current text of that document: MIL-STD-2525E w/Change 1 for 2525, APP-6(E) Version 2 for APP-6. The two disagree (e.g. land equipment friend frame 1.2L against 1.0L), and version `10` is shared by 2525D and APP-6(D)(1), so the version digits cannot carry presentation. Display rules apply to every numeric SIDC; the frame shapes are the same table for edition D.
+
+Versions `10`–`12` and letter SIDCs keep upstream code meanings; no pinned document covers them.
+
+Where a standard is silent (line widths, text placement, colours not specified), keep upstream 3.0.4 behavior.
+
+In standards mode, every output that differs from upstream must be traceable to a row, figure or paragraph of a pinned standard, and is listed by rule in a reviewed, checked-in table that the corpus test applies; never a tolerance.
+
+Extract the standards' tables mechanically from the pinned PDFs with explicit developer tooling (`tools/standards/`) into checked-in, reviewable fixtures under `tests/data/standards/`, with the printed page and table of every row. Hand-entered values are allowed only for figures that carry no extractable text (e.g. frame proportions), each with its page reference. Fixtures derived from APP-6 acknowledge NATO in `NOTICE`.
+
+Icon geometry that upstream does not provide must come from the standards' own drawings by a reproducible conversion, not from hand-drawn approximations; record the page each icon came from.
+
+Multipoint control measures (lines and areas) stay out of scope; the fixtures mark them, and conformance tests skip them explicitly, never silently.
+
+
 ## Compatibility target
 
-Implement the symbol behavior exposed by upstream `milsymbol` 3.0.4.
+Implement the symbol behavior exposed by upstream `milsymbol` 3.0.4 for the standard revisions it implements.
 
 Support the standards and compatibility behavior implemented upstream, including:
 
@@ -142,7 +176,9 @@ Prefer comparisons in this order:
 
 Do not declare a mismatch acceptable merely because the result “looks similar.”
 
-When exact upstream behavior appears erroneous, retain compatibility by default and document the issue. Improvements may be offered only behind an explicit behavior/version mode.
+When exact upstream behavior appears erroneous, retain compatibility by default and document the issue. Improvements may be offered only behind an explicit behavior/version mode. From 0.5.x the standards mode is the default and the milsymbol 3.0.4 mode is the explicit one: in standards mode the pinned standard decides, and upstream behavior that contradicts it is not retained.
+
+Compare standards-mode output against the standards' fixtures semantically (code recognized, icon present and the one the standard names, frame proportions, required amplifiers drawn), with tolerances only where the standard states one or a figure must be measured; record each tolerance and its source.
 
 ## Implementation strategy
 
@@ -208,6 +244,10 @@ Library documentation must explain the SIDC API, rendering API, compatibility ba
 Benchmark representative single-symbol rendering, repeated cached rendering, and bulk rendering. Record methodology and results rather than making unsupported performance claims.
 
 The implementation must support symbol combinations produced at runtime; it must not merely retrieve members of the regression corpus.
+
+For 0.5.x, additionally: every in-scope code of both pinned standards (entities, sector 1 and 2 modifiers, common modifiers, header fields) parses as valid for its version and draws the icon the standard names; restricted target and no strike entity contexts draw their amplifiers; frame proportions match the standards' frame size tables. The conformance suite reports per-code status from the fixtures; any code it still skips must be listed with a reason.
+
+0.5.x is developed and tested on its own branch and is not released until the user explicitly authorizes publication.
 
 ## Repository/package naming
 
