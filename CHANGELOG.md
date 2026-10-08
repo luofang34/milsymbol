@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.4.2 — 2026-10-08
+
+Documentation only; the code and SVG output are unchanged.
+
+- The crate documentation and README say which later standard revisions
+  milsymbol.js 3.0.4, and therefore this crate, does not recognise: version
+  digits `15` (MIL-STD-2525E Change 1) and `16` (APP-6(E) Version 2),
+  contexts `3`–`8`, symbol set `64` and letters in numeric SIDCs. A doctest
+  checks each statement, including how a version `16` SIDC is drawn.
+- `TextField::Country`, `HeadquartersElement` and `InstallationComposition`
+  name their APP-6(E) fields (AS, AW, AX) next to the field letters
+  milsymbol.js documents (AC, AH, AI). In APP-6(E), AH and AI are the area
+  of uncertainty and the dead reckoning trailer.
+
 ## 0.4.1 — 2026-10-03
 
 SVG output is unchanged.

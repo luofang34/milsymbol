@@ -92,7 +92,8 @@ text_fields! {
     Speed, SPEED => "speed",
     /// Field AA: special headquarters.
     SpecialHeadquarters, SPECIAL_HEADQUARTERS => "specialHeadquarters",
-    /// Field AC: country.
+    /// Country: APP-6(E) field AS, the geographical entity (milsymbol.js
+    /// documents it as field AC).
     Country, COUNTRY => "country",
     /// Field AD: platform type.
     PlatformType, PLATFORM_TYPE => "platformType",
@@ -102,9 +103,11 @@ text_fields! {
     CommonIdentifier, COMMON_IDENTIFIER => "commonIdentifier",
     /// Field AG: auxiliary equipment indicator.
     AuxiliaryEquipmentIndicator, AUXILIARY_EQUIPMENT_INDICATOR => "auxiliaryEquipmentIndicator",
-    /// Field AH: headquarters element.
+    /// Headquarters element: APP-6(E) field AW (milsymbol.js documents it as
+    /// field AH).
     HeadquartersElement, HEADQUARTERS_ELEMENT => "headquartersElement",
-    /// Field AI: installation composition.
+    /// Installation composition: APP-6(E) field AX (milsymbol.js documents it
+    /// as field AI).
     InstallationComposition, INSTALLATION_COMPOSITION => "installationComposition",
     /// Field AO: engagement bar.
     EngagementBar, ENGAGEMENT_BAR => "engagementBar",

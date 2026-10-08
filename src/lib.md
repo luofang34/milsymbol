@@ -23,6 +23,39 @@ assert!(symbol.sidc_validity().is_valid());
 | Numeric (20 or 30 digits) | MIL-STD-2525D, 2525E; APP-6D, APP-6E (versions `10`–`12` → D, `13`–`14` → E) |
 | Letter (10–15 characters) | MIL-STD-2525B (incl. change 2), 2525C; APP-6B |
 
+Later revisions are not recognised, as in milsymbol.js 3.0.4. `Sidc::parse`
+rejects as malformed the version digits `15` (MIL-STD-2525E Change 1) and
+`16` (APP-6(E) Version 2), the contexts `3`–`8` (restricted target and no
+strike entity), symbol set `64` (cyberspace non-unit) and the letters `A`–`F`
+that APP-6(E) Version 2 allows in every position. Rendering still draws a
+version `15` or `16` SIDC with the edition E icons, except that digit 23
+(frame shape) is ignored and land unit sector 2 modifier `11` (dental) is
+drawn as the letter D. Codes that APP-6(E) Version 2 added draw as unknown,
+and codes it reassigned draw their earlier meaning.
+
+```
+use milsymbol::Renderer;
+use milsymbol::sidc::Sidc;
+
+for sidc in [
+    "16031000001211000000", // APP-6(E) Version 2
+    "14331000001211000000", // restricted target
+    "14036400001401000000", // cyberspace non-unit
+    "1403100000121100A000", // sector 1 modifier A0
+] {
+    assert!(Sidc::parse(sidc).is_err());
+}
+let r = Renderer::default();
+let svg = |sidc: &str| r.symbol(sidc).render().map(|s| s.to_svg());
+assert_eq!(svg("14031000001211000000")?, svg("16031000001211000000")?);
+assert_ne!(svg("14031000001100000011")?, svg("16031000001100000011")?);
+assert_ne!(
+    svg("140310000012110000000010000000")?,
+    svg("160310000012110000000010000000")?,
+);
+# Ok::<(), milsymbol::RenderError>(())
+```
+
 Whether 2525 or APP-6 rules apply is a renderer setting
 ([`RendererBuilder::standard`]) that a symbol can override
 (`style.standard`).

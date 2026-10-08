@@ -203,6 +203,10 @@ let svg = app6.symbol("SFGPUCFRM---").render()?.to_svg();
 | Numeric (20–30 digits) | MIL-STD-2525D, 2525E; APP-6D, APP-6E (version digits `10`–`12` → D, `13`–`14` → E) |
 | Letter (15 characters) | MIL-STD-2525B (incl. change 2), 2525C; APP-6B |
 
+Later revisions (version digits `15` and `16`, i.e. MIL-STD-2525E Change 1
+and APP-6(E) Version 2) are not recognised, as in milsymbol.js 3.0.4; the
+crate documentation lists what that changes.
+
 ## Drawing
 
 `to_svg()` is one renderer. `Symbol::drawing()` gives the same picture as
