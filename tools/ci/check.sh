@@ -23,4 +23,5 @@ RUSTDOCFLAGS="$docflags" step cargo doc --no-deps -p milsymbol --no-default-feat
 step cargo build --release
 step tools/ci/file-size.sh
 step tools/ci/lint-config.sh
+step tools/ci/workflow-concurrency.sh
 step tools/ci/changelog.sh

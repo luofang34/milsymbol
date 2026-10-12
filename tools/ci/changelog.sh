@@ -12,7 +12,7 @@ for arg in "$@"; do
     *) echo "unknown argument: $arg" >&2; exit 2 ;;
   esac
 done
-version=$(cargo metadata --no-deps --format-version 1 | jq -r '.packages[] | select(.name == "milsymbol") | .version')
+version=$(tools/ci/crate.sh version)
 section=$(awk -v heading="## $version — " '
   index($0, heading) == 1 { found = 1; print; next }
   found && /^## / { exit }

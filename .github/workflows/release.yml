@@ -1,7 +1,8 @@
 name: Release
 
-# Only tag pushes publish; manual runs verify OIDC authentication without
-# uploading a crate. The crates-io environment restricts allowed refs.
+# A v* tag publishes to crates.io once the tagged commit is on main and has a
+# successful CI run, authenticating through Trusted Publishing (OIDC) only.
+# Manual runs from a v* tag check the token exchange and upload nothing.
 on:
   push:
     tags: ["v*"]
@@ -60,17 +61,15 @@ jobs:
           fi
       - uses: dtolnay/rust-toolchain@stable
       - name: Tag matches Cargo.toml version
-        run: |
-          version=$(cargo metadata --no-deps --format-version 1 | jq -r '.packages[] | select(.name == "milsymbol") | .version')
-          test "v$version" = "$GITHUB_REF_NAME"
+        run: test "v$(tools/ci/crate.sh version)" = "$GITHUB_REF_NAME"
       - name: Changelog entry is dated
         run: tools/ci/changelog.sh --release
-      - run: cargo test --release -p milsymbol
+      - run: cargo test --locked --release -p "$(tools/ci/crate.sh name)"
       - name: Authenticate with Trusted Publishing
         id: trusted
         uses: rust-lang/crates-io-auth-action@v1
       - name: Publish
-        run: cargo publish -p milsymbol
+        run: cargo publish --locked -p "$(tools/ci/crate.sh name)"
         env:
           CARGO_REGISTRY_TOKEN: ${{ steps.trusted.outputs.token }}
 
@@ -90,4 +89,4 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           gh release create "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" --verify-tag \
-            --title "milsymbol ${GITHUB_REF_NAME#v}" --notes-file "$RUNNER_TEMP/notes.md"
+            --title "$(tools/ci/crate.sh name) ${GITHUB_REF_NAME#v}" --notes-file "$RUNNER_TEMP/notes.md"
