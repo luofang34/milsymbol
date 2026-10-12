@@ -5,6 +5,12 @@ on:
     branches: [main]
   pull_request:
 
+# A newer push to a pull request or to main supersedes the run before it: merging a stack
+# pushes main once per pull request and rebases each one left.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 env:
   CARGO_TERM_COLOR: always
   RUSTFLAGS: -D warnings
@@ -126,7 +132,8 @@ jobs:
         run: tools/ci/required-checks.sh
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
-      - run: cargo publish --dry-run -p milsymbol
+      - run: tools/ci/release-auth.sh
+      - run: cargo publish --locked --dry-run -p "$(tools/ci/crate.sh name)"
       - run: cargo package -p milsymbol
       - name: Package stays small and omits repository-only corpus
         run: |
