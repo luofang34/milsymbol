@@ -2,8 +2,10 @@
 
 Releases are published to crates.io by `.github/workflows/release.yml` when a
 `v*` tag is pushed. Authentication uses crates.io Trusted Publishing (OIDC)
-only; no registry token secret or feature variable is required. Manual runs
-only verify authentication and never publish.
+only; no registry token secret or feature variable is required. After the
+crate is published, the workflow creates the tag's GitHub release with its
+`CHANGELOG.md` entry as the notes. Manual runs only verify authentication
+and never publish.
 
 ## Before a release
 
