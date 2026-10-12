@@ -39,7 +39,9 @@ and never publish.
 ## Repository protections
 
 - `main`: no force pushes or deletion; the CI jobs are required status
-  checks (repository admins may still push directly).
+  checks (repository admins may still push directly). The package job runs
+  `tools/ci/required-checks.sh`, which fails when a required check is not a
+  job of the run, so a renamed job must be renamed in the protection too.
 - Tags `v*`: only repository admins may create them (ruleset "release
   tags: admins create"), and nobody can move or delete them (ruleset
   "release tags: immutable"). To remove a mistaken tag that was never
