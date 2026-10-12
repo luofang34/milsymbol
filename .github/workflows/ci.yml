@@ -115,8 +115,15 @@ jobs:
   package:
     name: crates.io package builds
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: read # list this run's jobs for tools/ci/required-checks.sh
     steps:
       - uses: actions/checkout@v5
+      - name: Required status checks are jobs of this workflow
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: tools/ci/required-checks.sh
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
       - run: cargo publish --dry-run -p milsymbol
