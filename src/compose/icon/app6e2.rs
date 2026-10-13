@@ -32,8 +32,9 @@ pub(super) enum Kind {
 const US_ONLY: [&str; 9] = ["06", "45", "46", "47", "50", "51", "52", "53", "54"];
 
 /// Codes Version 2 lists that the built-in tables, under APP-6 rules, draw
-/// with another meaning (modifier codes with their modifier-set digit).
-const OTHER_MEANING: [(&str, Kind, &str); 12] = [
+/// with another meaning or without the icon Version 2 shows (modifier codes
+/// with their modifier-set digit).
+const OTHER_MEANING: [(&str, Kind, &str); 13] = [
     // Table A-21 (pp. 742–743): tactical satellite communications, mobility
     // assault, amphibious warfare ship, load handling and palletised load
     // systems. The APP-6 icons are APP-6(D)'s airmobile, accident, other,
@@ -54,6 +55,9 @@ const OTHER_MEANING: [(&str, Kind, &str); 12] = [
     ("25", Kind::Entity, "212902"),
     // Table A-45 (pp. 809–813): an organized group, drawn as a meeting.
     ("40", Kind::Entity, "131000"),
+    // Table A-48 (p. 815) and Table 9-4 (p. 681): cyberspace operation, an
+    // icon the built-in tables define as empty.
+    ("60", Kind::Entity, "110000"),
     // Table A-48 (p. 815): criminal, drawn as advanced persistent threat.
     ("60", Kind::Entity, "120100"),
     // Table A-52 (p. 818): external defence measures, which the built-in

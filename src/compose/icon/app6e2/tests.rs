@@ -175,6 +175,6 @@ fn version_16_draws_version_14_icons_where_version_2_agrees() -> Result<(), crat
             unknown += 1;
         }
     }
-    assert_eq!((same, unknown), (3744, 527));
+    assert_eq!((same, unknown), (3743, 528));
     Ok(())
 }

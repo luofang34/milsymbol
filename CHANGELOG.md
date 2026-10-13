@@ -9,10 +9,10 @@ Output for every existing configuration is unchanged.
   draws edition E icons, ignores the reserved digits 23–27, and draws a
   built-in icon only for a code Annex A of Version 2 lists, with the meaning
   it gives that code. Codes Version 2 removed, the special entity subtypes
-  95–98, and twelve codes the built-in (APP-6 rules) icons show with another
-  meaning draw as unknown, as do the codes Version 2 added, which have no
-  icons yet. Every other SIDC draws as with `Standard::App6`; a test checks
-  this over the whole oracle corpus.
+  95–98, and thirteen codes the built-in (APP-6 rules) icons show with
+  another meaning or without their icon draw as unknown, as do the codes
+  Version 2 added, which have no icons yet. Every other SIDC draws as with
+  `Standard::App6`; a test checks this over the whole oracle corpus.
 - New `Sidc::parse_for(sidc, standard)`. With `Standard::App6EVersion2` it
   accepts version `16`, hexadecimal digits in its code fields (sector 1
   modifiers `A0`–`A7`) and zeros in digits 23–27; otherwise it is
