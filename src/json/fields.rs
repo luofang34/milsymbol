@@ -247,6 +247,7 @@ pub(super) fn options<'a>(sidc: &'a str, o: &'a SymbolOptions, j: &mut Object<'a
                 None => "",
                 Some(crate::Standard::Mil2525) => "2525",
                 Some(crate::Standard::App6) => "APP6",
+                Some(crate::Standard::App6EVersion2) => "APP6E2",
             }),
         )
         .put("strokeWidth", n(st.stroke_width))

@@ -49,7 +49,10 @@ pub(super) fn interpret(sidc: &str, md: &mut Metadata, input: &ParseInput<'_>) {
     if matches!(&*version, "10" | "11" | "12") {
         md.flags.edition = Some(Edition::D);
     }
-    if matches!(&*version, "13" | "14") {
+    // APP-6(E) Version 2 keeps the edition E code tables (Annex A); which of
+    // their built-in icons it draws is decided with the icon.
+    md.app6e2 = input.app6e2 && version == "16";
+    if matches!(&*version, "13" | "14") || md.app6e2 {
         md.flags.edition = Some(Edition::E);
     }
     if eq_num(&version, 13.0) && eq_num(&si2, 5.0) {
@@ -111,7 +114,11 @@ pub(super) fn interpret(sidc: &str, md: &mut Metadata, input: &ParseInput<'_>) {
     md.base_affiliation = md.affiliation;
     identity(&si1, &si2, &symbol_set, md);
     civilian(&symbol_set, &fid, md);
-    frame_shape(&frameshape, md);
+    // Digits 23–27 are reserved in APP-6(E) Version 2 (A.14, p. 723); the
+    // frame follows from context, identity and symbol set alone.
+    if !md.app6e2 {
+        frame_shape(&frameshape, md);
+    }
     amplifiers(&hq_tf_dummy, &echelon_mob, md);
 }
 

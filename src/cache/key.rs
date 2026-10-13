@@ -233,6 +233,7 @@ fn write_style(k: &mut KeyBuf, st: &Style) {
         None => 0,
         Some(crate::Standard::Mil2525) => 1,
         Some(crate::Standard::App6) => 2,
+        Some(crate::Standard::App6EVersion2) => 3,
     });
     for c in [
         frame_color,

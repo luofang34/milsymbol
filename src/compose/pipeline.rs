@@ -39,13 +39,15 @@ pub(crate) fn metadata(
     config: &RendererConfig,
 ) -> (String, Metadata) {
     let st = &options.style;
-    let std2525 = st.standard.unwrap_or(config.standard) == Standard::Mil2525;
+    let standard = st.standard.unwrap_or(config.standard);
+    let std2525 = standard == Standard::Mil2525;
     let mut md = Metadata::new(st.fill, st.frame, std2525);
     if st.mono_color.is_some() {
         md.fill = false;
     }
     let normalized = sidc::normalize(sidc_in);
     let input = ParseInput {
+        app6e2: standard == Standard::App6EVersion2,
         style_frame: st.frame,
         alternate_medal: st.alternate_medal,
         dashes: Dashes {

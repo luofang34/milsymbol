@@ -41,6 +41,9 @@ pub(crate) struct Metadata {
     pub activity: bool,
     /// Affiliation the frame is drawn as (`Friend`, `Hostile`, …).
     pub affiliation: Field<Affiliation>,
+    /// A version `16` SIDC drawn as APP-6(E) Version 2
+    /// ([`Standard::App6EVersion2`](crate::Standard::App6EVersion2)).
+    pub app6e2: bool,
     /// Affiliation before joker/faker remapping (upstream `baseAffilation`).
     pub base_affiliation: Field<Affiliation>,
     /// Dimension before equipment/dismounted remapping.
@@ -98,6 +101,7 @@ impl Metadata {
         Metadata {
             activity: false,
             affiliation: Field::Undefined,
+            app6e2: false,
             base_affiliation: Field::Empty,
             base_dimension: Field::Empty,
             base_geometry: None,

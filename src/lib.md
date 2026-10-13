@@ -20,21 +20,31 @@ assert!(symbol.sidc_validity().is_valid());
 
 | SIDC | Standards |
 |---|---|
-| Numeric (20 or 30 digits) | MIL-STD-2525D, 2525E; APP-6D, APP-6E (versions `10`–`12` → D, `13`–`14` → E) |
+| Numeric (20 or 30 digits) | MIL-STD-2525D, 2525E; APP-6D, APP-6E (versions `10`–`12` → D, `13`–`14` → E); APP-6(E) Version 2 (version `16`, opt-in) |
 | Letter (10–15 characters) | MIL-STD-2525B (incl. change 2), 2525C; APP-6B |
 
-Later revisions are not recognised, as in milsymbol.js 3.0.4. `Sidc::parse`
-rejects as malformed the version digits `15` (MIL-STD-2525E Change 1) and
-`16` (APP-6(E) Version 2), the contexts `3`–`8` (restricted target and no
-strike entity), symbol set `64` (cyberspace non-unit) and the letters `A`–`F`
-that APP-6(E) Version 2 allows in every position. Rendering still draws a
-version `15` or `16` SIDC with the edition E icons, except that digit 23
-(frame shape) is ignored and land unit sector 2 modifier `11` (dental) is
-drawn as the letter D. Codes that APP-6(E) Version 2 added draw as unknown,
-and codes it reassigned draw their earlier meaning.
+By default, later revisions are not recognised, as in milsymbol.js 3.0.4.
+`Sidc::parse` rejects as malformed the version digits `15` (MIL-STD-2525E
+Change 1) and `16` (APP-6(E) Version 2), the contexts `3`–`8` (restricted
+target and no strike entity), symbol set `64` (cyberspace non-unit) and the
+letters `A`–`F` that APP-6(E) Version 2 allows in every position. Rendering
+still draws a version `15` or `16` SIDC with the edition E icons, except that
+digit 23 (frame shape) is ignored and land unit sector 2 modifier `11`
+(dental) is drawn as the letter D. Codes that APP-6(E) Version 2 added draw
+as unknown, and codes it reassigned draw their earlier meaning.
+
+[`Standard::App6EVersion2`] reads version `16` SIDCs as APP-6(E) Version 2
+defines them and draws every other SIDC as [`Standard::App6`] does.
+[`Sidc::parse_for`](sidc::Sidc::parse_for) with it accepts version `16`,
+hexadecimal digits in its code fields, and digits 23–27 (reserved) only as
+zeros. A version `16` SIDC draws a built-in icon only for a code that Annex A
+of Version 2 lists, with the meaning Version 2 gives it; every other code
+draws as unknown, among them the codes Version 2 added. Symbol sets that
+Version 2 marks as used by the US only draw as MIL-STD-2525E. The contexts
+`3`–`8` and symbol set `64` are malformed under these rules too.
 
 ```
-use milsymbol::Renderer;
+use milsymbol::{Renderer, Standard};
 use milsymbol::sidc::Sidc;
 
 for sidc in [
@@ -53,6 +63,14 @@ assert_ne!(
     svg("140310000012110000000010000000")?,
     svg("160310000012110000000010000000")?,
 );
+
+let v2 = Renderer::builder().standard(Standard::App6EVersion2).build();
+assert!(v2.check_sidc("16031000001211000000").is_ok());
+assert!(Sidc::parse_for("1603100000121100A000", Standard::App6EVersion2).is_ok());
+// Activities 131000 is a meeting before Version 2 and an organized group in
+// it; the built-in icon shows a meeting, so it draws as unknown.
+let group = v2.symbol("16034000001310000000").render()?;
+assert!(!group.sidc_validity().is_valid());
 # Ok::<(), milsymbol::RenderError>(())
 ```
 
@@ -66,7 +84,8 @@ Whether 2525 or APP-6 rules apply is a renderer setting
 - [`options`], [`Renderer`] and [`SymbolBuilder`]: what to draw and how.
 - [`Symbol::drawing`] ([`drawing`]): the picture as flat typed items, the
   input for any renderer other than SVG.
-- [`Symbol::to_svg`]: the SVG renderer, byte-identical to milsymbol.js.
+- [`Symbol::to_svg`]: the SVG renderer, byte-identical to milsymbol.js
+  (except for version `16` SIDCs under [`Standard::App6EVersion2`]).
 - [`ir`] and [`compat`]: milsymbol.js's own instruction tree and string
   representations, for extensions and differential testing.
 

@@ -12,6 +12,9 @@ use crate::registry::{IconKey, IconPartContext};
 use crate::template::{self, IconContext, Resolver, UserParts, Var};
 use alloc::borrow::Cow;
 use alloc::vec::Vec;
+use app6e2::Kind;
+
+mod app6e2;
 
 const UNDEFINED_ICON: &str = "m 94.8206,78.1372 c -0.4542,6.8983 0.6532,14.323 5.3424,19.6985 4.509,5.6933 11.309,9.3573 14.98,15.7283 3.164,6.353 -0.09,14.245 -5.903,17.822 -7.268,4.817 -18.6219,2.785 -22.7328,-5.249 -1.5511,-2.796 -2.3828,-5.931 -2.8815,-9.071 -3.5048,0.416 -7.0093,0.835 -10.5142,1.252 0.8239,8.555 5.2263,17.287 13.2544,21.111 7.8232,3.736 17.1891,3.783 25.3291,1.052 8.846,-3.103 15.737,-11.958 15.171,-21.537 0.05,-6.951 -4.272,-12.85 -9.134,-17.403 -4.526,-4.6949 -11.048,-8.3862 -12.401,-15.2748 -1.215,-2.3639 -0.889,-8.129 -0.889,-8.129 z m -0.6253,-20.5177 0,11.6509 11.6527,0 0,-11.6509 z";
 
@@ -235,8 +238,15 @@ fn icon(s: &SymbolState<'_>) -> Result<(Vec<Node>, BBox, bool), RenderError> {
     Ok((post, gbbox, invalid))
 }
 
-/// Number-table lookup: extension entries first, then generated tables.
-fn number_entry(parts: &Parts<'_>, ss: &str, kind: usize, code: &str) -> Option<Node> {
+/// Number-table lookup: extension entries first, then, if `builtin`, the
+/// generated tables.
+fn number_entry(
+    parts: &Parts<'_>,
+    ss: &str,
+    kind: usize,
+    code: &str,
+    builtin: bool,
+) -> Option<Node> {
     let key = match kind {
         0 => IconKey::Entity {
             symbol_set: ss,
@@ -253,6 +263,9 @@ fn number_entry(parts: &Parts<'_>, ss: &str, kind: usize, code: &str) -> Option<
     };
     if let Some(n) = parts.user_icon(key) {
         return Some(n);
+    }
+    if !builtin {
+        return None;
     }
     let table = ss
         .parse::<usize>()
@@ -279,9 +292,10 @@ fn number_icon(
     let fid = js::JsStr::new(&md.function_id);
     let fid6 = fid.substr(0, 6);
     let mut invalid = false;
-    let mut main = defined(number_entry(parts, ss, 0, &fid6));
-    if main.is_none() && js::string_to_number(&fid.substr(4, 2)) >= 95.0 {
-        main = defined(number_entry(parts, ss, 0, &(fid.substr(0, 4) + "00")));
+    let builtin = !md.app6e2 || app6e2::draws(ss, Kind::Entity, &fid6);
+    let mut main = defined(number_entry(parts, ss, 0, &fid6, builtin));
+    if main.is_none() && builtin && js::string_to_number(&fid.substr(4, 2)) >= 95.0 {
+        main = defined(number_entry(parts, ss, 0, &(fid.substr(0, 4) + "00"), true));
     }
     let m1_code = md.flags.modifier1.as_deref().unwrap_or("");
     let m2_code = md.flags.modifier2.as_deref().unwrap_or("");
@@ -303,7 +317,7 @@ fn number_icon(
             let table = ss
                 .parse::<usize>()
                 .ok()
-                .filter(|_| ss.len() == 2)
+                .filter(|_| ss.len() == 2 && builtin)
                 .and_then(|i| tables::NUMBER.get(i))?;
             let entry = template::find(table.get(3)?, &fid6)?;
             parts.resolver.bbox(entry).map(bbox_from)
@@ -318,13 +332,20 @@ fn number_icon(
         "98" => Some("GR.IC.FF.THEATRE SUPPORT"),
         _ => None,
     };
-    if let Some(name) = hq_part {
+    // APP-6(E) Version 2 has no special entity subtypes.
+    if let Some(name) = hq_part.filter(|_| !md.app6e2) {
         post.push(parts.part(name).unwrap_or(Node::Missing));
     }
     for (kind, code, fid_code) in [
         (1, m1_code, fid.substr(6, 2)),
         (2, m2_code, fid.substr(8, 2)),
     ] {
+        let sector = if kind == 1 {
+            Kind::Modifier1
+        } else {
+            Kind::Modifier2
+        };
+        let builtin = !md.app6e2 || app6e2::draws(ss, sector, code);
         let key = if code.starts_with('0') {
             if fid_code == "00" {
                 continue;
@@ -333,7 +354,7 @@ fn number_icon(
         } else {
             Cow::Borrowed(code)
         };
-        match defined(number_entry(parts, ss, kind, &key)) {
+        match defined(number_entry(parts, ss, kind, &key, builtin)) {
             Some(n) => post.push(n),
             None => invalid = true,
         }

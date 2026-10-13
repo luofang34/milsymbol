@@ -224,7 +224,8 @@ impl Mobility {
 pub enum Edition {
     /// MIL-STD-2525D / APP-6D (SIDC versions 10–12).
     D,
-    /// MIL-STD-2525E / APP-6E (SIDC versions 13–14).
+    /// MIL-STD-2525E / APP-6E (SIDC versions 13–14, and 16 with
+    /// [`Standard::App6EVersion2`](crate::Standard::App6EVersion2)).
     E,
 }
 

@@ -12,8 +12,8 @@ pub(crate) struct Item {
     pub name: &'static str,
     /// The SIDC.
     pub sidc: &'static str,
-    /// Render with the APP-6 standard.
-    pub app6: bool,
+    /// The renderer's standard.
+    pub standard: Standard,
     /// Options by upstream name.
     pub options: &'static [(&'static str, Value)],
 }
@@ -39,7 +39,7 @@ pub(crate) const ITEMS: &[Item] = &[
     Item {
         name: "figure13",
         sidc: "130315003611010300000000000000",
-        app6: false,
+        standard: Standard::Mil2525,
         options: &[
             ("size", N(35.0)),
             ("quantity", S("200")),
@@ -54,165 +54,165 @@ pub(crate) const ITEMS: &[Item] = &[
     Item {
         name: "infantry-platoon",
         sidc: "130310001412110000000000000000",
-        app6: false,
+        standard: Standard::Mil2525,
         options: &[("size", N(35.0))],
     },
     // Standard identities across dimensions.
     Item {
         name: "friend-air",
         sidc: "10030100001101000000",
-        app6: false,
+        standard: Standard::Mil2525,
         options: &[SIZE],
     },
     Item {
         name: "hostile-air",
         sidc: "10060100001101000000",
-        app6: false,
+        standard: Standard::Mil2525,
         options: &[SIZE],
     },
     Item {
         name: "neutral-air",
         sidc: "10040100001101000000",
-        app6: false,
+        standard: Standard::Mil2525,
         options: &[SIZE],
     },
     Item {
         name: "unknown-air",
         sidc: "10010100001101000000",
-        app6: false,
+        standard: Standard::Mil2525,
         options: &[SIZE],
     },
     Item {
         name: "friend-land",
         sidc: "10031000001211000000",
-        app6: false,
+        standard: Standard::Mil2525,
         options: &[SIZE],
     },
     Item {
         name: "hostile-land",
         sidc: "10061000001211000000",
-        app6: false,
+        standard: Standard::Mil2525,
         options: &[SIZE],
     },
     Item {
         name: "neutral-land",
         sidc: "10041000001211000000",
-        app6: false,
+        standard: Standard::Mil2525,
         options: &[SIZE],
     },
     Item {
         name: "unknown-land",
         sidc: "10011000001211000000",
-        app6: false,
+        standard: Standard::Mil2525,
         options: &[SIZE],
     },
     Item {
         name: "friend-sea",
         sidc: "10033000001201000000",
-        app6: false,
+        standard: Standard::Mil2525,
         options: &[SIZE],
     },
     Item {
         name: "hostile-sea",
         sidc: "10063000001201000000",
-        app6: false,
+        standard: Standard::Mil2525,
         options: &[SIZE],
     },
     Item {
         name: "neutral-sea",
         sidc: "10043000001201000000",
-        app6: false,
+        standard: Standard::Mil2525,
         options: &[SIZE],
     },
     Item {
         name: "unknown-sea",
         sidc: "10013000001201000000",
-        app6: false,
+        standard: Standard::Mil2525,
         options: &[SIZE],
     },
     Item {
         name: "friend-subsurface",
         sidc: "10033500001101000000",
-        app6: false,
+        standard: Standard::Mil2525,
         options: &[SIZE],
     },
     Item {
         name: "hostile-subsurface",
         sidc: "10063500001101000000",
-        app6: false,
+        standard: Standard::Mil2525,
         options: &[SIZE],
     },
     Item {
         name: "neutral-subsurface",
         sidc: "10043500001101000000",
-        app6: false,
+        standard: Standard::Mil2525,
         options: &[SIZE],
     },
     Item {
         name: "unknown-subsurface",
         sidc: "10013500001101000000",
-        app6: false,
+        standard: Standard::Mil2525,
         options: &[SIZE],
     },
     // Amplifiers and modifiers.
     Item {
         name: "hq-brigade",
         sidc: "10031002181211000000",
-        app6: false,
+        standard: Standard::Mil2525,
         options: &[SIZE],
     },
     Item {
         name: "task-force-company",
         sidc: "10031004151211000000",
-        app6: false,
+        standard: Standard::Mil2525,
         options: &[SIZE],
     },
     Item {
         name: "feint-dummy",
         sidc: "10031001151205000000",
-        app6: false,
+        standard: Standard::Mil2525,
         options: &[SIZE],
     },
     Item {
         name: "tracked-equipment",
         sidc: "10031500331101000000",
-        app6: false,
+        standard: Standard::Mil2525,
         options: &[SIZE],
     },
     Item {
         name: "planned",
         sidc: "10031010001211000000",
-        app6: false,
+        standard: Standard::Mil2525,
         options: &[SIZE],
     },
     Item {
         name: "damaged",
         sidc: "10031030001211000000",
-        app6: false,
+        standard: Standard::Mil2525,
         options: &[SIZE],
     },
     Item {
         name: "exercise-joker",
         sidc: "10151000001211000000",
-        app6: false,
+        standard: Standard::Mil2525,
         options: &[SIZE],
     },
     Item {
         name: "installation",
         sidc: "10032000001101000000",
-        app6: false,
+        standard: Standard::Mil2525,
         options: &[SIZE],
     },
     Item {
         name: "speed-leader",
         sidc: "10030100001101000000",
-        app6: false,
+        standard: Standard::Mil2525,
         options: &[SIZE, ("direction", N(60.0)), ("speedLeader", N(60.0))],
     },
     Item {
         name: "engagement-bar",
         sidc: "10061000001211000000",
-        app6: false,
+        standard: Standard::Mil2525,
         options: &[
             SIZE,
             ("engagementBar", S("2:10")),
@@ -223,25 +223,25 @@ pub(crate) const ITEMS: &[Item] = &[
     Item {
         name: "style-unfilled",
         sidc: "10031000001211000000",
-        app6: false,
+        standard: Standard::Mil2525,
         options: &[SIZE, ("fill", B(false))],
     },
     Item {
         name: "style-dark",
         sidc: "10031000001211000000",
-        app6: false,
+        standard: Standard::Mil2525,
         options: &[SIZE, ("colorMode", S("Dark"))],
     },
     Item {
         name: "style-mono",
         sidc: "10061000001211000000",
-        app6: false,
+        standard: Standard::Mil2525,
         options: &[SIZE, ("monoColor", S("rgb(20,60,160)"))],
     },
     Item {
         name: "style-outline",
         sidc: "10031000001211000000",
-        app6: false,
+        standard: Standard::Mil2525,
         options: &[
             SIZE,
             ("outlineWidth", N(5.0)),
@@ -251,13 +251,13 @@ pub(crate) const ITEMS: &[Item] = &[
     Item {
         name: "style-unframed",
         sidc: "10031000001211000000",
-        app6: false,
+        standard: Standard::Mil2525,
         options: &[SIZE, ("frame", B(false))],
     },
     Item {
         name: "style-info-background",
         sidc: "10031000001211000000",
-        app6: false,
+        standard: Standard::Mil2525,
         options: &[
             SIZE,
             ("uniqueDesignation", S("A/1-66")),
@@ -265,34 +265,43 @@ pub(crate) const ITEMS: &[Item] = &[
             ("infoBackground", S("rgb(255,240,170)")),
         ],
     },
-    // Letter SIDCs and standards.
+    // APP-6(E) Version 2.
     Item {
-        name: "letter-2525c",
-        sidc: "SFGPUCFRM---",
-        app6: false,
+        name: "app6e2-infantry",
+        sidc: "16031000161211020000",
+        standard: Standard::App6EVersion2,
         options: &[SIZE],
     },
     Item {
-        name: "letter-app6b",
+        name: "app6e2-armour",
+        sidc: "16061000151205000000",
+        standard: Standard::App6EVersion2,
+        options: &[SIZE],
+    },
+    Item {
+        name: "app6e2-uas",
+        sidc: "16030100001103000000",
+        standard: Standard::App6EVersion2,
+        options: &[SIZE],
+    },
+    // Letter SIDCs.
+    Item {
+        name: "letter-2525c",
         sidc: "SFGPUCFRM---",
-        app6: true,
+        standard: Standard::Mil2525,
         options: &[SIZE],
     },
     Item {
         name: "letter-sea-mine",
         sidc: "SHUPWMGX----",
-        app6: false,
+        standard: Standard::Mil2525,
         options: &[SIZE],
     },
 ];
 
 /// Renders a gallery item.
 pub(crate) fn render(item: &Item) -> Result<Symbol, Box<dyn std::error::Error>> {
-    let renderer = if item.app6 {
-        Renderer::builder().standard(Standard::App6).build()
-    } else {
-        Renderer::default()
-    };
+    let renderer = Renderer::builder().standard(item.standard).build();
     let mut o = SymbolOptions::default();
     for (k, v) in item.options {
         match *v {

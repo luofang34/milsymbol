@@ -26,6 +26,8 @@ pub(crate) struct Dashes<'a> {
 
 /// Inputs to SIDC interpretation besides the code itself.
 pub(crate) struct ParseInput<'a> {
+    /// Read version `16` SIDCs as APP-6(E) Version 2.
+    pub app6e2: bool,
     pub style_frame: bool,
     pub alternate_medal: bool,
     pub dashes: Dashes<'a>,

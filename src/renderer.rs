@@ -100,8 +100,9 @@ impl Renderer {
         SymbolBuilder::new(self.clone(), sidc.into())
     }
 
-    /// Checks that `sidc` is well formed ([`Sidc::parse`]) and that this
-    /// renderer, with its extensions, recognises every part of it.
+    /// Checks that `sidc` is well formed ([`Sidc::parse_for`] with the
+    /// renderer's standard) and that this renderer, with its extensions,
+    /// recognises every part of it.
     ///
     /// ```
     /// use milsymbol::{Renderer, sidc::SidcCheckError};
@@ -115,7 +116,7 @@ impl Renderer {
     /// ));
     /// ```
     pub fn check_sidc(&self, sidc: &str) -> Result<Sidc, SidcCheckError> {
-        let parsed = Sidc::parse(sidc)?;
+        let parsed = Sidc::parse_for(sidc, self.inner.config.standard)?;
         match self.render_checked(parsed.as_str(), SymbolOptions::default(), true) {
             Ok(_) => Ok(parsed),
             Err(RenderError::MalformedSidc(e)) => Err(SidcCheckError::Malformed(e)),
@@ -135,7 +136,8 @@ impl Renderer {
         strict: bool,
     ) -> Result<Symbol, RenderError> {
         if strict {
-            Sidc::parse(sidc).map_err(RenderError::MalformedSidc)?;
+            let standard = options.style.standard.unwrap_or(self.inner.config.standard);
+            Sidc::parse_for(sidc, standard).map_err(RenderError::MalformedSidc)?;
         }
         let symbol = self.render(sidc, options)?;
         if strict {
