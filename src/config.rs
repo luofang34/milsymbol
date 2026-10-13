@@ -16,6 +16,10 @@ pub enum Standard {
     Mil2525,
     /// NATO APP-6.
     App6,
+    /// NATO APP-6, with version `16` SIDCs read and drawn as APP-6(E)
+    /// Version 2 defines them. milsymbol.js has no such mode; other SIDCs
+    /// draw exactly as with [`Standard::App6`].
+    App6EVersion2,
 }
 
 /// Which JavaScript engine build the output should match exactly.

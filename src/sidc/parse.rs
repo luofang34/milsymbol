@@ -244,9 +244,32 @@ impl Sidc {
     /// # Ok::<(), SidcError>(())
     /// ```
     pub fn parse(s: &str) -> Result<Sidc, SidcError> {
+        Sidc::parse_for(s, crate::Standard::Mil2525)
+    }
+
+    /// Parses and validates `s` under the rules of `standard`.
+    /// [`Standard::App6EVersion2`](crate::Standard::App6EVersion2) also
+    /// accepts version `16` SIDCs (APP-6(E) Version 2), whose fields may hold
+    /// hexadecimal digits and whose digits 23–27 are reserved. Every other
+    /// SIDC parses as with [`Sidc::parse`].
+    ///
+    /// ```
+    /// use milsymbol::Standard;
+    /// use milsymbol::sidc::Sidc;
+    ///
+    /// let sidc = "1603100000121100A000"; // sector 1 modifier A0
+    /// assert!(Sidc::parse(sidc).is_err());
+    /// let Sidc::Numeric(n) = Sidc::parse_for(sidc, Standard::App6EVersion2)? else {
+    ///     return Ok(());
+    /// };
+    /// assert_eq!(n.version(), 16);
+    /// assert_eq!(n.modifier_codes().0.as_str(), "0A0");
+    /// # Ok::<(), milsymbol::sidc::SidcError>(())
+    /// ```
+    pub fn parse_for(s: &str, standard: crate::Standard) -> Result<Sidc, SidcError> {
         let first = s.chars().find(|&c| c != ' ').ok_or(SidcError::Empty)?;
         if first.is_ascii_digit() {
-            NumericSidc::parse(s).map(Sidc::Numeric)
+            NumericSidc::parse(s, standard == crate::Standard::App6EVersion2).map(Sidc::Numeric)
         } else {
             LetterSidc::parse(s).map(Sidc::Letter)
         }

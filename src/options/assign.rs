@@ -224,7 +224,8 @@ impl SymbolOptions {
                     "" => None,
                     "2525" => Some(crate::Standard::Mil2525),
                     "APP6" => Some(crate::Standard::App6),
-                    _ => return err(key, "\"2525\", \"APP6\" or \"\""),
+                    "APP6E2" => Some(crate::Standard::App6EVersion2),
+                    _ => return err(key, "\"2525\", \"APP6\", \"APP6E2\" or \"\""),
                 }
             }
             "strokeWidth" => st.stroke_width = num(key, v)?,

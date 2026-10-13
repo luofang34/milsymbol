@@ -113,10 +113,11 @@ impl Symbol {
     /// Whether the symbol is what its SIDC says, and every reason it is not.
     ///
     /// This is the recommended judgement. The SIDC must be well formed
-    /// ([`Sidc::parse`](crate::sidc::Sidc::parse)) and fully recognised by the
-    /// renderer: every code is known and the icon exists (an icon added by an
-    /// extension counts), whether or not icons are drawn. The verdict depends
-    /// on the SIDC and the renderer, never on options; the issue list can
+    /// ([`Sidc::parse_for`](crate::sidc::Sidc::parse_for) with the symbol's
+    /// standard) and fully recognised by the renderer: every code is known
+    /// and the icon exists (an icon added by an extension counts), whether or
+    /// not icons are drawn. The verdict depends on the SIDC, the renderer and
+    /// the standard, never on other options; the issue list can
     /// differ with `style.icon` (a symbol drawn without its icon reports an
     /// unknown icon rather than a missing instruction). Text never affects it.
     /// milsymbol.js `isValid()`, with its `null`-text rule, is

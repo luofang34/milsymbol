@@ -9,7 +9,8 @@ Military unit symbols per **MIL-STD-2525** and **STANAG APP-6**, in native Rust.
 This is a port of [milsymbol.js](https://github.com/spatialillusions/milsymbol)
 3.0.4 by Måns Beckman. It produces the same SVG as milsymbol.js, byte for byte,
 verified on 295,753 symbol/option combinations, and also exposes each symbol as
-typed drawing instructions for non-SVG renderers.
+typed drawing instructions for non-SVG renderers. An opt-in standard reads
+APP-6(E) Version 2 SIDCs, which milsymbol.js does not know.
 
 ![Figure 13](https://github.com/luofang34/milsymbol/raw/main/docs/images/figure13.svg)
 
@@ -37,7 +38,7 @@ This is figure 13 of MIL-STD-2525C, rendered by this crate.
 ## Summary
 
 - MIL-STD-2525B/C/D/E and STANAG APP-6 B/D/E, legacy letter SIDCs and
-  numeric SIDCs.
+  numeric SIDCs; APP-6(E) Version 2 on request.
 - Filled/unfilled, framed/unframed, monochrome, outlined symbols; text
   amplifiers; movement indicators and speed leaders; engagement bars;
   headquarters, task force, feint/dummy, installation, echelon and mobility
@@ -185,27 +186,42 @@ existing SVG output remains byte-identical to milsymbol.js. Set
 does not override custom text nodes supplied by icon extensions or load fonts
 for an SVG consumer.
 
-### Letter SIDCs and APP-6
+### APP-6
 
-| MIL-STD-2525C `SFGPUCFRM---` | APP-6B `SFGPUCFRM---` | 2525C sea mine `SHUPWMGX----` |
+| `16031000161211020000`<br>mechanized infantry battalion | `16061000151205000000`<br>hostile armour company | `16030100001103000000`<br>unmanned aircraft |
 |:-:|:-:|:-:|
-| ![](https://github.com/luofang34/milsymbol/raw/main/docs/images/letter-2525c.svg) | ![](https://github.com/luofang34/milsymbol/raw/main/docs/images/letter-app6b.svg) | ![](https://github.com/luofang34/milsymbol/raw/main/docs/images/letter-sea-mine.svg) |
+| ![](https://github.com/luofang34/milsymbol/raw/main/docs/images/app6e2-infantry.svg) | ![](https://github.com/luofang34/milsymbol/raw/main/docs/images/app6e2-armour.svg) | ![](https://github.com/luofang34/milsymbol/raw/main/docs/images/app6e2-uas.svg) |
+
+These are APP-6(E) Version 2 SIDCs (version digits `16`), drawn with
+`Standard::App6EVersion2`. milsymbol.js 3.0.4 has no such mode: under the
+default standards, version `16` is not recognised and some of its codes keep
+an earlier meaning. With it, a version `16` SIDC draws only the codes Annex A
+of Version 2 lists, with the meaning it gives them, and shows any other code
+as unknown; every other SIDC draws exactly as with `Standard::App6`.
 
 ```rust
 use milsymbol::{Renderer, Standard};
-let app6 = Renderer::builder().standard(Standard::App6).build();
-let svg = app6.symbol("SFGPUCFRM---").render()?.to_svg();
+let app6 = Renderer::builder().standard(Standard::App6EVersion2).build();
+let svg = app6.symbol("16031000161211020000").render()?.to_svg();
 # Ok::<(), milsymbol::RenderError>(())
 ```
 
+### Letter SIDCs
+
+| MIL-STD-2525C `SFGPUCFRM---` | 2525C sea mine `SHUPWMGX----` |
+|:-:|:-:|
+| ![](https://github.com/luofang34/milsymbol/raw/main/docs/images/letter-2525c.svg) | ![](https://github.com/luofang34/milsymbol/raw/main/docs/images/letter-sea-mine.svg) |
+
+`Standard::App6` draws letter SIDCs as APP-6B.
+
 | SIDC form | Standards |
 |---|---|
-| Numeric (20–30 digits) | MIL-STD-2525D, 2525E; APP-6D, APP-6E (version digits `10`–`12` → D, `13`–`14` → E) |
+| Numeric (20–30 digits) | MIL-STD-2525D, 2525E; APP-6D, APP-6E (version digits `10`–`12` → D, `13`–`14` → E); APP-6(E) Version 2 (`16`, with `Standard::App6EVersion2`) |
 | Letter (15 characters) | MIL-STD-2525B (incl. change 2), 2525C; APP-6B |
 
-Later revisions (version digits `15` and `16`, i.e. MIL-STD-2525E Change 1
-and APP-6(E) Version 2) are not recognised, as in milsymbol.js 3.0.4; the
-crate documentation lists what that changes.
+MIL-STD-2525E Change 1 (version digits `15`) is not recognised, as in
+milsymbol.js 3.0.4; the crate documentation lists what that changes and what
+the APP-6(E) Version 2 mode covers.
 
 ## Drawing
 

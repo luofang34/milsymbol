@@ -44,14 +44,22 @@ impl core::fmt::Display for ModifierCode {
 pub struct NumericSidc(Code<30>);
 
 impl NumericSidc {
-    pub(super) fn parse(s: &str) -> Result<Self, SidcError> {
+    /// `app6e2` also accepts version `16` SIDCs as APP-6(E) Version 2
+    /// defines them.
+    pub(super) fn parse(s: &str, app6e2: bool) -> Result<Self, SidcError> {
         let code = Code::<30>::collect(s, |c| c)?;
         let len = usize::from(code.len);
         if len != 20 && len != 30 {
             return Err(SidcError::Length { len });
         }
+        let v2 = app6e2 && code.field(1, 2) == "16";
         for (i, c) in code.as_str().chars().enumerate() {
-            if !(c.is_ascii_digit() || (i == 22 && c == 'A')) {
+            // Version 2 allows hexadecimal digits in every position (A.2,
+            // p. 711); the fields below still take only their own codes.
+            let ok = c.is_ascii_digit()
+                || (v2 && matches!(c, 'A'..='F'))
+                || (!v2 && i == 22 && c == 'A');
+            if !ok {
                 return Err(invalid("character", i + 1, code.field(i + 1, 1)));
             }
         }
@@ -63,14 +71,24 @@ impl NumericSidc {
             }
         };
         check(
-            matches!(code.field(1, 2), "10" | "11" | "12" | "13" | "14"),
+            v2 || matches!(code.field(1, 2), "10" | "11" | "12" | "13" | "14"),
             "version",
             1,
             2,
         )?;
+        // Version 2 also has the restricted-target and no-strike contexts
+        // `3`–`8`, which this crate does not draw.
         check(matches!(code.at(3), '0'..='2'), "context", 3, 1)?;
         check(matches!(code.at(4), '0'..='6'), "standard identity", 4, 1)?;
-        check(SYMBOL_SETS.contains(&code.field(5, 2)), "symbol set", 5, 2)?;
+        // Version 2 has no symbol sets `12` and `39` (Table A-4, p. 715).
+        // Its symbol set `64` has no icons in this crate.
+        let ss = code.field(5, 2);
+        check(
+            SYMBOL_SETS.contains(&ss) && !(v2 && matches!(ss, "12" | "39")),
+            "symbol set",
+            5,
+            2,
+        )?;
         check(matches!(code.at(7), '0'..='5'), "status", 7, 1)?;
         check(
             matches!(code.at(8), '0'..='7'),
@@ -84,10 +102,18 @@ impl NumericSidc {
             9,
             2,
         )?;
+        // Reserved in Version 2 (A.14, p. 723).
+        check(
+            !v2 || matches!(code.field(23, 5), "" | "00000"),
+            "reserved",
+            23,
+            5,
+        )?;
         Ok(NumericSidc(code))
     }
 
-    /// Version (`10`–`12`: 2525D/APP-6D, `13`–`14`: 2525E/APP-6E).
+    /// Version (`10`–`12`: 2525D/APP-6D, `13`–`14`: 2525E/APP-6E, `16`:
+    /// APP-6(E) Version 2, see [`Sidc::parse_for`](super::Sidc::parse_for)).
     pub fn version(&self) -> u8 {
         self.0.field(1, 2).parse().unwrap_or(0)
     }
