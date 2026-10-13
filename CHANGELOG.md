@@ -2,7 +2,7 @@
 
 ## 0.4.3 — Unreleased
 
-SVG output, draw instructions and metadata are unchanged.
+Output for existing configurations is unchanged.
 
 - New `Symbol::to_data_url`, `write_data_url` and `write_data_url_with`, the
   `data:image/svg+xml;utf8,…` URL of milsymbol.js `toDataURL()`.
@@ -14,6 +14,22 @@ SVG output, draw instructions and metadata are unchanged.
   and shares built-in colour sets. Rendering, cloning, and writing to a
   sufficiently sized SVG or data-URL buffer require no heap allocations for
   those symbols.
+- New `Standard::App6EVersion2`: APP-6 rules, with version `16` SIDCs read
+  as APP-6(E) Version 2 (October 2025) defines them. A version `16` SIDC
+  draws edition E icons, ignores the reserved digits 23–27, and draws a
+  built-in icon only for a code Annex A of Version 2 lists, with the meaning
+  it gives that code. Codes Version 2 removed, the special entity subtypes
+  95–98, and twelve codes the built-in (APP-6 rules) icons show with another
+  meaning draw as unknown, as do the codes Version 2 added, which have no
+  icons yet. Every other SIDC draws as with `Standard::App6`; a test checks
+  this over the whole oracle corpus.
+- New `Sidc::parse_for(sidc, standard)`. With `Standard::App6EVersion2` it
+  accepts version `16`, hexadecimal digits in its code fields (sector 1
+  modifiers `A0`–`A7`) and zeros in digits 23–27; otherwise it is
+  `Sidc::parse`. `Renderer::check_sidc`, strict rendering and
+  `Symbol::sidc_validity` judge a SIDC by the standard it is drawn with.
+- The `standard` option accepts `"APP6E2"`.
+- The README's APP-6 examples are APP-6(E) Version 2 SIDCs.
 
 ## 0.4.2 — 2026-10-08
 

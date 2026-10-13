@@ -11,6 +11,9 @@ use crate::registry::{IconKey, IconPartContext};
 use crate::template::{self, Resolver, UserParts};
 use alloc::borrow::Cow;
 use alloc::vec::Vec;
+use app6e2::Kind;
+
+mod app6e2;
 
 mod context;
 mod letter;
@@ -256,8 +259,15 @@ fn number_table(ss: &str) -> Option<&'static [&'static [(&'static str, u32)]; 4]
         .and_then(|i| tables::NUMBER.get(i))
 }
 
-/// Number-table lookup: extension entries first, then generated tables.
-fn number_entry(parts: &Parts<'_>, ss: &str, kind: usize, code: &str) -> Option<Node> {
+/// Number-table lookup: extension entries first, then, if `builtin`, the
+/// generated tables.
+fn number_entry(
+    parts: &Parts<'_>,
+    ss: &str,
+    kind: usize,
+    code: &str,
+    builtin: bool,
+) -> Option<Node> {
     let key = match kind {
         0 => IconKey::Entity {
             symbol_set: ss,
@@ -274,6 +284,9 @@ fn number_entry(parts: &Parts<'_>, ss: &str, kind: usize, code: &str) -> Option<
     };
     if let Some(n) = parts.user_icon(key) {
         return Some(n);
+    }
+    if !builtin {
+        return None;
     }
     let table = number_table(ss)?;
     let entry = template::find(table.get(kind)?, code)?;
@@ -304,20 +317,22 @@ fn number_icon_into(
     let md = s.metadata;
     let fid = js::JsStr::new(&md.function_id);
     let (fid6, fid_hq) = (fid.substr(0, 6), fid.substr(4, 2));
-    let hq_part = match &*fid_hq {
+    let hq_part = (match &*fid_hq {
         "95" => Some("GR.IC.FF.HEADQUARTERS OR HEADQUARTERS ELEMENT"),
         "96" => Some("GR.IC.FF.DIVISION AND BELOW SUPPORT"),
         "97" => Some("GR.IC.FF.CORPS SUPPORT"),
         "98" => Some("GR.IC.FF.THEATRE SUPPORT"),
         _ => None,
-    };
+    })
+    .filter(|_| !md.app6e2);
     let (m1_code, m2_code) = (
         md.flags.modifier1.as_deref().unwrap_or(""),
         md.flags.modifier2.as_deref().unwrap_or(""),
     );
     let m1_key = sector_key(m1_code, fid.substr(6, 2));
     let m2_key = sector_key(m2_code, fid.substr(8, 2));
-    let table = number_table(ss);
+    let builtin = !md.app6e2 || app6e2::draws(ss, Kind::Entity, &fid6);
+    let table = number_table(ss).filter(|_| builtin);
     if let Some(b) = parts
         .user_bbox(IconKey::Entity {
             symbol_set: ss,
@@ -352,7 +367,7 @@ fn number_icon_into(
                 Some(e) => parts.resolver.value_unwrapped(e, true, acc)?,
                 None => false,
             };
-            if !wrote && js::string_to_number(&fid_hq) >= 95.0 {
+            if !wrote && builtin && js::string_to_number(&fid_hq) >= 95.0 {
                 if let Some(e) = find_entry(&(fid.substr(0, 4) + "00")) {
                     wrote = parts.resolver.value_unwrapped(e, true, acc)?;
                 }
@@ -390,9 +405,10 @@ fn number_icon_slow(
 ) -> Result<(Vec<Node>, bool), RenderError> {
     let mut post = Vec::new();
     let mut invalid = false;
-    let mut main = defined(number_entry(parts, ss, 0, fid6));
-    if main.is_none() && js::string_to_number(fid_hq) >= 95.0 {
-        main = defined(number_entry(parts, ss, 0, &(fid.substr(0, 4) + "00")));
+    let builtin = !s.metadata.app6e2 || app6e2::draws(ss, Kind::Entity, fid6);
+    let mut main = defined(number_entry(parts, ss, 0, fid6, builtin));
+    if main.is_none() && builtin && js::string_to_number(fid_hq) >= 95.0 {
+        main = defined(number_entry(parts, ss, 0, &(fid.substr(0, 4) + "00"), true));
     }
     match main {
         None if !(fid6 == "000000" || fid6.is_empty()) => {
@@ -405,9 +421,15 @@ fn number_icon_slow(
     if let Some(name) = hq_part {
         post.push(parts.part(name).unwrap_or(Node::Missing));
     }
-    for (kind, key) in [(1, m1_key), (2, m2_key)] {
+    for (kind, code, key) in [(1, m1_code, m1_key), (2, m2_code, m2_key)] {
         let Some(key) = key else { continue };
-        match defined(number_entry(parts, ss, kind, &key)) {
+        let sector = if kind == 1 {
+            Kind::Modifier1
+        } else {
+            Kind::Modifier2
+        };
+        let builtin = !s.metadata.app6e2 || app6e2::draws(ss, sector, code);
+        match defined(number_entry(parts, ss, kind, &key, builtin)) {
             Some(n) => post.push(n),
             None => invalid = true,
         }

@@ -170,6 +170,16 @@ suite and native regression tests check the observable differences.
   appears in canonical options only when enabled. Custom text nodes returned
   by icon extensions keep their own fonts. Font metrics and icon bounds are
   not recalculated, so wider fonts can extend beyond the template bounds.
+- **Opt-in APP-6(E) Version 2.** `Standard::App6EVersion2` (option
+  `standard: "APP6E2"`) draws a version `16` SIDC by the code tables of
+  APP-6(E) Version 2 rather than as a version upstream does not recognise:
+  edition E icons, digits 23–27 ignored, and a built-in icon only for a code
+  Version 2 lists, with the meaning it gives that code. Upstream has no such
+  mode, so no oracle covers it. Native tests check that every other corpus
+  SIDC draws as with `Standard::App6`, and that each built-in code draws
+  either exactly as in its version `14` SIDC or as unknown. The code lists in
+  module `compose::icon::app6e2`, and the codes whose built-in icon shows
+  another meaning, cite the standard's Annex A tables by number and page.
 - **JavaScript exceptions become typed errors.** Inputs on which upstream
   throws (an unknown `colorMode`, `undefined` instructions reaching
   `ms.outline` or `_scale`) return `RenderError` instead of rendering.
