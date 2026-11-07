@@ -1,0 +1,2696 @@
+symbol_set	kind	code	name	icon	remarks	page	table
+01	entity	000000	Unspecified	yes		69	A-XI
+01	entity	110000	Military	yes		69	A-XI
+01	entity	110100	Fixed Wing	yes		69	A-XI
+01	entity	110101	Medical Evacuation (MEDEVAC)	yes		69	A-XI
+01	entity	110102	Attack/Strike	yes		69	A-XI
+01	entity	110103	Bomber	yes		69	A-XI
+01	entity	110104	Fighter	yes		69	A-XI
+01	entity	110105	Fighter/Bomber	yes		69	A-XI
+01	entity	110107	Cargo	yes		69	A-XI
+01	entity	110108	Electronic Combat (EC)/Jammer	yes		69	A-XI
+01	entity	110109	Tanker	yes		69	A-XI
+01	entity	110110	Patrol	yes		69	A-XI
+01	entity	110111	Reconnaissance	yes		69	A-XI
+01	entity	110112	Trainer	yes		69	A-XI
+01	entity	110113	Utility	yes		69	A-XI
+01	entity	110114	Vertical or Short Take-off and Landing (VSTOL)	yes		69	A-XI
+01	entity	110115	Airborne Command Post (ACP)	yes		69	A-XI
+01	entity	110116	Airborne Early Warning (AEW)	yes		69	A-XI
+01	entity	110117	Antisurface Warfare	yes		70	A-XI
+01	entity	110118	Antisubmarine Warfare	yes		70	A-XI
+01	entity	110119	Communications	yes		70	A-XI
+01	entity	110120	Combat Search and Rescue (CSAR)	yes		70	A-XI
+01	entity	110121	Electronic Support (ES)	yes		70	A-XI
+01	entity	110122	Government	yes		70	A-XI
+01	entity	110123	Mine Countermeasures (MCM)	yes		70	A-XI
+01	entity	110124	Personnel Recovery	yes		70	A-XI
+01	entity	110125	Search and Rescue	yes		70	A-XI
+01	entity	110126	Special Operations Forces	yes		70	A-XI
+01	entity	110127	Ultra Light	yes		70	A-XI
+01	entity	110128	Photographic Reconnaissance	yes		70	A-XI
+01	entity	110129	Very Important Person (VIP)	yes		70	A-XI
+01	entity	110130	Suppression of Enemy Air Defense	yes		70	A-XI
+01	entity	110131	Passenger	yes		70	A-XI
+01	entity	110132	Escort	yes		70	A-XI
+01	entity	110133	Electromagnetic Attack (EA)	yes		70	A-XI
+01	entity	110200	Rotary Wing	yes		70	A-XI
+01	entity	110300	Unmanned Aircraft (UA) / Unmanned Aerial Vehicle (UAV) / Unmanned Aircraft System (UAS)	yes		70	A-XI
+01	entity	110400	Vertical–Takeoff UAV (VT–UAV)	yes		70	A-XI
+01	entity	110500	Lighter Than Air	yes		70	A-XI
+01	entity	110600	Airship	yes		70	A-XI
+01	entity	110700	Tethered Lighter than Air	yes		70	A-XI
+01	entity	120000	Civilian	yes		70	A-XI
+01	entity	120100	Fixed Wing	yes		70	A-XI
+01	entity	120200	Rotary Wing	yes		70	A-XI
+01	entity	120300	Unmanned Aircraft (UA) / Unmanned Aerial Vehicle (UAV) / Unmanned Aircraft System (UAS)	yes		70	A-XI
+01	entity	120400	Lighter Than Air	yes		70	A-XI
+01	entity	120500	Airship	yes		70	A-XI
+01	entity	120600	Tethered Lighter than Air	yes		70	A-XI
+01	entity	130000	Weapon	yes		70	A-XI
+01	entity	130100	Bomb	yes		70	A-XI
+01	entity	130200	Decoy	yes		70	A-XI
+01	entity	140000	Manual Track	yes		70	A-XI
+01	entity	150000	Equipment	yes		70	A-XI
+01	entity	150100	Tactical Air Navigation (TACAN)	yes		70	A-XI
+01	m1	00	Unspecified	yes		71	A-XII
+01	m1	02	Bomber	yes		71	A-XII
+01	m1	04	Fighter	yes		71	A-XII
+01	m1	06	Tanker	yes		71	A-XII
+01	m1	09	Passenger	yes		71	A-XII
+01	m1	10	Ultra Light	yes		71	A-XII
+01	m1	11	Airborne Command Post (ACP)	yes		71	A-XII
+01	m1	12	Airborne Early Warning (AEW)	yes		71	A-XII
+01	m1	16	Electronic Combat (EC)/Jammer	yes		71	A-XII
+01	m1	17	Patrol	yes		71	A-XII
+01	m1	18	Reconnaissance	yes		71	A-XII
+01	m1	19	Trainer	yes		71	A-XII
+01	m1	20	Photographic (Reconnaissance)	yes		71	A-XII
+01	m1	21	Personnel Recovery	yes		71	A-XII
+01	m1	23	Communications	yes		71	A-XII
+01	m1	24	Electronic Support (ES)	yes		71	A-XII
+01	m1	29	Very Important Person (VIP) Transport	yes		71	A-XII
+01	m1	30	Combat Search and Rescue (CSAR)	yes		71	A-XII
+01	m1	32	Antisurface Warfare	yes		71	A-XII
+01	m1	33	Fighter/Bomber	yes		71	A-XII
+01	m1	34	Intensive Care	yes		71	A-XII
+01	m1	35	Electromagnetic Attack (EA)	yes		71	A-XII
+01	m1	36	Multi-Mission	yes		71	A-XII
+01	m1	38	ASW Helo - LAMPS	yes		71	A-XII
+01	m1	39	ASW Helo - SH-60R	yes		71	A-XII
+01	m2	00	Unspecified	yes		71	A-XIII
+01	m2	04	Boom–Only	yes		71	A-XIII
+01	m2	05	Drogue–Only	yes		71	A-XIII
+01	m2	06	Boom and Drogue	yes		71	A-XIII
+01	m2	11	Downlinked	yes		71	A-XIII
+02	entity	000000	Unspecified	yes		71	A-XIV
+02	entity	110000	Missile	yes		71	A-XIV
+02	m1	00	Unspecified	yes		71	A-XV
+02	m1	01	Air	yes		71	A-XV
+02	m1	02	Surface	yes		72	A-XV
+02	m1	03	Subsurface	yes		72	A-XV
+02	m1	04	Space	yes		72	A-XV
+02	m1	05	Anti–Ballistic	yes		72	A-XV
+02	m1	06	Ballistic	yes		72	A-XV
+02	m1	07	Cruise	yes		72	A-XV
+02	m1	08	Interceptor	yes		72	A-XV
+02	m1	09	Hypersonic	yes		72	A-XV
+02	m2	00	Unspecified	yes		72	A-XVI
+02	m2	01	Air	yes		72	A-XVI
+02	m2	02	Surface	yes		72	A-XVI
+02	m2	03	Subsurface	yes		72	A-XVI
+02	m2	04	Space	yes		72	A-XVI
+02	m2	05	Launched	yes		72	A-XVI
+02	m2	07	Patriot	yes		72	A-XVI
+02	m2	08	Standard Missile-2 (SM-2)	yes		72	A-XVI
+02	m2	09	Standard Missile-6 (SM-6)	yes		72	A-XVI
+02	m2	10	Evolved Sea Sparrow Missile (ESSM)	yes		72	A-XVI
+02	m2	11	Rolling Airframe Missile (RAM)	yes		72	A-XVI
+02	m2	12	Short Range	yes		72	A-XVI
+02	m2	13	Medium Range	yes		72	A-XVI
+02	m2	14	Intermediate Range	yes		72	A-XVI
+02	m2	15	Long Range	yes		72	A-XVI
+02	m2	16	Intercontinental	yes		72	A-XVI
+05	entity	000000	Unspecified	yes		72	A-XVII
+05	entity	110000	Military	yes		72	A-XVII
+05	entity	110100	Space Vehicle	yes		72	A-XVII
+05	entity	110200	Re–Entry Vehicle	yes		72	A-XVII
+05	entity	110300	Planet Lander	yes		72	A-XVII
+05	entity	110400	Orbiter Shuttle	yes		72	A-XVII
+05	entity	110500	Capsule	yes		72	A-XVII
+05	entity	110700	Satellite	yes		72	A-XVII
+05	entity	110800	Antisatellite Weapon	yes		72	A-XVII
+05	entity	110900	Astronomical Satellite	yes		72	A-XVII
+05	entity	111000	Biosatellite	yes		72	A-XVII
+05	entity	111100	Communications Satellite	yes		72	A-XVII
+05	entity	111200	Earth Observation Satellite	yes		73	A-XVII
+05	entity	111300	Miniaturized Satellite	yes		73	A-XVII
+05	entity	111400	Navigational Satellite	yes		73	A-XVII
+05	entity	111500	Reconnaissance Satellite	yes		73	A-XVII
+05	entity	111600	Space Station	yes		73	A-XVII
+05	entity	111700	Tethered Satellite	yes		73	A-XVII
+05	entity	111800	Weather Satellite	yes		73	A-XVII
+05	entity	111900	Space Launched Vehicle (SLV)	yes		73	A-XVII
+05	entity	120000	Civilian	yes		73	A-XVII
+05	entity	120100	Orbiter Shuttle	yes		73	A-XVII
+05	entity	120200	Capsule	yes		73	A-XVII
+05	entity	120300	Satellite	yes		73	A-XVII
+05	entity	120400	Astronomical Satellite	yes		73	A-XVII
+05	entity	120500	Biosatellite	yes		73	A-XVII
+05	entity	120600	Communications Satellite	yes		73	A-XVII
+05	entity	120700	Earth Observation Satellite	yes		73	A-XVII
+05	entity	120800	Miniaturized Satellite	yes		73	A-XVII
+05	entity	120900	Navigational Satellite	yes		73	A-XVII
+05	entity	121000	Space Station	yes		73	A-XVII
+05	entity	121100	Tethered Satellite	yes		73	A-XVII
+05	entity	121200	Weather Satellite	yes		73	A-XVII
+05	entity	121300	Planetary Lander	yes		73	A-XVII
+05	entity	121400	Space Vehicle	yes		73	A-XVII
+05	entity	130000	Manual Track	yes		73	A-XVII
+05	m1	00	Unspecified	yes		73	A-XVIII
+05	m1	01	Low Earth Orbit (LEO)	yes		73	A-XVIII
+05	m1	02	Medium Earth Orbit (MEO)	yes		73	A-XVIII
+05	m1	03	High Earth Orbit (HEO)	yes		73	A-XVIII
+05	m1	04	Geosynchronous Orbit (GSO)	yes		73	A-XVIII
+05	m1	05	Geostationary Orbit (GO)	yes		73	A-XVIII
+05	m1	06	Molniya Orbit (MO)	yes		73	A-XVIII
+05	m2	00	Unspecified	yes		73	A-XIX
+05	m2	01	Optical	yes		73	A-XIX
+05	m2	02	Infrared	yes		73	A-XIX
+05	m2	03	Radar	yes		73	A-XIX
+05	m2	04	Signals Intelligence (SIGINT)	yes		73	A-XIX
+05	m2	07	High Power Microwave (ASAT)	yes		73	A-XIX
+05	m2	08	Laser (ASAT)	yes		74	A-XIX
+05	m2	09	Mine (ASAT)	yes		74	A-XIX
+05	m2	10	Maintenance	yes		74	A-XIX
+05	m2	11	Refuel	yes		74	A-XIX
+05	m2	12	Tug	yes		74	A-XIX
+06	entity	000000	Unspecified	yes		74	A-XX
+06	entity	110000	Missile	yes		74	A-XX
+06	m1	00	Unspecified	yes		74	A-XXI
+06	m1	01	Ballistic	yes		74	A-XXI
+06	m1	02	Space	yes		74	A-XXI
+06	m1	03	Interceptor	yes		74	A-XXI
+06	m1	04	Hypersonic	yes		74	A-XXI
+06	m2	00	Unspecified	yes		74	A-XXII
+06	m2	01	Short Range	yes		74	A-XXII
+06	m2	02	Medium Range	yes		74	A-XXII
+06	m2	03	Intermediate Range	yes		74	A-XXII
+06	m2	04	Long Range	yes		74	A-XXII
+06	m2	05	Intercontinental	yes		74	A-XXII
+06	m2	06	Arrow	yes		74	A-XXII
+06	m2	07	Ground-Based Interceptor (GBI)	yes		74	A-XXII
+06	m2	08	Patriot	yes		74	A-XXII
+06	m2	09	Standard Missile Terminal Phase (SM-T)	yes		74	A-XXII
+06	m2	10	Standard Missile – 3 (SM-3)	yes		74	A-XXII
+06	m2	11	Terminal High Altitude Area Defense (THAAD)	yes		74	A-XXII
+06	m2	12	Space	yes		74	A-XXII
+06	m2	13	Close Range (CRBM)	yes		74	A-XXII
+06	m2	14	Debris	yes		74	A-XXII
+06	m2	15	Unknown	yes		74	A-XXII
+10	entity	000000	Unspecified	yes		75	A-XXIII
+10	entity	110000	Command and Control	yes		75	A-XXIII
+10	entity	110100	Broadcast Transmitter Antennae	yes		75	A-XXIII
+10	entity	110200	Civil Affairs	yes		75	A-XXIII
+10	entity	110300	Civil–Military Cooperation	yes		75	A-XXIII
+10	entity	110400	Information Operations	yes		75	A-XXIII
+10	entity	110500	Liaison	yes		75	A-XXIII
+10	entity	110600	Military Information Support Operations (MISO)	yes		75	A-XXIII
+10	entity	110601	Broadcast Transmitter Antennae	yes		75	A-XXIII
+10	entity	110700	Radio	yes		75	A-XXIII
+10	entity	110800	Radio Relay	yes		75	A-XXIII
+10	entity	110900	Radio Teletype Center	yes		75	A-XXIII
+10	entity	111000	Signal	yes		75	A-XXIII
+10	entity	111001	Radio	yes		75	A-XXIII
+10	entity	111002	Radio Relay	yes		75	A-XXIII
+10	entity	111003	Teletype	yes		75	A-XXIII
+10	entity	111005	Video Imagery (Combat Camera)	yes		75	A-XXIII
+10	entity	111200	Video Imagery (Combat Camera)	yes		75	A-XXIII
+10	entity	111300	Space	yes		75	A-XXIII
+10	entity	111400	Special Troops	yes		75	A-XXIII
+10	entity	111500	Multi-Domain	yes		75	A-XXIII
+10	entity	120000	Movement and Maneuver	yes		75	A-XXIII
+10	entity	120100	Air Assault with Organic Lift	yes		75	A-XXIII
+10	entity	120200	Air Traffic Services/Airfield Operations	yes		75	A-XXIII
+10	entity	120400	Antitank/Antiarmor	yes		75	A-XXIII
+10	entity	120401	Armored	yes		75	A-XXIII
+10	entity	120402	Motorized/Mounted Operation	yes		75	A-XXIII
+10	entity	120500	Armor /Mechanized	yes		75	A-XXIII
+10	entity	120501	Reconnaissance/Cavalry/Scout	yes		75	A-XXIII
+10	entity	120502	Amphibious	yes		75	A-XXIII
+10	entity	120600	Army Aviation/Aviation Rotary Wing	yes		75	A-XXIII
+10	entity	120601	Reconnaissance	yes		75	A-XXIII
+10	entity	120700	Aviation Composite	yes		75	A-XXIII
+10	entity	120800	Aviation Fixed Wing	yes		75	A-XXIII
+10	entity	120801	Reconnaissance	yes		76	A-XXIII
+10	entity	120900	Combat	yes		76	A-XXIII
+10	entity	121000	Combined Arms	yes		76	A-XXIII
+10	entity	121100	Infantry	yes		76	A-XXIII
+10	entity	121101	Amphibious	yes		76	A-XXIII
+10	entity	121102	Armored/Mechanized/Tracked	yes		76	A-XXIII
+10	entity	121103	Main Gun System, Infantry	yes		76	A-XXIII
+10	entity	121104	Motorized/Mounted Operation	yes		76	A-XXIII
+10	entity	121105	Infantry Fighting Vehicle	yes		76	A-XXIII
+10	entity	121106	Main Gun System	yes		76	A-XXIII
+10	entity	121107	Marine Air-Ground Task Force (MAGTF)	yes		76	A-XXIII
+10	entity	121200	Observer	yes		76	A-XXIII
+10	entity	121300	Reconnaissance/Cavalry/Scout	yes		76	A-XXIII
+10	entity	121301	Reconnaissance and Surveillance	yes		76	A-XXIII
+10	entity	121302	Marine	yes		76	A-XXIII
+10	entity	121303	Motorized/Mounted Operation	yes		76	A-XXIII
+10	entity	121304	Reconnaissance Artillery, Mounted Operation	yes		76	A-XXIII
+10	entity	121400	Sea Air Land (SEAL)	yes		76	A-XXIII
+10	entity	121500	Sniper	yes		76	A-XXIII
+10	entity	121600	Surveillance	yes		76	A-XXIII
+10	entity	121700	Special Forces	yes		76	A-XXIII
+10	entity	121800	Special Operations Forces (SOF)	yes		76	A-XXIII
+10	entity	121801	Fixed Wing MISO	yes		76	A-XXIII
+10	entity	121802	Ground	yes		76	A-XXIII
+10	entity	121805	Underwater Demolition	yes		76	A-XXIII
+10	entity	121900	Unmanned Aerial Systems	yes		76	A-XXIII
+10	entity	122000	Ranger	yes		76	A-XXIII
+10	entity	122100	Combined Combat	yes		76	A-XXIII
+10	entity	130000	Fires	yes		76	A-XXIII
+10	entity	130100	Air Defense	yes		76	A-XXIII
+10	entity	130101	Main Gun System	yes		76	A-XXIII
+10	entity	130102	Missile	yes		76	A-XXIII
+10	entity	130103	Air and Missile Defense	yes		76	A-XXIII
+10	entity	130200	Air/Land Naval Gunfire Liaison	yes		76	A-XXIII
+10	entity	130300	Field Artillery	yes		76	A-XXIII
+10	entity	130303	Reconnaissance (FIST)	yes		76	A-XXIII
+10	entity	130400	Field Artillery Observer	yes		76	A-XXIII
+10	entity	130500	Joint Fire Support	yes		76	A-XXIII
+10	entity	130600	Meteorological	yes		77	A-XXIII
+10	entity	130700	Missile	yes		77	A-XXIII
+10	entity	130800	Mortar	yes		77	A-XXIII
+10	entity	130802	Self-Propelled Wheeled	yes		77	A-XXIII
+10	entity	130900	Survey	yes		77	A-XXIII
+10	entity	140000	Protection	yes		77	A-XXIII
+10	entity	140100	Chemical Biological Radiological Nuclear Defense	yes		77	A-XXIII
+10	entity	140102	Motorized/Mounted Operation	yes		77	A-XXIII
+10	entity	140103	Reconnaissance	yes		77	A-XXIII
+10	entity	140105	Reconnaissance Motorized/Mounted Operation	yes		77	A-XXIII
+10	entity	140106	Chemical, Biological, Radiological, Nuclear, and High-Yield Explosives	yes		77	A-XXIII
+10	entity	140200	Combat Support (Maneuver Enhancement)	yes		77	A-XXIII
+10	entity	140300	Criminal Investigation Division	yes		77	A-XXIII
+10	entity	140400	Diving	yes		77	A-XXIII
+10	entity	140500	Dog	yes		77	A-XXIII
+10	entity	140600	Drilling	yes		77	A-XXIII
+10	entity	140700	Engineer	yes		77	A-XXIII
+10	entity	140701	Mechanized	yes		77	A-XXIII
+10	entity	140702	Motorized/Mounted Operation	yes		77	A-XXIII
+10	entity	140703	Reconnaissance	yes		77	A-XXIII
+10	entity	140800	Explosive Ordnance Disposal (EOD)	yes		77	A-XXIII
+10	entity	140900	Field Camp Construction	yes		77	A-XXIII
+10	entity	141000	Fire Fighting/Fire Protection	yes		77	A-XXIII
+10	entity	141100	Geospatial Support/Geospatial Information Support	yes		77	A-XXIII
+10	entity	141200	Military Police	yes		77	A-XXIII
+10	entity	141300	Mine	yes		77	A-XXIII
+10	entity	141400	Mine Clearing	yes		77	A-XXIII
+10	entity	141500	Mine Launching	yes		77	A-XXIII
+10	entity	141600	Mine Laying	yes		77	A-XXIII
+10	entity	141700	Security	yes		77	A-XXIII
+10	entity	141702	Motorized/Mounted Operation	yes		77	A-XXIII
+10	entity	141800	Search and Rescue	yes		77	A-XXIII
+10	entity	141801	Isolated Personnel	yes		77	A-XXIII
+10	entity	142000	Shore Patrol/Security Police	yes		77	A-XXIII
+10	entity	142100	Topographic/Geospatial	yes		77	A-XXIII
+10	entity	142200	Missile Defense	yes		77	A-XXIII
+10	entity	150000	Intelligence	yes		77	A-XXIII
+10	entity	150100	Analysis	yes		78	A-XXIII
+10	entity	150200	Counterintelligence	yes		78	A-XXIII
+10	entity	150300	Direction Finding	yes		78	A-XXIII
+10	entity	150400	Electronic Ranging	yes		78	A-XXIII
+10	entity	150500	Electromagnetic Warfare	yes		78	A-XXIII
+10	entity	150501	Analysis	yes		78	A-XXIII
+10	entity	150502	Direction Finding	yes		78	A-XXIII
+10	entity	150503	Intercept	yes		78	A-XXIII
+10	entity	150600	Intercept (Search and Recording)	yes		78	A-XXIII
+10	entity	150700	Interrogation	yes		78	A-XXIII
+10	entity	150800	Jamming	yes		78	A-XXIII
+10	entity	150900	Joint Intelligence Center	yes		78	A-XXIII
+10	entity	151000	Military Intelligence	yes		78	A-XXIII
+10	entity	151100	Search	yes		78	A-XXIII
+10	entity	151200	Sensor	yes		78	A-XXIII
+10	entity	151300	Military History	yes		78	A-XXIII
+10	entity	160000	Sustainment	yes		78	A-XXIII
+10	entity	160100	Administrative	yes		78	A-XXIII
+10	entity	160200	All Classes of Supply	yes		78	A-XXIII
+10	entity	160400	Ammunition	yes		78	A-XXIII
+10	entity	160500	Band	yes		78	A-XXIII
+10	entity	160501	Army Music	yes		78	A-XXIII
+10	entity	160600	Combat Service Support	yes		78	A-XXIII
+10	entity	160700	Finance	yes		78	A-XXIII
+10	entity	160800	Judge Advocate General	yes		78	A-XXIII
+10	entity	160900	Labor	yes		78	A-XXIII
+10	entity	161000	Laundry/Bath	yes		78	A-XXIII
+10	entity	161100	Maintenance	yes		78	A-XXIII
+10	entity	161200	Material	yes		78	A-XXIII
+10	entity	161300	Medical	yes		78	A-XXIII
+10	entity	161400	Medical Treatment Facility	yes		78	A-XXIII
+10	entity	161500	Morale, Welfare and Recreation	yes		78	A-XXIII
+10	entity	161600	Mortuary Affairs	yes		78	A-XXIII
+10	entity	161700	Multiple Classes of Supply	yes		78	A-XXIII
+10	entity	161800	NATO Supply Class I	yes		78	A-XXIII
+10	entity	162000	NATO Supply Class III	yes		78	A-XXIII
+10	entity	162100	NATO Supply Class IV	yes		78	A-XXIII
+10	entity	162300	Ordnance	yes		78	A-XXIII
+10	entity	162400	Personnel Services	yes		78	A-XXIII
+10	entity	162500	Petroleum, Oil and Lubricants	yes		79	A-XXIII
+10	entity	162800	Public Affairs/Public Information	yes		79	A-XXIII
+10	entity	162900	Quartermaster	yes		79	A-XXIII
+10	entity	163100	Religious Support	yes		79	A-XXIII
+10	entity	163200	Replacement Holding Unit	yes		79	A-XXIII
+10	entity	163500	Joint Information Bureau (JIB)	yes		79	A-XXIII
+10	entity	163600	Transportation	yes		79	A-XXIII
+10	entity	163700	US Supply Class I	yes		79	A-XXIII
+10	entity	164000	US Supply Class IV	yes		79	A-XXIII
+10	entity	164200	US Supply Class VI	yes		79	A-XXIII
+10	entity	164300	US Supply Class VII	yes		79	A-XXIII
+10	entity	164400	US Supply Class VIII	yes		79	A-XXIII
+10	entity	164500	US Supply Class IX	yes		79	A-XXIII
+10	entity	164600	US Supply Class X	yes		79	A-XXIII
+10	entity	164800	Water Purification	yes		79	A-XXIII
+10	entity	164900	Broadcast	yes		79	A-XXIII
+10	entity	165100	Interpreter/Translator	yes		79	A-XXIII
+10	entity	165200	Support	yes		79	A-XXIII
+10	entity	165300	Army Field Support	yes		79	A-XXIII
+10	entity	165400	Contracting Services	yes		79	A-XXIII
+10	entity	165500	Parachute Rigger	yes		79	A-XXIII
+10	entity	165600	Human Resources	yes		79	A-XXIII
+10	entity	165700	Field Feeding	yes		79	A-XXIII
+10	entity	170000	Maritime	yes		79	A-XXIII
+10	entity	170100	Naval	yes		79	A-XXIII
+10	entity	180000	Named Headquarters	yes		79	A-XXIII
+10	entity	180100	Allied Command Europe Rapid Reaction Corps (ARRC)	yes		79	A-XXIII
+10	entity	180200	Allied Command Operations	yes		79	A-XXIII
+10	entity	180300	International Security Assistance Force (ISAF)	yes		79	A-XXIII
+10	entity	180400	Multinational (MN)	yes		79	A-XXIII
+10	entity	190000	Emergency Operation	yes		79	A-XXIII
+10	entity	200000	Law Enforcement	yes		79	A-XXIII
+10	entity	200100	Bureau of Alcohol, Tobacco, Firearms and Explosives (ATF) (Department of Justice)	yes		79	A-XXIII
+10	entity	200200	Border Patrol	yes		79	A-XXIII
+10	entity	200300	Customs Service	yes		79	A-XXIII
+10	entity	200400	Drug Enforcement Administration (DEA)	yes		80	A-XXIII
+10	entity	200500	Department of Justice (DOJ)	yes		80	A-XXIII
+10	entity	200600	Federal Bureau of Investigation (FBI)	yes		80	A-XXIII
+10	entity	200700	Police	yes		80	A-XXIII
+10	entity	200800	Prison	yes		80	A-XXIII
+10	entity	200900	United States Secret Service (USSS)	yes		80	A-XXIII
+10	entity	201000	Transportation Security Administration (TSA)	yes		80	A-XXIII
+10	entity	201100	Coast Guard	yes		80	A-XXIII
+10	entity	201200	US Marshals Service	yes		80	A-XXIII
+10	entity	201300	Internal Security Force	yes		80	A-XXIII
+10	entity	210000	Cyber	yes		80	A-XXIII
+10	m1	00	Unspecified	yes		80	A-XXIV
+10	m1	01	Tactical Satellite Communications	yes		80	A-XXIV
+10	m1	02	Area	yes		80	A-XXIV
+10	m1	04	Biological	yes		80	A-XXIV
+10	m1	05	Border	yes		80	A-XXIV
+10	m1	11	Communications Contingency Package	yes		80	A-XXIV
+10	m1	12	Construction	yes		80	A-XXIV
+10	m1	13	Cross Cultural Communication	yes		80	A-XXIV
+10	m1	16	Detention	yes		80	A-XXIV
+10	m1	17	Direct Communications	yes		80	A-XXIV
+10	m1	18	Diving	yes		80	A-XXIV
+10	m1	19	Division	yes		80	A-XXIV
+10	m1	20	Dog	yes		80	A-XXIV
+10	m1	21	Drilling	yes		80	A-XXIV
+10	m1	22	Electro–Optical	yes		80	A-XXIV
+10	m1	23	Enhanced	yes		80	A-XXIV
+10	m1	25	Fire Direction Center	yes		80	A-XXIV
+10	m1	26	Force	yes		80	A-XXIV
+10	m1	27	Forward	yes		80	A-XXIV
+10	m1	28	Ground Station Module	yes		80	A-XXIV
+10	m1	29	Landing Support	yes		80	A-XXIV
+10	m1	32	Meteorological	yes		80	A-XXIV
+10	m1	34	Missile	yes		80	A-XXIV
+10	m1	35	Mobile Advisor and Support	yes		80	A-XXIV
+10	m1	36	Mobile Subscriber Equipment	yes		80	A-XXIV
+10	m1	37	Mobility Support	yes		80	A-XXIV
+10	m1	39	Multinational	yes		80	A-XXIV
+10	m1	40	Multinational Specialized Unit	yes		80	A-XXIV
+10	m1	41	Multiple Rocket Launcher	yes		81	A-XXIV
+10	m1	42	NATO Medical Role 1	yes		81	A-XXIV
+10	m1	43	NATO Medical Role 2	yes		81	A-XXIV
+10	m1	44	NATO Medical Role 3	yes		81	A-XXIV
+10	m1	45	NATO Medical Role 4	yes		81	A-XXIV
+10	m1	46	Naval	yes		81	A-XXIV
+10	m1	49	Operations	yes		81	A-XXIV
+10	m1	50	Radar	yes		81	A-XXIV
+10	m1	51	Radio Frequency Identification (RFID) Interrogator/Sensor	yes		81	A-XXIV
+10	m1	55	Sensor	yes		81	A-XXIV
+10	m1	57	Signal Intelligence	yes		81	A-XXIV
+10	m1	59	Single Rocket Launcher	yes		81	A-XXIV
+10	m1	60	Smoke	yes		81	A-XXIV
+10	m1	62	Sound Ranging	yes		81	A-XXIV
+10	m1	65	Survey	yes		81	A-XXIV
+10	m1	66	Tactical Exploitation	yes		81	A-XXIV
+10	m1	67	Target Acquisition	yes		81	A-XXIV
+10	m1	68	Topographic/Geospatial	yes		81	A-XXIV
+10	m1	70	Video Imagery (Combat Camera)	yes		81	A-XXIV
+10	m1	71	Mobility Assault	yes		81	A-XXIV
+10	m1	72	Amphibious Warfare Ship	yes		81	A-XXIV
+10	m1	73	Load Handling System	yes		81	A-XXIV
+10	m1	74	Palletized Load System	yes		81	A-XXIV
+10	m1	77	Support	yes		81	A-XXIV
+10	m1	79	Route, Reconnaissance, and Clearance	yes		81	A-XXIV
+10	m1	84	Assault	yes		81	A-XXIV
+10	m1	86	Criminal Investigation Division	yes		81	A-XXIV
+10	m1	87	Digital	yes		81	A-XXIV
+10	m1	88	Network or Network Operations	yes		81	A-XXIV
+10	m1	89	Airfield, Aerial Port of Debarkation, or Aerial Port of Embarkation	yes		81	A-XXIV
+10	m1	90	Pipeline	yes		81	A-XXIV
+10	m1	91	Postal	yes		81	A-XXIV
+10	m1	94	Theater	yes		81	A-XXIV
+10	m1	95	Army or Theater Army	yes		81	A-XXIV
+10	m1	96	Corps	yes		81	A-XXIV
+10	m1	98	Headquarters or headquarters staff element	yes		81	A-XXIV
+10	m1	99	Multi-Domain	yes		81	A-XXIV
+10	m1	A1	Electric Generation	yes		81	A-XXIV
+10	m1	A3	Intercept	yes		81	A-XXIV
+10	m1	A4	Intermodal	yes		81	A-XXIV
+10	m1	A6	Non-Combative Generic Vessel	yes		81	A-XXIV
+10	m1	A7	Search	yes		81	A-XXIV
+10	m2	00	Unspecified	yes		81	A-XXV
+10	m2	02	Arctic	yes		81	A-XXV
+10	m2	03	Battle Damage Repair	yes		81	A-XXV
+10	m2	05	Casualty Staging	yes		82	A-XXV
+10	m2	06	Clearing	yes		82	A-XXV
+10	m2	08	Control	yes		82	A-XXV
+10	m2	09	Decontamination	yes		82	A-XXV
+10	m2	10	Demolition	yes		82	A-XXV
+10	m2	11	Dental	yes		82	A-XXV
+10	m2	12	Digital	yes		82	A-XXV
+10	m2	13	Enhanced Position Location Reporting System (EPLRS)	yes		82	A-XXV
+10	m2	16	High Altitude	yes		82	A-XXV
+10	m2	17	Intermodal	yes		82	A-XXV
+10	m2	18	Intensive Care	yes		82	A-XXV
+10	m2	21	Launcher	yes		82	A-XXV
+10	m2	23	Low Altitude	yes		82	A-XXV
+10	m2	25	Medium Altitude	yes		82	A-XXV
+10	m2	28	High to Medium Altitude	yes		82	A-XXV
+10	m2	29	Multi–Channel	yes		82	A-XXV
+10	m2	30	Optical (Flash)	yes		82	A-XXV
+10	m2	31	Pack Animal	yes		82	A-XXV
+10	m2	32	Patient Evacuation Coordination	yes		82	A-XXV
+10	m2	33	Preventive Maintenance	yes		82	A-XXV
+10	m2	34	Psychological	yes		82	A-XXV
+10	m2	35	Radio Relay Line of Sight	yes		82	A-XXV
+10	m2	37	Recovery	yes		82	A-XXV
+10	m2	38	Maintenance	yes		82	A-XXV
+10	m2	39	Rescue Coordination Center	yes		82	A-XXV
+10	m2	40	Riverine	yes		82	A-XXV
+10	m2	41	Single Channel	yes		82	A-XXV
+10	m2	44	Strategic	yes		82	A-XXV
+10	m2	45	Support	yes		82	A-XXV
+10	m2	46	Tactical	yes		82	A-XXV
+10	m2	47	Towed	yes		82	A-XXV
+10	m2	48	Troop	yes		82	A-XXV
+10	m2	49	Vertical or Short Take–Off and Landing (VTOL/VSTOL)	yes		82	A-XXV
+10	m2	50	Veterinary	yes		82	A-XXV
+10	m2	52	High to Low Altitude	yes		82	A-XXV
+10	m2	53	Medium to Low Altitude	yes		82	A-XXV
+10	m2	54	Attack	yes		82	A-XXV
+10	m2	55	Refuel	yes		82	A-XXV
+10	m2	56	Utility	yes		82	A-XXV
+10	m2	57	Combat Search and Rescue	yes		82	A-XXV
+10	m2	58	Guerrilla	yes		82	A-XXV
+10	m2	59	Air Assault	yes		82	A-XXV
+10	m2	60	Amphibious	yes		82	A-XXV
+10	m2	61	Very Heavy	yes		82	A-XXV
+10	m2	64	Barge, Self-Propelled	yes		82	A-XXV
+10	m2	65	Barge, Not Self-Propelled	yes		82	A-XXV
+10	m2	66	Launch	yes		82	A-XXV
+10	m2	67	Landing Craft	yes		82	A-XXV
+10	m2	68	Landing Ship	yes		82	A-XXV
+10	m2	69	Service Craft/Yard	yes		82	A-XXV
+10	m2	70	Tug Harbor	yes		83	A-XXV
+10	m2	71	Ocean Going Tug Boat	yes		83	A-XXV
+10	m2	72	Surface Deployment and Distribution Command	yes		83	A-XXV
+10	m2	73	Noncombatant Generic Vessel	yes		83	A-XXV
+10	m2	74	Composite	yes		83	A-XXV
+10	m2	75	Shelter	yes		83	A-XXV
+10	m2	81	Surgical	yes		83	A-XXV
+10	m2	82	Blood	yes		83	A-XXV
+10	m2	83	Combat and Operational Stress Control	yes		83	A-XXV
+10	m2	86	Optometry	yes		83	A-XXV
+10	m2	87	Preventive Medicine	yes		83	A-XXV
+10	m2	89	Air Defense	yes		83	A-XXV
+10	m2	91	Intercept	yes		83	A-XXV
+10	m2	93	Search	yes		83	A-XXV
+10	m2	94	Fire Direction Center	yes		83	A-XXV
+10	m2	95	Construction	yes		83	A-XXV
+10	m2	96	Dog	yes		83	A-XXV
+11	entity	000000	Unspecified	yes		83	A-XXVI
+11	entity	110000	Civilian	yes		83	A-XXVI
+11	entity	110100	Environmental Protection	yes		83	A-XXVI
+11	entity	110200	Government Organization	yes		83	A-XXVI
+11	entity	110300	Individual	yes		83	A-XXVI
+11	entity	110400	Organization or Group	yes		83	A-XXVI
+11	entity	110500	Killing Victim	yes		83	A-XXVI
+11	entity	110600	Killing Victims	yes		83	A-XXVI
+11	entity	110700	Victim of an Attempted Crime	yes		83	A-XXVI
+11	entity	110800	Spy	yes		83	A-XXVI
+11	entity	110900	Composite Loss	yes		83	A-XXVI
+11	entity	111000	Emergency Medical Operation	yes		83	A-XXVI
+11	m1	00	Unspecified	yes		83	A-XXVII
+11	m1	03	Murder Victims	yes		83	A-XXVII
+11	m1	09	Displaced Persons/Refugees/Evacuees	yes		83	A-XXVII
+11	m1	10	Foreign Fighter(s)	yes		83	A-XXVII
+11	m1	11	Gang Member or Gang	yes		83	A-XXVII
+11	m1	13	Leader or Leadership	yes		83	A-XXVII
+11	m1	15	Unwilling/Coerced Recruit	yes		83	A-XXVII
+11	m1	16	Willing Recruit	yes		84	A-XXVII
+11	m1	17	Religious or Religious Organization	yes		84	A-XXVII
+11	m1	18	Targeted Individual or Organization	yes		84	A-XXVII
+11	m1	19	Terrorist or Terrorist Organization	yes		84	A-XXVII
+11	m1	20	Speaker	yes		84	A-XXVII
+11	m1	23	Other	yes		84	A-XXVII
+11	m1	24	Loot	yes		84	A-XXVII
+11	m2	00	Unspecified	yes		84	A-XXVIII
+11	m2	01	Leader or Leadership	yes		84	A-XXVIII
+15	entity	000000	Unspecified	yes		84	A-XXIX
+15	entity	110000	Weapon/Weapon System	yes		84	A-XXIX
+15	entity	110100	Rifle	yes		84	A-XXIX
+15	entity	110101	Single Shot Rifle	yes		84	A-XXIX
+15	entity	110102	Semiautomatic Rifle	yes		84	A-XXIX
+15	entity	110103	Automatic Rifle	yes		84	A-XXIX
+15	entity	110200	Machine Gun	yes		84	A-XXIX
+15	entity	110201	Light	yes		84	A-XXIX
+15	entity	110202	Medium	yes		84	A-XXIX
+15	entity	110203	Heavy	yes		84	A-XXIX
+15	entity	110300	Grenade Launcher	yes		84	A-XXIX
+15	entity	110301	Light	yes		84	A-XXIX
+15	entity	110302	Medium	yes		84	A-XXIX
+15	entity	110303	Heavy	yes		84	A-XXIX
+15	entity	110400	Flame Thrower	yes		84	A-XXIX
+15	entity	110500	Air Defense Gun	yes		84	A-XXIX
+15	entity	110501	Light	yes		84	A-XXIX
+15	entity	110502	Medium	yes		84	A-XXIX
+15	entity	110503	Heavy	yes		84	A-XXIX
+15	entity	110600	Antitank Gun	yes		84	A-XXIX
+15	entity	110601	Light	yes		84	A-XXIX
+15	entity	110602	Medium	yes		84	A-XXIX
+15	entity	110603	Heavy	yes		84	A-XXIX
+15	entity	110700	Direct Fire Gun	yes		84	A-XXIX
+15	entity	110701	Light	yes		84	A-XXIX
+15	entity	110702	Medium	yes		85	A-XXIX
+15	entity	110703	Heavy	yes		85	A-XXIX
+15	entity	110800	Recoilless Gun	yes		85	A-XXIX
+15	entity	110801	Light	yes		85	A-XXIX
+15	entity	110802	Medium	yes		85	A-XXIX
+15	entity	110803	Heavy	yes		85	A-XXIX
+15	entity	110900	Howitzer	yes		85	A-XXIX
+15	entity	110901	Light	yes		85	A-XXIX
+15	entity	110902	Medium	yes		85	A-XXIX
+15	entity	110903	Heavy	yes		85	A-XXIX
+15	entity	111000	Missile Launcher	yes		85	A-XXIX
+15	entity	111001	Light	yes		85	A-XXIX
+15	entity	111002	Medium	yes		85	A-XXIX
+15	entity	111003	Heavy	yes		85	A-XXIX
+15	entity	111100	Air Defense Missile Launcher	yes		85	A-XXIX
+15	entity	111101	Light	yes		85	A-XXIX
+15	entity	111102	Light, Light Transporter-Launcher and Radar (TLAR)	yes		85	A-XXIX
+15	entity	111103	Light, Light Tactical Landing Approach Radar (TELAR)	yes		85	A-XXIX
+15	entity	111104	Medium	yes		85	A-XXIX
+15	entity	111105	Medium, TLAR	yes		85	A-XXIX
+15	entity	111106	Medium, TELAR	yes		85	A-XXIX
+15	entity	111107	Heavy	yes		85	A-XXIX
+15	entity	111108	Heavy, TLAR	yes		85	A-XXIX
+15	entity	111109	Heavy, TELAR	yes		85	A-XXIX
+15	entity	111200	Antitank Missile Launcher	yes		85	A-XXIX
+15	entity	111201	Light	yes		85	A-XXIX
+15	entity	111202	Medium	yes		85	A-XXIX
+15	entity	111203	Heavy	yes		85	A-XXIX
+15	entity	111300	Surface-to-Surface Missile Launcher	yes		85	A-XXIX
+15	entity	111301	Light	yes		85	A-XXIX
+15	entity	111302	Medium	yes		85	A-XXIX
+15	entity	111303	Heavy	yes		85	A-XXIX
+15	entity	111400	Mortar	yes		85	A-XXIX
+15	entity	111401	Light	yes		85	A-XXIX
+15	entity	111402	Medium	yes		85	A-XXIX
+15	entity	111403	Heavy	yes		85	A-XXIX
+15	entity	111500	Single Rocket Launcher	yes		85	A-XXIX
+15	entity	111501	Light	yes		85	A-XXIX
+15	entity	111502	Medium	yes		85	A-XXIX
+15	entity	111503	Heavy	yes		85	A-XXIX
+15	entity	111600	Multiple Rocket Launcher	yes		86	A-XXIX
+15	entity	111601	Light	yes		86	A-XXIX
+15	entity	111602	Medium	yes		86	A-XXIX
+15	entity	111603	Heavy	yes		86	A-XXIX
+15	entity	111700	Antitank Rocket Launcher	yes		86	A-XXIX
+15	entity	111701	Light	yes		86	A-XXIX
+15	entity	111702	Medium	yes		86	A-XXIX
+15	entity	111703	Heavy	yes		86	A-XXIX
+15	entity	111800	Nonlethal Weapon	yes		86	A-XXIX
+15	entity	111900	Taser	yes		86	A-XXIX
+15	entity	112000	Water Cannon	yes		86	A-XXIX
+15	entity	120000	Vehicle	yes		86	A-XXIX
+15	entity	120100	Armored	yes		86	A-XXIX
+15	entity	120101	Armored Fighting Vehicle	yes		86	A-XXIX
+15	entity	120102	Armored Fighting Vehicle Command and Control	yes		86	A-XXIX
+15	entity	120103	Armored Personnel Carrier	yes		86	A-XXIX
+15	entity	120104	Armored Personnel Carrier Ambulance	yes		86	A-XXIX
+15	entity	120105	Armored Protected Vehicle	yes		86	A-XXIX
+15	entity	120108	Armored Personnel Carrier, Recovery	yes		86	A-XXIX
+15	entity	120109	Combat Service Support Vehicle	yes		86	A-XXIX
+15	entity	120111	Light Armor Reconnaissance	yes		86	A-XXIX
+15	entity	120200	Tank	yes		86	A-XXIX
+15	entity	120201	Light	yes		86	A-XXIX
+15	entity	120202	Medium	yes		86	A-XXIX
+15	entity	120203	Heavy	yes		86	A-XXIX
+15	entity	130000	Engineer Vehicle and Equipment	yes		86	A-XXIX
+15	entity	130100	Bridge	yes		86	A-XXIX
+15	entity	130300	Fixed Bridge	yes		86	A-XXIX
+15	entity	130400	Floating Bridge	yes		86	A-XXIX
+15	entity	130500	Folding Girder Bridge	yes		86	A-XXIX
+15	entity	130600	Hollow Deck Bridge	yes		86	A-XXIX
+15	entity	130700	Drill	yes		86	A-XXIX
+15	entity	130701	Drill Mounted on Utility Vehicle	yes		86	A-XXIX
+15	entity	130800	Earthmover	yes		86	A-XXIX
+15	entity	130801	Multifunctional Earthmover/Digger	yes		86	A-XXIX
+15	entity	130900	Mine Clearing Equipment	yes		86	A-XXIX
+15	entity	130902	Mine Clearing Equipment on Tank Chassis	yes		86	A-XXIX
+15	entity	130903	Assault Breacher Vehicle (ABV) with Combat Dozer Blade	yes		86	A-XXIX
+15	entity	130904	Medium Capability Equipment	yes		86	A-XXIX
+15	entity	130905	Heavy Capability Equipment	yes		87	A-XXIX
+15	entity	131000	Mine Laying Equipment	yes		87	A-XXIX
+15	entity	131001	Mine Laying Equipment on Utility Vehicle	yes		87	A-XXIX
+15	entity	131002	Armored Carrier with Volcano	yes		87	A-XXIX
+15	entity	131003	Truck Mounted with Volcano	yes		87	A-XXIX
+15	entity	131100	Dozer	yes		87	A-XXIX
+15	entity	131101	Dozer, Armored	yes		87	A-XXIX
+15	entity	131200	Armored Assault	yes		87	A-XXIX
+15	entity	131300	Armored Engineer Recon Vehicle (AERV)	yes		87	A-XXIX
+15	entity	131400	Backhoe	yes		87	A-XXIX
+15	entity	131500	Construction Vehicle	yes		87	A-XXIX
+15	entity	131600	Ferry Transporter	yes		87	A-XXIX
+15	entity	140000	Utility Vehicle	yes		87	A-XXIX
+15	entity	140100	Vehicle (Generic)	yes		87	A-XXIX
+15	entity	140200	Medical	yes		87	A-XXIX
+15	entity	140400	Mobile Emergency Physician	yes		87	A-XXIX
+15	entity	140500	Bus	yes		87	A-XXIX
+15	entity	140600	Semi–Trailer and Truck	yes		87	A-XXIX
+15	entity	140601	Light	yes		87	A-XXIX
+15	entity	140602	Medium	yes		87	A-XXIX
+15	entity	140603	Heavy	yes		87	A-XXIX
+15	entity	140700	Limited Cross Country Truck	yes		87	A-XXIX
+15	entity	140800	Cross Country Truck	yes		87	A-XXIX
+15	entity	140900	Petroleum, Oil and Lubricant	yes		87	A-XXIX
+15	entity	141000	Water	yes		87	A-XXIX
+15	entity	141100	Amphibious Utility Wheeled Vehicle	yes		87	A-XXIX
+15	entity	141200	Tow Truck	yes		87	A-XXIX
+15	entity	141201	Light	yes		87	A-XXIX
+15	entity	141202	Heavy	yes		87	A-XXIX
+15	entity	150000	Train	yes		87	A-XXIX
+15	entity	150100	Locomotive	yes		87	A-XXIX
+15	entity	160000	Civilian Vehicle	yes		87	A-XXIX
+15	entity	160100	Automobile	yes		87	A-XXIX
+15	entity	160200	Open-Bed Truck	yes		87	A-XXIX
+15	entity	160300	Multiple Passenger Vehicle	yes		87	A-XXIX
+15	entity	160400	Utility Vehicle	yes		87	A-XXIX
+15	entity	160500	Jeep Type Vehicle	yes		87	A-XXIX
+15	entity	160600	Tractor Trailer Truck with Box	yes		87	A-XXIX
+15	entity	160700	Tractor Trailer Truck with Flatbed Trailer	yes		87	A-XXIX
+15	entity	160800	Known Insurgent Vehicle	yes		88	A-XXIX
+15	entity	160900	Drug Vehicle	yes		88	A-XXIX
+15	entity	170000	Law Enforcement	yes		88	A-XXIX
+15	entity	170100	Bureau of Alcohol, Tobacco, Firearms and Explosives (ATF) (Department of Justice)	yes		88	A-XXIX
+15	entity	170200	Border Patrol	yes		88	A-XXIX
+15	entity	170300	Customs Service	yes		88	A-XXIX
+15	entity	170400	Drug Enforcement Administration (DEA)	yes		88	A-XXIX
+15	entity	170500	Department of Justice (DOJ)	yes		88	A-XXIX
+15	entity	170600	Federal Bureau of Investigation (FBI)	yes		88	A-XXIX
+15	entity	170700	Police	yes		88	A-XXIX
+15	entity	170800	United States Secret Service (USSS)	yes		88	A-XXIX
+15	entity	170900	Transportation Security Administration (TSA)	yes		88	A-XXIX
+15	entity	171000	Coast Guard	yes		88	A-XXIX
+15	entity	171100	US Marshals Service	yes		88	A-XXIX
+15	entity	180000	Pack Animals	yes		88	A-XXIX
+15	entity	190000	Missile Support	yes		88	A-XXIX
+15	entity	190100	Transloader	yes		88	A-XXIX
+15	entity	190200	Transporter	yes		88	A-XXIX
+15	entity	190300	Crane/Loading Device	yes		88	A-XXIX
+15	entity	190400	Propellant Transporter	yes		88	A-XXIX
+15	entity	190500	Warhead Transporter	yes		88	A-XXIX
+15	entity	200000	Other Equipment	yes		88	A-XXIX
+15	entity	200100	Antennae	yes		88	A-XXIX
+15	entity	200200	Bomb	yes		88	A-XXIX
+15	entity	200300	Booby Trap	yes		88	A-XXIX
+15	entity	200400	CBRN Equipment	yes		88	A-XXIX
+15	entity	200500	Computer System	yes		88	A-XXIX
+15	entity	200600	Command Launch Equipment (CLE)	yes		88	A-XXIX
+15	entity	200700	Generator Set	yes		88	A-XXIX
+15	entity	200800	Ground-based Midcourse Defense (GMD) Fire Control (GFC) Center	yes		88	A-XXIX
+15	entity	200900	In-Flight Interceptor Communications System (IFICS) Data Terminal (IDT)	yes		88	A-XXIX
+15	entity	201000	Directed Energy	yes		88	A-XXIX
+15	entity	201100	Military Information Support Operations (MISO)	yes		88	A-XXIX
+15	entity	201200	Sustainment Shipments	yes		89	A-XXIX
+15	entity	201300	Tent	yes		89	A-XXIX
+15	entity	201301	Civilian	yes		89	A-XXIX
+15	entity	201302	Military	yes		89	A-XXIX
+15	entity	201400	Unit Deployment Shipments	yes		89	A-XXIX
+15	entity	201500	Emergency Medical Operation	yes		89	A-XXIX
+15	entity	201600	Tactical Air Navigation (TACAN)	yes		89	A-XXIX
+15	entity	210000	Land Mines	yes		89	A-XXIX
+15	entity	210100	Land Mine	yes		89	A-XXIX
+15	entity	210200	Antipersonnel Land mine (APL)	yes		89	A-XXIX
+15	entity	210300	Antitank Mine	yes		89	A-XXIX
+15	entity	210400	Improvised Explosives Device (IED)	yes		89	A-XXIX
+15	entity	210500	Less Than Lethal	yes		89	A-XXIX
+15	entity	220000	Sensors	yes		89	A-XXIX
+15	entity	220100	Sensor	yes		89	A-XXIX
+15	entity	220200	Sensor Emplaced	yes		89	A-XXIX
+15	entity	220300	Radar	yes		89	A-XXIX
+15	entity	230000	Emergency Operation	yes		89	A-XXIX
+15	entity	230200	Fire Fighting/Fire Protection	yes		89	A-XXIX
+15	entity	240000	Manual Track	yes		89	A-XXIX
+15	entity	250000	Rotary Wing	yes		89	A-XXIX
+15	m1	00	Unspecified	yes		89	A-XXX
+15	m1	01	Biological	yes		89	A-XXX
+15	m1	03	Early Warning Radar	yes		89	A-XXX
+15	m1	04	Intrusion	yes		89	A-XXX
+15	m1	07	Upgraded Early Warning Radar	yes		89	A-XXX
+15	m1	12	Multi-purpose Blade	yes		89	A-XXX
+15	m1	13	Tank-width Mine Plow	yes		89	A-XXX
+15	m2	00	Unspecified	yes		89	A-XXXI
+15	m2	06	Tractor Trailer	yes		89	A-XXXI
+20	entity	000000	Unspecified	yes		90	A-XXXII
+20	entity	110000	Military/Civilian	yes		90	A-XXXII
+20	entity	110100	Aircraft Production/Assembly	yes		90	A-XXXII
+20	entity	110200	Ammunition and Explosives Production	yes		90	A-XXXII
+20	entity	110300	Ammunition Cache	yes		90	A-XXXII
+20	entity	110400	Armament Production	yes		90	A-XXXII
+20	entity	110500	Black List Location	yes		90	A-XXXII
+20	entity	110600	Chemical, Biological, Radiological and Nuclear (CBRN)	yes		90	A-XXXII
+20	entity	110700	Engineering Equipment Production	yes		90	A-XXXII
+20	entity	110701	Bridge	yes		90	A-XXXII
+20	entity	110800	Equipment Manufacture	yes		90	A-XXXII
+20	entity	110900	Government Leadership	yes		90	A-XXXII
+20	entity	111000	Gray List Location	yes		90	A-XXXII
+20	entity	111100	Mass Grave Site	yes		90	A-XXXII
+20	entity	111200	Materiel	yes		90	A-XXXII
+20	entity	111300	Mine	yes		90	A-XXXII
+20	entity	111400	Missile and Space System Production	yes		90	A-XXXII
+20	entity	111500	Nuclear (Non CBRN Defense)	yes		90	A-XXXII
+20	entity	111600	Printed Media	yes		90	A-XXXII
+20	entity	111700	Safe House	yes		90	A-XXXII
+20	entity	111800	White List Location	yes		90	A-XXXII
+20	entity	111900	Tented Camp	yes		90	A-XXXII
+20	entity	111903	Civilian Camp	yes		90	A-XXXII
+20	entity	111904	Military Camp	yes		90	A-XXXII
+20	entity	112000	Warehouse/Storage	yes		90	A-XXXII
+20	entity	112001	Grenade	yes		90	A-XXXII
+20	entity	112100	Law Enforcement	yes		90	A-XXXII
+20	entity	112101	Bureau of Alcohol, Tobacco, Firearms and Explosives (ATF) (Department of Justice)	yes		90	A-XXXII
+20	entity	112102	Border Patrol	yes		90	A-XXXII
+20	entity	112103	Customs Service	yes		90	A-XXXII
+20	entity	112104	Drug Enforcement Administration (DEA)	yes		90	A-XXXII
+20	entity	112105	Department of Justice (DOJ)	yes		90	A-XXXII
+20	entity	112106	Federal Bureau of Investigation (FBI)	yes		90	A-XXXII
+20	entity	112107	Police	yes		90	A-XXXII
+20	entity	112108	Prison	yes		90	A-XXXII
+20	entity	112109	United States Secret Service (USSS)	yes		90	A-XXXII
+20	entity	112110	Transportation Security Administration (TSA)	yes		91	A-XXXII
+20	entity	112111	Coast Guard	yes		91	A-XXXII
+20	entity	112112	US Marshals Service	yes		91	A-XXXII
+20	entity	112200	Emergency Operation	yes		91	A-XXXII
+20	entity	112201	Fire Station	yes		91	A-XXXII
+20	entity	112202	Emergency Medical Operation	yes		91	A-XXXII
+20	entity	112300	Home/House	yes		91	A-XXXII
+20	entity	112400	Non-Governmental Organization	yes		91	A-XXXII
+20	entity	120000	Infrastructure	yes		91	A-XXXII
+20	entity	120100	Agriculture and Food	yes		91	A-XXXII
+20	entity	120101	Agricultural	yes		91	A-XXXII
+20	entity	120102	Animal Feedlot	yes		91	A-XXXII
+20	entity	120103	Commercial Food Distribution Center	yes		91	A-XXXII
+20	entity	120104	Farm/Ranch	yes		91	A-XXXII
+20	entity	120105	Food Distribution	yes		91	A-XXXII
+20	entity	120106	Food Production Center	yes		91	A-XXXII
+20	entity	120107	Food Retail	yes		91	A-XXXII
+20	entity	120108	Grain Storage	yes		91	A-XXXII
+20	entity	120200	Banking Finance and Insurance	yes		91	A-XXXII
+20	entity	120201	ATM	yes		91	A-XXXII
+20	entity	120202	Bank	yes		91	A-XXXII
+20	entity	120203	Bullion Storage	yes		91	A-XXXII
+20	entity	120204	Economic Infrastructure Asset	yes		91	A-XXXII
+20	entity	120205	Federal Reserve Bank	yes		91	A-XXXII
+20	entity	120206	Financial Exchange	yes		91	A-XXXII
+20	entity	120207	Financial Services, Other	yes		91	A-XXXII
+20	entity	120300	Commercial	yes		91	A-XXXII
+20	entity	120301	Chemical Plant	yes		91	A-XXXII
+20	entity	120302	Firearms Manufacturer	yes		91	A-XXXII
+20	entity	120303	Firearms Retailer	yes		91	A-XXXII
+20	entity	120304	Hazardous Material Production	yes		91	A-XXXII
+20	entity	120305	Hazardous Material Storage	yes		91	A-XXXII
+20	entity	120306	Industrial Site	yes		91	A-XXXII
+20	entity	120307	Landfill	yes		91	A-XXXII
+20	entity	120308	Pharmaceutical Manufacturer	yes		91	A-XXXII
+20	entity	120309	Contaminated Hazardous Waste Site	yes		91	A-XXXII
+20	entity	120310	Toxic Release Inventory	yes		91	A-XXXII
+20	entity	120400	Educational	yes		91	A-XXXII
+20	entity	120401	College/University	yes		91	A-XXXII
+20	entity	120402	School	yes		91	A-XXXII
+20	entity	120500	Energy	yes		91	A-XXXII
+20	entity	120501	Electric Power	yes		92	A-XXXII
+20	entity	120502	Generation Station	yes		92	A-XXXII
+20	entity	120503	Natural Gas	yes		92	A-XXXII
+20	entity	120505	Petroleum/Gas/Oil	yes		92	A-XXXII
+20	entity	120506	Propane	yes		92	A-XXXII
+20	entity	120600	Government Site	yes		92	A-XXXII
+20	entity	120700	Medical Infrastructure	yes		92	A-XXXII
+20	entity	120701	Medical	yes		92	A-XXXII
+20	entity	120702	Medical Treatment Facility (Hospital)	yes		92	A-XXXII
+20	entity	120800	Military	yes		92	A-XXXII
+20	entity	120803	Airport/Air Base	yes		92	A-XXXII
+20	entity	120900	Postal Services	yes		92	A-XXXII
+20	entity	120901	Postal Distribution Center	yes		92	A-XXXII
+20	entity	120902	Post Office	yes		92	A-XXXII
+20	entity	121000	Public Venues	yes		92	A-XXXII
+20	entity	121001	Enclosed Facility (Public Venue)	yes		92	A-XXXII
+20	entity	121002	Open Facility (Public Venue)	yes		92	A-XXXII
+20	entity	121003	Recreational Area	yes		92	A-XXXII
+20	entity	121004	Religious Institution	yes		92	A-XXXII
+20	entity	121100	Special Needs	yes		92	A-XXXII
+20	entity	121101	Adult Day Care	yes		92	A-XXXII
+20	entity	121102	Child Day Care	yes		92	A-XXXII
+20	entity	121103	Elder Care	yes		92	A-XXXII
+20	entity	121200	Telecommunications	yes		92	A-XXXII
+20	entity	121201	Broadcast Transmitter Antennae	yes		92	A-XXXII
+20	entity	121202	Telecommunications	yes		92	A-XXXII
+20	entity	121203	Telecommunications Tower	yes		92	A-XXXII
+20	entity	121300	Transportation	yes		92	A-XXXII
+20	entity	121301	Aerial Port of Debarkation / Aerial Port of Embarkation	yes		92	A-XXXII
+20	entity	121302	Air Traffic Control	yes		92	A-XXXII
+20	entity	121303	Bus Station	yes		92	A-XXXII
+20	entity	121304	Ferry Terminal	yes		92	A-XXXII
+20	entity	121305	Helicopter Landing Site	yes		92	A-XXXII
+20	entity	121306	Maintenance	yes		92	A-XXXII
+20	entity	121307	Railhead/Railroad Station	yes		92	A-XXXII
+20	entity	121308	Rest Stop	yes		92	A-XXXII
+20	entity	121309	Sea Port/Naval Base	yes		92	A-XXXII
+20	entity	121310	Ship Yard	yes		92	A-XXXII
+20	entity	121311	Toll	yes		92	A-XXXII
+20	entity	121312	Traffic Inspection	yes		92	A-XXXII
+20	entity	121313	Tunnel	yes		92	A-XXXII
+20	entity	121400	Water Supply	yes		93	A-XXXII
+20	entity	121401	Control Valve	yes		93	A-XXXII
+20	entity	121402	Dam	yes		93	A-XXXII
+20	entity	121403	Discharge Outfall	yes		93	A-XXXII
+20	entity	121404	Ground Water Well	yes		93	A-XXXII
+20	entity	121405	Pumping Station	yes		93	A-XXXII
+20	entity	121406	Reservoir	yes		93	A-XXXII
+20	entity	121407	Storage Tower	yes		93	A-XXXII
+20	entity	121408	Surface Water Intake	yes		93	A-XXXII
+20	entity	121409	Wastewater Treatment	yes		93	A-XXXII
+20	entity	121410	Water	yes		93	A-XXXII
+20	entity	121411	Water Treatment	yes		93	A-XXXII
+20	m1	00	Unspecified	yes		93	A-XXXIII
+20	m1	01	Biological	yes		93	A-XXXIII
+20	m1	06	Coal	yes		93	A-XXXIII
+20	m1	07	Geothermal	yes		93	A-XXXIII
+20	m1	08	Hydroelectric	yes		93	A-XXXIII
+20	m1	09	Natural Gas	yes		93	A-XXXIII
+20	m1	12	Civilian Telephone	yes		93	A-XXXIII
+20	m1	13	Civilian Television	yes		93	A-XXXIII
+20	m1	15	Displaced Persons/Refugees/Evacuees Camp	yes		93	A-XXXIII
+20	m1	16	Training Camp	yes		93	A-XXXIII
+20	m2	00	Unspecified	yes		93	A-XXXIV
+20	m2	01	Biological Warfare Production	yes		93	A-XXXIV
+20	m2	02	Chemical Warfare Production	yes		93	A-XXXIV
+20	m2	03	Nuclear Warfare Production	yes		93	A-XXXIV
+20	m2	04	Radiological Warfare Production	yes		93	A-XXXIV
+20	m2	05	Atomic Energy Reactor	yes		93	A-XXXIV
+20	m2	06	Nuclear Material Production	yes		93	A-XXXIV
+20	m2	07	Nuclear Material Storage	yes		93	A-XXXIV
+20	m2	08	Weapons Grade Production	yes		93	A-XXXIV
+20	m2	10	Transportation	yes		93	A-XXXIV
+20	m2	11	Displaced Persons/Refugees/Evacuees Camp	yes		93	A-XXXIV
+20	m2	12	Training Camp	yes		93	A-XXXIV
+25	entity	110000	Command and Control Lines	no		94	A-XXXV
+25	entity	110100	Boundary	yes		94	A-XXXV
+25	entity	110200	Light Line	yes		94	A-XXXV
+25	entity	110300	Engineer Work Line	yes		94	A-XXXV
+25	entity	110400	Generic	yes		94	A-XXXV
+25	entity	120000	Command and Control Areas	no		94	A-XXXV
+25	entity	120100	Area of Operations	yes		94	A-XXXV
+25	entity	120200	Named Area of Interest	yes		94	A-XXXV
+25	entity	120300	Targeted Area of Interest	yes		94	A-XXXV
+25	entity	120400	Airfield Zone	yes		94	A-XXXV
+25	entity	120500	Base Camp	yes		94	A-XXXV
+25	entity	120600	Guerrilla Base	yes		94	A-XXXV
+25	entity	120700	Generic	yes		94	A-XXXV
+25	entity	130000	Command and Control Points	no		94	A-XXXV
+25	entity	130100	Action Point (General)	yes		94	A-XXXV
+25	entity	130200	Amnesty Point	yes		94	A-XXXV
+25	entity	130300	Checkpoint	yes		94	A-XXXV
+25	entity	130400	Center of Main Effort	yes		94	A-XXXV
+25	entity	130500	Contact Point	yes		94	A-XXXV
+25	entity	130600	Coordinating Point	yes		94	A-XXXV
+25	entity	130700	Decision Point	yes		94	A-XXXV
+25	entity	130800	Distress Call	yes		94	A-XXXV
+25	entity	130900	Entry Control Point	yes		94	A-XXXV
+25	entity	131000	Fly-To-Point	no		94	A-XXXV
+25	entity	131001	Sonobuoy	yes		94	A-XXXV
+25	entity	131002	Weapon	yes		94	A-XXXV
+25	entity	131003	Normal	yes		94	A-XXXV
+25	entity	131100	Linkup Point	yes		94	A-XXXV
+25	entity	131200	Passage Point	yes		94	A-XXXV
+25	entity	131300	Point of Interest	yes		94	A-XXXV
+25	entity	131301	Launch Event	yes		94	A-XXXV
+25	entity	131400	Rally Point	yes		94	A-XXXV
+25	entity	131500	Release Point	yes		94	A-XXXV
+25	entity	131600	Start Point	yes		94	A-XXXV
+25	entity	131700	Special Point	yes		94	A-XXXV
+25	entity	131800	Waypoint	yes		94	A-XXXV
+25	entity	131900	Airfield	yes		94	A-XXXV
+25	entity	132000	Target Handover	yes		95	A-XXXV
+25	entity	132100	Key Terrain	yes		95	A-XXXV
+25	entity	132200	Control Point	yes		95	A-XXXV
+25	entity	140000	Maneuver Lines	no		95	A-XXXV
+25	entity	140100	Forward Line of Troops	yes		95	A-XXXV
+25	entity	140300	Phase Line	yes		95	A-XXXV
+25	entity	140400	Forward Edge of the Battle Area	yes		95	A-XXXV
+25	entity	140500	Field of Fire	yes		95	A-XXXV
+25	entity	140501	Final Protective Fire (Left)	yes		95	A-XXXV
+25	entity	140502	Final Protective Fire (Right)	yes		95	A-XXXV
+25	entity	140503	Principal Direction of Fire	yes		95	A-XXXV
+25	entity	140504	Secondary Direction of Fire	yes		95	A-XXXV
+25	entity	140600	Direction of Attack	yes		95	A-XXXV
+25	entity	140601	Friendly Aviation	yes		95	A-XXXV
+25	entity	140602	Friendly Main Attack /Decisive	yes		95	A-XXXV
+25	entity	140603	Friendly Supporting Attack	yes		95	A-XXXV
+25	entity	140700	Final Coordination Line	yes		95	A-XXXV
+25	entity	140800	Infiltration Lane	yes		95	A-XXXV
+25	entity	140900	Limit of Advance	yes		95	A-XXXV
+25	entity	141000	Line of Departure	yes		95	A-XXXV
+25	entity	141100	Line of Departure/Line of Contact	yes		95	A-XXXV
+25	entity	141200	Probable Line of Deployment	yes		95	A-XXXV
+25	entity	141300	Airhead Line	yes		95	A-XXXV
+25	entity	141400	Bridgehead Line	yes		95	A-XXXV
+25	entity	141500	Holding Line	yes		95	A-XXXV
+25	entity	141600	Release Line	yes		95	A-XXXV
+25	entity	141700	Ambush	yes		95	A-XXXV
+25	entity	141800	Handover Line	yes		95	A-XXXV
+25	entity	141900	Battle Handover Line	yes		95	A-XXXV
+25	entity	150000	Maneuver Areas	no		95	A-XXXV
+25	entity	150100	Area	yes		95	A-XXXV
+25	entity	150200	Assembly Area	yes		95	A-XXXV
+25	entity	150500	Action Area	no		95	A-XXXV
+25	entity	150501	Joint Tactical Action Area (JTAA)	yes		95	A-XXXV
+25	entity	150502	Submarine Action Area (SAA)	yes		95	A-XXXV
+25	entity	150503	Submarine-Generated Action Area (SGAA)	yes		95	A-XXXV
+25	entity	150600	Drop Zone	yes		95	A-XXXV
+25	entity	150700	Extraction Zone	yes		95	A-XXXV
+25	entity	150800	Landing Zone	yes		96	A-XXXV
+25	entity	150900	Pick–Up Zone	yes		96	A-XXXV
+25	entity	151000	Fortified Area	yes		96	A-XXXV
+25	entity	151100	Limited Access Area	yes		96	A-XXXV
+25	entity	151200	Battle Position	yes		96	A-XXXV
+25	entity	151202	Prepared (P) but not Occupied	yes		96	A-XXXV
+25	entity	151203	Strong Point	yes		96	A-XXXV
+25	entity	151204	Contain	yes		96	A-XXXV
+25	entity	151205	Retain	yes		96	A-XXXV
+25	entity	151300	Engagement Area (EA)	yes		96	A-XXXV
+25	entity	151400	Axis of Advance	no		96	A-XXXV
+25	entity	151401	Friendly Airborne/Aviation	yes		96	A-XXXV
+25	entity	151402	Attack Helicopter	yes		96	A-XXXV
+25	entity	151403	Main Attack	yes		96	A-XXXV
+25	entity	151404	Supporting Attack	yes		96	A-XXXV
+25	entity	151500	Assault Position	yes		96	A-XXXV
+25	entity	151600	Attack Position	yes		96	A-XXXV
+25	entity	151700	Objective Area	yes		96	A-XXXV
+25	entity	151800	Encirclement	yes		96	A-XXXV
+25	entity	151900	Penetration Box	yes		96	A-XXXV
+25	entity	152000	Attack by Fire	yes		96	A-XXXV
+25	entity	152100	Support by Fire	yes		96	A-XXXV
+25	entity	152200	Search Area/Reconnaissance Area	yes		96	A-XXXV
+25	entity	152600	Area Defense	yes		96	A-XXXV
+25	entity	152700	Frontal Attack	yes		96	A-XXXV
+25	entity	152800	Mobile Defense	yes		96	A-XXXV
+25	entity	152900	Turning Movement	yes		96	A-XXXV
+25	entity	160000	Maneuver Points	no		96	A-XXXV
+25	entity	160100	Observation Post/Outpost (unspecified)	yes		96	A-XXXV
+25	entity	160200	Observation Post/Outpost (specified)	yes		96	A-XXXV
+25	entity	160201	Reconnaissance Outpost	yes		96	A-XXXV
+25	entity	160202	Forward Observer/Spotter Outpost/Position	yes		96	A-XXXV
+25	entity	160203	CBRN Observation Outpost	yes		96	A-XXXV
+25	entity	160204	Sensor Outpost /Listening Post	yes		96	A-XXXV
+25	entity	160205	Combat Outpost	yes		96	A-XXXV
+25	entity	160300	Target Reference Point	yes		96	A-XXXV
+25	entity	160400	Point of Departure	yes		96	A-XXXV
+25	entity	170000	Airspace Control (Corridors) Areas	no		97	A-XXXV
+25	entity	170100	Air Corridor	yes		97	A-XXXV
+25	entity	170200	Low Level Transit Route	yes		97	A-XXXV
+25	entity	170300	Minimum–Risk Route	yes		97	A-XXXV
+25	entity	170400	Safe Lane	yes		97	A-XXXV
+25	entity	170500	Standard Use Army Aircraft Flight Route	yes		97	A-XXXV
+25	entity	170600	Transit Corridor	yes		97	A-XXXV
+25	entity	170700	Special Corridor	yes		97	A-XXXV
+25	entity	170800	Base Defense Zone	yes		97	A-XXXV
+25	entity	170900	High–Density Airspace Control Zone	yes		97	A-XXXV
+25	entity	171000	Restricted Operations Zone (ROZ)	yes		97	A-XXXV
+25	entity	171100	Air-to-Air Restricted Operating Zone (AARROZ)	yes		97	A-XXXV
+25	entity	171200	Unmanned Aircraft Restricted Operating Zone (UA-ROZ)	yes		97	A-XXXV
+25	entity	171300	Weapon Engagement Zone	yes		97	A-XXXV
+25	entity	171400	Fighter Engagement Zone (FEZ)	yes		97	A-XXXV
+25	entity	171500	Joint Engagement Zone (JEZ)	yes		97	A-XXXV
+25	entity	171600	Missile Engagement Zone (MEZ)	yes		97	A-XXXV
+25	entity	171700	Low Altitude Missile Engagement Zone (LOMEZ)	yes		97	A-XXXV
+25	entity	171800	High Altitude Missile Engagement Zone (HIMEZ)	yes		97	A-XXXV
+25	entity	171900	Short Range Air Defense Engagement Zone (SHORADEZ)	yes		97	A-XXXV
+25	entity	172000	Weapons Free Zone	yes		97	A-XXXV
+25	entity	180000	Airspace Control Points	no		97	A-XXXV
+25	entity	180100	Air Control Point	yes		97	A-XXXV
+25	entity	180200	Communications Checkpoint	yes		97	A-XXXV
+25	entity	180300	Isolated Personnel Recovery Point	yes		97	A-XXXV
+25	entity	180400	Pop–up Point	yes		97	A-XXXV
+25	entity	180500	Air Control Rendezvous	yes		97	A-XXXV
+25	entity	180600	Tactical Air Navigation (TACAN)	yes		97	A-XXXV
+25	entity	180700	Combat Air Patrol (CAP)Station	yes		97	A-XXXV
+25	entity	180800	Airborne Early Warning (AEW) Station	yes		97	A-XXXV
+25	entity	180900	ASW (Helo and F/W) Station	yes		97	A-XXXV
+25	entity	181000	Strike Initial Point	yes		97	A-XXXV
+25	entity	181100	Replenishment Station	yes		97	A-XXXV
+25	entity	181200	Tanking	yes		98	A-XXXV
+25	entity	181300	Antisubmarine Warfare, Rotary Wing	yes		98	A-XXXV
+25	entity	181400	Surface Combat Air Patrol (SUCAP) – Fixed Wing	yes		98	A-XXXV
+25	entity	181500	SUCAP – Rotary Wing	yes		98	A-XXXV
+25	entity	181600	MIW – Fixed Wing	yes		98	A-XXXV
+25	entity	181700	MIW – Rotary Wing	yes		98	A-XXXV
+25	entity	181800	Tomcat	yes		98	A-XXXV
+25	entity	181900	Rescue	yes		98	A-XXXV
+25	entity	182000	Unmanned Aerial System (UAS/UA)	yes		98	A-XXXV
+25	entity	182100	Vertical Takeoff and Landing (VTOL) Tactical Unmanned Aircraft (VTUA)	yes		98	A-XXXV
+25	entity	182200	Orbit	yes		98	A-XXXV
+25	entity	182300	Orbit – Figure Eight	yes		98	A-XXXV
+25	entity	182400	Orbit – Race Track	yes		98	A-XXXV
+25	entity	182500	Orbit – Random Closed	yes		98	A-XXXV
+25	entity	182600	Isolated Personnel Location	yes		98	A-XXXV
+25	entity	190000	Airspace Control Lines	no		98	A-XXXV
+25	entity	190100	Identification Friend or Foe (IFF) Off Line	yes		98	A-XXXV
+25	entity	190200	Identification Friend or Foe (IFF) On Line	yes		98	A-XXXV
+25	entity	200000	Maritime Control Areas	no		98	A-XXXV
+25	entity	200100	Launch Area	no		98	A-XXXV
+25	entity	200101	Ellipse/Circle	yes		98	A-XXXV
+25	entity	200200	Defended Area	no		98	A-XXXV
+25	entity	200201	Ellipse/Circle	yes		98	A-XXXV
+25	entity	200202	Rectangle	yes		98	A-XXXV
+25	entity	200300	No Attack (NOTACK) Zone	yes		98	A-XXXV
+25	entity	200400	Ship Area of Interest	yes		98	A-XXXV
+25	entity	200401	Ellipse/Circle	yes		98	A-XXXV
+25	entity	200402	Rectangle	yes		98	A-XXXV
+25	entity	200500	Active Maneuver Area	yes		98	A-XXXV
+25	entity	200600	Cued Acquisition Doctrine	yes		98	A-XXXV
+25	entity	200700	Radar Search Doctrine	yes		98	A-XXXV
+25	entity	210000	Maritime Control Points	no		98	A-XXXV
+25	entity	210100	Plan Ship	yes		98	A-XXXV
+25	entity	210200	Aim Point	yes		98	A-XXXV
+25	entity	210300	Defended Asset	yes		98	A-XXXV
+25	entity	210400	Drop Point	yes		99	A-XXXV
+25	entity	210500	Entry Point	yes		99	A-XXXV
+25	entity	210600	Air Detonation	yes		99	A-XXXV
+25	entity	210700	Ground Zero	yes		99	A-XXXV
+25	entity	210800	Impact Point	yes		99	A-XXXV
+25	entity	210900	Predicted Impact Point	yes		99	A-XXXV
+25	entity	211000	Launched Torpedo	yes		99	A-XXXV
+25	entity	211100	Missile Detection Point	yes		99	A-XXXV
+25	entity	211200	Acoustic Countermeasure (Decoy)	yes		99	A-XXXV
+25	entity	211300	Electronic Countermeasures (ECM) Decoy	yes		99	A-XXXV
+25	entity	211400	Brief Contact	yes		99	A-XXXV
+25	entity	211500	Datum Lost Contact	yes		99	A-XXXV
+25	entity	211600	BT Buoy Drop	yes		99	A-XXXV
+25	entity	211700	Reported Bottomed Sub	yes		99	A-XXXV
+25	entity	211800	Moving Haven	yes		99	A-XXXV
+25	entity	211900	Screen Center	yes		99	A-XXXV
+25	entity	212000	Lost Contact	yes		99	A-XXXV
+25	entity	212100	Sinker	yes		99	A-XXXV
+25	entity	212200	Trial Track	yes		99	A-XXXV
+25	entity	212300	Acoustic Fix	yes		99	A-XXXV
+25	entity	212400	Electromagnetic Fix	yes		99	A-XXXV
+25	entity	212500	Electromagnetic – Magnetic Anomaly Detection (MAD)	yes		99	A-XXXV
+25	entity	212600	Optical Fix	yes		99	A-XXXV
+25	entity	212700	Formation	yes		99	A-XXXV
+25	entity	212800	Harbor	yes		99	A-XXXV
+25	entity	212900	Harbor Entrance Point	yes		99	A-XXXV
+25	entity	212901	A	yes		99	A-XXXV
+25	entity	212902	Q	yes		99	A-XXXV
+25	entity	212903	X	yes		99	A-XXXV
+25	entity	212904	Y	yes		99	A-XXXV
+25	entity	213000	Dip Position	yes		99	A-XXXV
+25	entity	213100	Search	yes		99	A-XXXV
+25	entity	213200	Search Area	yes		99	A-XXXV
+25	entity	213300	Search Center	yes		99	A-XXXV
+25	entity	213400	Navigational Reference Point	yes		99	A-XXXV
+25	entity	213500	Sonobuoy	yes		99	A-XXXV
+25	entity	213501	Ambient Noise	yes		99	A-XXXV
+25	entity	213502	Air Transportable Communication (ATAC)	yes		99	A-XXXV
+25	entity	213503	Barra	yes		99	A-XXXV
+25	entity	213504	Bathythermograph Transmitting	yes		100	A-XXXV
+25	entity	213505	Command Active Multi-Beam Sonobuoy (CAMBS)	yes		100	A-XXXV
+25	entity	213506	Command Active Sonobuoy Directional Command Active Sonobuoy System (CASS)	yes		100	A-XXXV
+25	entity	213507	Directional Frequency Analysis and Recording (DIFAR)	yes		100	A-XXXV
+25	entity	213508	Directional Command Active Sonobuoy System (DICASS)	yes		100	A-XXXV
+25	entity	213509	Expendable Reliable Acoustic Path Sonobuoy (ERAPS)	yes		100	A-XXXV
+25	entity	213510	Expired	yes		100	A-XXXV
+25	entity	213511	Kingpin	yes		100	A-XXXV
+25	entity	213512	Low Frequency Analysis and Recording (LOFAR)	yes		100	A-XXXV
+25	entity	213513	Pattern Center	yes		100	A-XXXV
+25	entity	213514	Range Only	yes		100	A-XXXV
+25	entity	213515	Vertical Line Array Directional Frequency Analysis and Recording (DIFAR)	yes		100	A-XXXV
+25	entity	213600	Reference Point	yes		100	A-XXXV
+25	entity	213700	Special Point	yes		100	A-XXXV
+25	entity	213800	Navigational Reference Point	yes		100	A-XXXV
+25	entity	213900	Data Link Reference Point	yes		100	A-XXXV
+25	entity	214100	Vital Area Center	yes		100	A-XXXV
+25	entity	214200	Corridor Tab Point	yes		100	A-XXXV
+25	entity	214300	Enemy Point	yes		100	A-XXXV
+25	entity	214400	Marshall Point	yes		100	A-XXXV
+25	entity	214500	Position and Intended Movement (PIM)	yes		100	A-XXXV
+25	entity	214600	Pre-Landfall Waypoint	yes		100	A-XXXV
+25	entity	214700	Estimated Position (EP)	yes		100	A-XXXV
+25	entity	214800	Waypoint	yes		100	A-XXXV
+25	entity	214900	General Sea Subsurface Station	yes		100	A-XXXV
+25	entity	215000	Submarine Sea Subsurface Station	yes		100	A-XXXV
+25	entity	215100	Submarine Antisubmarine Warfare Sea Subsurface Station	yes		100	A-XXXV
+25	entity	215200	Unmanned Underwater Vehicle Sea Subsurface Station	yes		100	A-XXXV
+25	entity	215300	Antisubmarine Warfare (ASW) Unmanned Underwater Vehicle Sea Subsurface Station	yes		101	A-XXXV
+25	entity	215400	Mine Warfare Unmanned Underwater Vehicle Sea Subsurface Station	yes		101	A-XXXV
+25	entity	215500	Sea Surface Warfare Unmanned Underwater Vehicle Subsurface Station	yes		101	A-XXXV
+25	entity	215600	General Sea Surface Station	yes		101	A-XXXV
+25	entity	215700	Antisubmarine Warfare (ASW) Sea Surface Station	yes		101	A-XXXV
+25	entity	215800	Mine Warfare Sea Surface Station	yes		101	A-XXXV
+25	entity	215900	Non-Combatant Sea Surface Station	yes		101	A-XXXV
+25	entity	216000	Picket Sea Surface Station	yes		101	A-XXXV
+25	entity	216100	Rendezvous Sea Surface Station	yes		101	A-XXXV
+25	entity	216200	Replenishment at Sea Surface Station	yes		101	A-XXXV
+25	entity	216300	Rescue Sea Surface Station	yes		101	A-XXXV
+25	entity	216400	Surface Warfare Sea Surface Station	yes		101	A-XXXV
+25	entity	216500	Unmanned Underwater Vehicle Sea Surface Station	yes		101	A-XXXV
+25	entity	216600	Antisubmarine Warfare (ASW) Unmanned Underwater Vehicle Sea Surface Station	yes		101	A-XXXV
+25	entity	216700	Mine Warfare Unmanned Underwater Vehicle Sea Surface Station	yes		101	A-XXXV
+25	entity	216800	Remote Multi-Mission Vehicle Mine Warfare Unmanned Underwater Sea Surface Station	yes		101	A-XXXV
+25	entity	216900	Surface Warfare Mine Warfare Unmanned Underwater Vehicle Sea Surface Station	yes		101	A-XXXV
+25	entity	217000	Shore Control Station	yes		101	A-XXXV
+25	entity	217100	General Route	yes		101	A-XXXV
+25	entity	217200	Diversion Route	yes		101	A-XXXV
+25	entity	217300	Position and Intended Movement (PIM) Route	yes		101	A-XXXV
+25	entity	217400	Picket Route	yes		101	A-XXXV
+25	entity	217500	Point R Route	yes		101	A-XXXV
+25	entity	217600	Rendezvous Route	yes		101	A-XXXV
+25	entity	217700	Waypoint Route	yes		101	A-XXXV
+25	entity	217800	Clutter, Stationary or Cease Reporting	yes		101	A-XXXV
+25	entity	217900	Tentative or Provisional Track	yes		101	A-XXXV
+25	entity	218000	Distressed Vessel	yes		101	A-XXXV
+25	entity	218100	Ditched Aircraft/Downed Aircraft	yes		101	A-XXXV
+25	entity	218200	Person in Water/Bailout	yes		102	A-XXXV
+25	entity	218300	Iceberg	yes		102	A-XXXV
+25	entity	218400	Navigational	yes		102	A-XXXV
+25	entity	218500	Oil Rig	yes		102	A-XXXV
+25	entity	218600	Sea Mine–Like	yes		102	A-XXXV
+25	entity	218700	Bottom Return/Non-Mine, Mine-Like Bottom Object (NOMBO)	yes		102	A-XXXV
+25	entity	218800	Bottom Return/Non-Mine, Mine-Like Bottom Object (NOMBO)/Installation Manmade	yes		102	A-XXXV
+25	entity	218900	Marine Life	yes		102	A-XXXV
+25	entity	219000	Sea Anomaly (Wake, Current, Knuckle)	yes		102	A-XXXV
+25	entity	219100	Bottom Return/Non-MILCO, Wreck, Dangerous	yes		102	A-XXXV
+25	entity	219200	Bottom Return/Non-MILCO, Wreck, Non Dangerous	yes		102	A-XXXV
+25	entity	220000	Maritime Control Lines	no		102	A-XXXV
+25	entity	220100	Bearing Line	yes		102	A-XXXV
+25	entity	220101	Electronic	yes		102	A-XXXV
+25	entity	220102	Electromagnetic Warfare (EW)	yes		102	A-XXXV
+25	entity	220103	Acoustic	yes		102	A-XXXV
+25	entity	220104	Acoustic (Ambiguous)	yes		102	A-XXXV
+25	entity	220105	Torpedo	yes		102	A-XXXV
+25	entity	220106	Electro-Optical Intercept	yes		102	A-XXXV
+25	entity	220107	Jammer	yes		102	A-XXXV
+25	entity	220108	Radio Direction Finder (RDF)	yes		102	A-XXXV
+25	entity	240000	Fires Areas	no		102	A-XXXV
+25	entity	240100	Airspace Coordination Area	no		102	A-XXXV
+25	entity	240101	Irregular	yes		102	A-XXXV
+25	entity	240102	Rectangular	yes		102	A-XXXV
+25	entity	240103	Circular	yes		102	A-XXXV
+25	entity	240200	Free Fire Area	no		102	A-XXXV
+25	entity	240201	Irregular	yes		102	A-XXXV
+25	entity	240202	Rectangular	yes		102	A-XXXV
+25	entity	240203	Circular	yes		102	A-XXXV
+25	entity	240300	No Fire Area	no		102	A-XXXV
+25	entity	240301	Irregular	yes		102	A-XXXV
+25	entity	240302	Rectangular	yes		102	A-XXXV
+25	entity	240303	Circular	yes		102	A-XXXV
+25	entity	240400	Restricted Fire Area	no		103	A-XXXV
+25	entity	240401	Irregular	yes		103	A-XXXV
+25	entity	240402	Rectangular	yes		103	A-XXXV
+25	entity	240403	Circular	yes		103	A-XXXV
+25	entity	240500	Position Area for Artillery (PAA)	no		103	A-XXXV
+25	entity	240501	Rectangular	yes		103	A-XXXV
+25	entity	240502	Circular	yes		103	A-XXXV
+25	entity	240503	Irregular	yes		103	A-XXXV
+25	entity	240600	Point Targets	no		103	A-XXXV
+25	entity	240601	Point or Single Target	yes		103	A-XXXV
+25	entity	240602	Nuclear Target	yes		103	A-XXXV
+25	entity	240603	Target-Recorded	yes		103	A-XXXV
+25	entity	240700	Linear Targets	no		103	A-XXXV
+25	entity	240701	Linear Target	yes		103	A-XXXV
+25	entity	240702	Linear Smoke Target	yes		103	A-XXXV
+25	entity	240703	Final Protective Fire (FPF)	yes		103	A-XXXV
+25	entity	240800	Area Targets	no		103	A-XXXV
+25	entity	240801	Area Target	yes		103	A-XXXV
+25	entity	240802	Rectangular Target	yes		103	A-XXXV
+25	entity	240803	Circular Target	yes		103	A-XXXV
+25	entity	240805	Series or Groups of Targets	yes		103	A-XXXV
+25	entity	240806	Smoke	yes		103	A-XXXV
+25	entity	240808	Bomb Area	yes		103	A-XXXV
+25	entity	240900	Fire Support Station	yes		103	A-XXXV
+25	entity	241000	Fire Support Area	no		103	A-XXXV
+25	entity	241001	Irregular	yes		103	A-XXXV
+25	entity	241002	Rectangular	yes		103	A-XXXV
+25	entity	241003	Circular	yes		103	A-XXXV
+25	entity	241100	Artillery Target Intelligence Zone	no		103	A-XXXV
+25	entity	241101	Irregular	yes		103	A-XXXV
+25	entity	241102	Rectangular	yes		103	A-XXXV
+25	entity	241103	Circular	yes		103	A-XXXV
+25	entity	241200	Call for Fire Area	no		103	A-XXXV
+25	entity	241201	Irregular	yes		103	A-XXXV
+25	entity	241202	Rectangular	yes		103	A-XXXV
+25	entity	241203	Circular	yes		103	A-XXXV
+25	entity	241300	Censor Zone	no		103	A-XXXV
+25	entity	241301	Irregular	yes		103	A-XXXV
+25	entity	241302	Rectangular	yes		103	A-XXXV
+25	entity	241303	Circular	yes		103	A-XXXV
+25	entity	241400	Critical Friendly Zone	no		103	A-XXXV
+25	entity	241401	Irregular	yes		104	A-XXXV
+25	entity	241402	Rectangular	yes		104	A-XXXV
+25	entity	241403	Circular	yes		104	A-XXXV
+25	entity	241500	Dead Space Area	no		104	A-XXXV
+25	entity	241501	Irregular	yes		104	A-XXXV
+25	entity	241502	Rectangular	yes		104	A-XXXV
+25	entity	241503	Circular	yes		104	A-XXXV
+25	entity	241700	Target Build–up Area	no		104	A-XXXV
+25	entity	241701	Irregular	yes		104	A-XXXV
+25	entity	241702	Rectangular	yes		104	A-XXXV
+25	entity	241703	Circular	yes		104	A-XXXV
+25	entity	241800	Target Value Area	no		104	A-XXXV
+25	entity	241801	Irregular	yes		104	A-XXXV
+25	entity	241802	Rectangular	yes		104	A-XXXV
+25	entity	241803	Circular	yes		104	A-XXXV
+25	entity	241900	Zone of Responsibility	no		104	A-XXXV
+25	entity	241901	Irregular	yes		104	A-XXXV
+25	entity	241902	Rectangular	yes		104	A-XXXV
+25	entity	241903	Circular	yes		104	A-XXXV
+25	entity	242000	Terminally Guided Munition Footprint (TGMF)	yes		104	A-XXXV
+25	entity	242100	Weapon/Sensor Range fan, Circular	yes		104	A-XXXV
+25	entity	242200	Weapon/Sensor Range fan, Sector	yes		104	A-XXXV
+25	entity	242300	Kill Box	no		104	A-XXXV
+25	entity	242301	Irregular, Blue	yes		104	A-XXXV
+25	entity	242302	Rectangular, Blue	yes		104	A-XXXV
+25	entity	242303	Circular, Blue	yes		104	A-XXXV
+25	entity	242304	Irregular, Purple	yes		104	A-XXXV
+25	entity	242305	Rectangular, Purple	yes		104	A-XXXV
+25	entity	242306	Circular, Purple	yes		104	A-XXXV
+25	entity	242800	Kill Zone	no		104	A-XXXV
+25	entity	250000	Fires Points	no		104	A-XXXV
+25	entity	250100	Firing Point	yes		104	A-XXXV
+25	entity	250200	Hide Point	yes		104	A-XXXV
+25	entity	250300	Launch Point	yes		104	A-XXXV
+25	entity	250400	Reload Point	yes		104	A-XXXV
+25	entity	250500	Survey Control Point	yes		104	A-XXXV
+25	entity	250600	Known Point	yes		104	A-XXXV
+25	entity	260000	Fire Lines	no		104	A-XXXV
+25	entity	260100	Fire Support Coordination Line (FSCL)	yes		104	A-XXXV
+25	entity	260200	Coordinated Fire Line (CFL)	yes		105	A-XXXV
+25	entity	260300	No Fire Line	yes		105	A-XXXV
+25	entity	260400	Battlefield Coordination Line	yes		105	A-XXXV
+25	entity	260500	Restrictive Fire Line	yes		105	A-XXXV
+25	entity	260600	Munition Flight Path	yes		105	A-XXXV
+25	entity	270000	Protection Areas	no		105	A-XXXV
+25	entity	270100	Obstacle Belt	yes		105	A-XXXV
+25	entity	270200	Obstacle Zone	yes		105	A-XXXV
+25	entity	270300	Obstacle Free Zone	yes		105	A-XXXV
+25	entity	270400	Obstacle Restricted Zone	yes		105	A-XXXV
+25	entity	270500	Obstacle Effects	no		105	A-XXXV
+25	entity	270501	Block	yes		105	A-XXXV
+25	entity	270502	Disrupt	yes		105	A-XXXV
+25	entity	270503	Fix	yes		105	A-XXXV
+25	entity	270504	Turn	yes		105	A-XXXV
+25	entity	270600	Obstacle Bypass	no		105	A-XXXV
+25	entity	270601	Easy	yes		105	A-XXXV
+25	entity	270602	Difficult	yes		105	A-XXXV
+25	entity	270603	Impossible	yes		105	A-XXXV
+25	entity	270700	Minefield	no		105	A-XXXV
+25	entity	270701	Static Depiction	yes		105	A-XXXV
+25	entity	270707	Dynamic Depiction	yes		105	A-XXXV
+25	entity	270800	Mined Area	yes		105	A-XXXV
+25	entity	270801	Fenced	yes		105	A-XXXV
+25	entity	271000	Unexploded Explosive Ordnance (UXO) Area	yes		105	A-XXXV
+25	entity	271100	Bridge or Gap	yes		105	A-XXXV
+25	entity	271200	Roadblocks, Craters and Blown Bridges	no		105	A-XXXV
+25	entity	271201	Planned	yes		105	A-XXXV
+25	entity	271202	Explosives, State of Readiness 1 (Safe)	yes		105	A-XXXV
+25	entity	271203	Explosives, State of Readiness 2 (Armed but passable)	yes		105	A-XXXV
+25	entity	271204	Roadblock Complete (Executed)	yes		105	A-XXXV
+25	entity	271300	Assault Crossing	yes		105	A-XXXV
+25	entity	271500	Ford Easy	yes		105	A-XXXV
+25	entity	271600	Ford Difficult	yes		105	A-XXXV
+25	entity	271700	Biological Contaminated Area	yes		105	A-XXXV
+25	entity	271800	Chemical Contaminated Area	yes		105	A-XXXV
+25	entity	271900	Nuclear Contaminated Area	yes		105	A-XXXV
+25	entity	272000	Radiological Contaminated Area	yes		106	A-XXXV
+25	entity	272100	Minimum Safe Distance Zone	yes		106	A-XXXV
+25	entity	272101	Multiple Strikes – STRIKWARN	yes		106	A-XXXV
+25	entity	272200	Radiation Dose Rate Contour Lines	yes		106	A-XXXV
+25	entity	280000	Protection Points	no		106	A-XXXV
+25	entity	280100	Abatis	yes		106	A-XXXV
+25	entity	280200	Antipersonnel Mine	yes		106	A-XXXV
+25	entity	280201	Antipersonnel Mine with Directional Effects	yes		106	A-XXXV
+25	entity	280300	Antitank Mine	yes		106	A-XXXV
+25	entity	280400	Antitank Mine with Anti-handling Device	yes		106	A-XXXV
+25	entity	280500	Wide Area Antitank Mine	yes		106	A-XXXV
+25	entity	280600	Unspecified Mine	yes		106	A-XXXV
+25	entity	280700	Booby Trap	yes		106	A-XXXV
+25	entity	280800	Engineer Regulating Point	yes		106	A-XXXV
+25	entity	280900	Shelter	yes		106	A-XXXV
+25	entity	281000	Above Ground Shelter	yes		106	A-XXXV
+25	entity	281100	Below Ground Shelter	yes		106	A-XXXV
+25	entity	281200	Fort	yes		106	A-XXXV
+25	entity	281300	Chemical Event	yes		106	A-XXXV
+25	entity	281400	Biological Event	yes		106	A-XXXV
+25	entity	281500	Nuclear Event	yes		106	A-XXXV
+25	entity	281600	Nuclear Fallout Producing Event	yes		106	A-XXXV
+25	entity	281700	Radiological Event	yes		106	A-XXXV
+25	entity	281800	General Decontamination Point/Site	yes		106	A-XXXV
+25	entity	281801	Alternate	yes		106	A-XXXV
+25	entity	281802	Equipment	yes		106	A-XXXV
+25	entity	281803	Troop	yes		106	A-XXXV
+25	entity	281804	Equipment/Troop	yes		106	A-XXXV
+25	entity	281805	Operational	yes		106	A-XXXV
+25	entity	281806	Thorough	yes		106	A-XXXV
+25	entity	281807	Main Equipment	yes		106	A-XXXV
+25	entity	281808	Forward Troop	yes		106	A-XXXV
+25	entity	281809	Wounded Personnel	yes		106	A-XXXV
+25	entity	281900	Tetrahedrons, Dragons Teeth, and Other Similar Obstacles	no		106	A-XXXV
+25	entity	281901	Fixed and Prefabricated	yes		106	A-XXXV
+25	entity	281902	Movable	yes		106	A-XXXV
+25	entity	281903	Movable and Prefabricated	yes		106	A-XXXV
+25	entity	282000	Vertical Obstructions	no		106	A-XXXV
+25	entity	282001	Tower, Low	yes		107	A-XXXV
+25	entity	282002	Tower, High	yes		107	A-XXXV
+25	entity	282003	Overhead Wire	yes		107	A-XXXV
+25	entity	290000	Protection Lines	no		107	A-XXXV
+25	entity	290100	Obstacle Line	yes		107	A-XXXV
+25	entity	290101	Mineline	yes		107	A-XXXV
+25	entity	290200	Antitank Obstacles	no		107	A-XXXV
+25	entity	290201	Ditch Under Construction	yes		107	A-XXXV
+25	entity	290202	Ditch Completed	yes		107	A-XXXV
+25	entity	290203	Ditch Reinforced, with Antitank Mines	yes		107	A-XXXV
+25	entity	290204	Antitank Wall	yes		107	A-XXXV
+25	entity	290300	Wire Obstacles	no		107	A-XXXV
+25	entity	290301	Unspecified	yes		107	A-XXXV
+25	entity	290302	Single Fence	yes		107	A-XXXV
+25	entity	290303	Double Fence	yes		107	A-XXXV
+25	entity	290304	Double Apron Fence	yes		107	A-XXXV
+25	entity	290305	Low Wire Fence	yes		107	A-XXXV
+25	entity	290306	High Wire Fence	yes		107	A-XXXV
+25	entity	290307	Single Concertina	yes		107	A-XXXV
+25	entity	290308	Double Strand Concertina	yes		107	A-XXXV
+25	entity	290309	Triple Strand Concertina	yes		107	A-XXXV
+25	entity	290400	Mine Cluster	yes		107	A-XXXV
+25	entity	290500	Trip Wire	yes		107	A-XXXV
+25	entity	290600	Lane	yes		107	A-XXXV
+25	entity	290700	Ferry	yes		107	A-XXXV
+25	entity	290800	Raft Site	yes		107	A-XXXV
+25	entity	290900	Fortified Line	yes		107	A-XXXV
+25	entity	291000	Fighting Position	yes		107	A-XXXV
+25	entity	300000	Intelligence Lines	no		107	A-XXXV
+25	entity	300100	Intelligence Coordination Line	yes		107	A-XXXV
+25	entity	310000	Sustainment Areas	no		107	A-XXXV
+25	entity	310100	Detainee Holding Area	yes		107	A-XXXV
+25	entity	310200	Enemy Prisoner of War (EPW) Holding Area	yes		107	A-XXXV
+25	entity	310300	Forward Arming and Refueling Point (FARP)	yes		107	A-XXXV
+25	entity	310400	Refugee Holding Area	yes		107	A-XXXV
+25	entity	310500	Regimental Support Area	yes		107	A-XXXV
+25	entity	310600	Brigade Support Area	yes		107	A-XXXV
+25	entity	310700	Division Support Area	yes		108	A-XXXV
+25	entity	310800	Corps Support Area	yes		108	A-XXXV
+25	entity	320000	Sustainment Points	no		108	A-XXXV
+25	entity	320100	Ambulance Points	yes		108	A-XXXV
+25	entity	320101	Ambulance Exchange Point	yes		108	A-XXXV
+25	entity	320102	Ambulance Control Point	yes		108	A-XXXV
+25	entity	320103	Ambulance Load Point	yes		108	A-XXXV
+25	entity	320104	Ambulance Relay Point	yes		108	A-XXXV
+25	entity	320200	Ammunition Supply Point	yes		108	A-XXXV
+25	entity	320300	Ammunition Transfer and Holding Point	yes		108	A-XXXV
+25	entity	320400	Cannibalization Point	yes		108	A-XXXV
+25	entity	320500	Casualty Collection Point	yes		108	A-XXXV
+25	entity	320600	Civilian Collection Point	yes		108	A-XXXV
+25	entity	320700	Detainee Collection Point	yes		108	A-XXXV
+25	entity	320800	Enemy Prisoner of War (EPW) Collection Point	yes		108	A-XXXV
+25	entity	320900	Logistics Release Point (LRP)	yes		108	A-XXXV
+25	entity	321000	Maintenance Collection Point (MCP)	yes		108	A-XXXV
+25	entity	321100	Medical Evacuation Point (MEDEVAC) Pick-Up Point	yes		108	A-XXXV
+25	entity	321200	Rearm, Refuel and Resupply Point (R3P)	yes		108	A-XXXV
+25	entity	321300	Refuel on the Move (ROM) Point	yes		108	A-XXXV
+25	entity	321400	Traffic Control Post (TCP)	yes		108	A-XXXV
+25	entity	321500	Trailer Transfer Point (TTP)	yes		108	A-XXXV
+25	entity	321600	Unit Maintenance Collection Point (UNCP)	yes		108	A-XXXV
+25	entity	321700	General Supply Point	yes		108	A-XXXV
+25	entity	321701	NATO Class I	yes		108	A-XXXV
+25	entity	321702	NATO Class II	yes		108	A-XXXV
+25	entity	321703	NATO Class III	yes		108	A-XXXV
+25	entity	321704	NATO Class IV	yes		108	A-XXXV
+25	entity	321705	NATO Class V	yes		108	A-XXXV
+25	entity	321706	NATO Multiple Class	yes		108	A-XXXV
+25	entity	321707	US Class I	yes		108	A-XXXV
+25	entity	321708	US Class II	yes		108	A-XXXV
+25	entity	321709	US Class III	yes		108	A-XXXV
+25	entity	321710	US Class IV	yes		108	A-XXXV
+25	entity	321711	US Class V	yes		108	A-XXXV
+25	entity	321712	US Class VI	yes		108	A-XXXV
+25	entity	321713	US Class VII	yes		109	A-XXXV
+25	entity	321714	US Class VIII	yes		109	A-XXXV
+25	entity	321715	US Class IX	yes		109	A-XXXV
+25	entity	321716	US Class X	yes		109	A-XXXV
+25	entity	321800	Medical Supply Point	yes		109	A-XXXV
+25	entity	321900	Mortuary Affairs Collection Point	yes		109	A-XXXV
+25	entity	330000	Sustainment Lines	no		109	A-XXXV
+25	entity	330100	Moving Convoy	yes		109	A-XXXV
+25	entity	330200	Halted Convoy	yes		109	A-XXXV
+25	entity	330300	Main Supply Route (MSR)	yes		109	A-XXXV
+25	entity	330301	One Way Traffic	yes		109	A-XXXV
+25	entity	330302	Two Way Traffic	yes		109	A-XXXV
+25	entity	330303	Alternating Traffic	yes		109	A-XXXV
+25	entity	330400	Alternate Supply Route (ASR)	yes		109	A-XXXV
+25	entity	330401	One Way Traffic	yes		109	A-XXXV
+25	entity	330402	Two Way Traffic	yes		109	A-XXXV
+25	entity	330403	Alternating Traffic	yes		109	A-XXXV
+25	entity	330500	Traffic Route	yes		109	A-XXXV
+25	entity	330501	One Way Traffic	yes		109	A-XXXV
+25	entity	330502	Alternating Traffic	yes		109	A-XXXV
+25	entity	340000	Mission Tasks	no		109	A-XXXV
+25	entity	340100	Block	yes		109	A-XXXV
+25	entity	340200	Breach	yes		109	A-XXXV
+25	entity	340300	Bypass	yes		109	A-XXXV
+25	entity	340400	Canalize	yes		109	A-XXXV
+25	entity	340500	Clear	yes		109	A-XXXV
+25	entity	340600	Counterattack	yes		109	A-XXXV
+25	entity	340700	Counterattack by Fire	yes		109	A-XXXV
+25	entity	340800	Delay	yes		109	A-XXXV
+25	entity	340900	Destroy	yes		109	A-XXXV
+25	entity	341000	Disrupt	yes		109	A-XXXV
+25	entity	341100	Fix	yes		109	A-XXXV
+25	entity	341200	Follow and Assume	yes		109	A-XXXV
+25	entity	341300	Follow and Support	yes		109	A-XXXV
+25	entity	341400	Interdict	yes		109	A-XXXV
+25	entity	341500	Isolate	yes		109	A-XXXV
+25	entity	341600	Neutralize	yes		109	A-XXXV
+25	entity	341700	Occupy	yes		109	A-XXXV
+25	entity	341800	Penetrate	yes		109	A-XXXV
+25	entity	341900	Relief in Place (RIP)	yes		109	A-XXXV
+25	entity	342000	Retire/Retirement	yes		110	A-XXXV
+25	entity	342100	Secure	yes		110	A-XXXV
+25	entity	342200	Security	no		110	A-XXXV
+25	entity	342201	Cover	yes		110	A-XXXV
+25	entity	342202	Guard	yes		110	A-XXXV
+25	entity	342203	Screen	yes		110	A-XXXV
+25	entity	342300	Seize	yes		110	A-XXXV
+25	entity	342400	Withdraw	yes		110	A-XXXV
+25	entity	342500	Withdraw Under Pressure	yes		110	A-XXXV
+25	entity	342600	Cordon and Knock	yes		110	A-XXXV
+25	entity	342700	Cordon and Search	yes		110	A-XXXV
+25	entity	342800	Suppress	yes		110	A-XXXV
+25	entity	342900	Movement to Contact	yes		110	A-XXXV
+25	entity	343100	Exploit/Exploitation	yes		110	A-XXXV
+25	entity	343300	Demonstrate/Demonstration	yes		110	A-XXXV
+25	entity	343500	Envelopment	yes		110	A-XXXV
+25	entity	343800	Infiltration	yes		110	A-XXXV
+25	entity	344000	Pursuit	yes		110	A-XXXV
+25	entity	344100	Forward Passage of Lines	yes		110	A-XXXV
+25	entity	344200	Rearward Passage of Lines	yes		110	A-XXXV
+25	entity	344300	Defeat	yes		110	A-XXXV
+25	entity	344400	Disengage	yes		110	A-XXXV
+25	entity	344500	Evacuate/Evacuation	yes		110	A-XXXV
+25	entity	344700	Turn	yes		110	A-XXXV
+25	m1	00	Unspecified	yes		110	A-XXXVI
+25	m1	01	Wheeled limited cross country	yes		110	A-XXXVI
+25	m1	02	Wheeled cross country	yes		110	A-XXXVI
+25	m1	03	Tracked	yes		110	A-XXXVI
+25	m1	04	Wheeled and tracked combination	yes		110	A-XXXVI
+25	m1	05	Towed	yes		110	A-XXXVI
+25	m1	06	Rail	yes		110	A-XXXVI
+25	m1	07	Over-Snow	yes		110	A-XXXVI
+25	m1	08	Sled	yes		110	A-XXXVI
+25	m1	09	Pack Animals	yes		110	A-XXXVI
+25	m1	10	Barge	yes		110	A-XXXVI
+25	m1	11	Amphibious	yes		110	A-XXXVI
+25	m1	12	No Vehicles	yes		110	A-XXXVI
+25	m1	13	Unspecified Mine	yes		110	A-XXXVI
+25	m1	14	Antipersonnel Mine	yes		110	A-XXXVI
+25	m1	15	Antipersonnel Mine with Directional Effects	yes		111	A-XXXVI
+25	m1	16	Antitank Mine	yes		111	A-XXXVI
+25	m1	17	Antitank Mine with Antihandling Device	yes		111	A-XXXVI
+25	m1	18	Wide Area Antitank Mine	yes		111	A-XXXVI
+25	m1	19	Mine Cluster	yes		111	A-XXXVI
+25	m1	20	Antipersonnel Mine and Antipersonnel Mine with Directional Effects	yes		111	A-XXXVI
+25	m1	21	Antipersonnel Mine and Antitank Mine	yes		111	A-XXXVI
+25	m1	22	Antipersonnel Mine and Antitank Mine with Antihandling Device	yes		111	A-XXXVI
+25	m1	23	Antipersonnel Mine and Wide Area Antitank Mine	yes		111	A-XXXVI
+25	m1	24	Antipersonnel Mine and Mine Cluster	yes		111	A-XXXVI
+25	m1	25	Antipersonnel Mine with Directional Effects and Antitank Mine	yes		111	A-XXXVI
+25	m1	26	Antipersonnel Mine with Directional Effects and Antitank Mine	yes		111	A-XXXVI
+25	m1	27	with Antihandling Device Antipersonnel Mine with Directional Effects and Wide Area Antitank Mine	yes		111	A-XXXVI
+25	m1	28	Antipersonnel Mine with Directional Effects and Mine Cluster	yes		111	A-XXXVI
+25	m1	29	Antitank Mine and Antitank Mine with Antihandling Device	yes		111	A-XXXVI
+25	m1	30	Antitank Mine and Wide Area Antitank Mine	yes		111	A-XXXVI
+25	m1	31	Antitank Mine and Mine Cluster	yes		111	A-XXXVI
+25	m1	32	Antitank Mine with Antihandling Device and Wide Area Antitank Mine	yes		111	A-XXXVI
+25	m1	33	Antitank Mine with Antihandling Device and Mine Cluster	yes		111	A-XXXVI
+25	m1	34	Wide Area Antitank Mine and Mine Cluster	yes		111	A-XXXVI
+25	m1	35	Antipersonnel Mine, Antipersonnel Mine with Directional Effects, and Antitank Mine	yes		111	A-XXXVI
+25	m1	36	Antipersonnel Mine, Antipersonnel Mine with Directional Effects,	yes		111	A-XXXVI
+25	m1	37	and Antitank Mine with Antihandling Device Antipersonnel Mine, Antipersonnel Mine with Directional Effects, and Wide Area Antitank Mine	yes		111	A-XXXVI
+25	m1	38	Antipersonnel Mine, Antipersonnel Mine with Directional Effects,	yes		111	A-XXXVI
+25	m1	39	and Mine Cluster Antipersonnel Mine, Antitank Mine, and Antitank Mine with Antihandling Device	yes		111	A-XXXVI
+25	m1	40	Antipersonnel Mine, Antitank Mine, and Wide Area Antitank Mine	yes		111	A-XXXVI
+25	m1	41	Antipersonnel Mine, Antitank Mine, and Mine Cluster	yes		111	A-XXXVI
+25	m1	42	Antipersonnel Mine, Antitank Mine with Antihandling Device, and	yes		111	A-XXXVI
+25	m1	43	Wide Area Antitank Mine Antipersonnel Mine, Antitank Mine with Antihandling Device, and Mine Cluster	yes		111	A-XXXVI
+25	m1	44	Antipersonnel Mine, Wide Area Antitank Mine, and Mine Cluster	yes		111	A-XXXVI
+25	m1	45	Antipersonnel Mine with Directional Effects, Antitank Mine, and Antitank Mine with Antihandling Device	yes		111	A-XXXVI
+25	m1	46	Antipersonnel Mine with Directional Effects, Antitank Mine, and Wide Area Antitank Mine	yes		111	A-XXXVI
+25	m1	47	Antipersonnel Mine with Directional Effects, Antitank Mine, and	yes		112	A-XXXVI
+25	m1	48	Mine Cluster Antipersonnel Mine with Directional Effects, Antitank Mine with Antihandling Device, and Wide Area Antitank Mine	yes		112	A-XXXVI
+25	m1	49	Antipersonnel Mine with Directional Effects, Antitank Mine with	yes		112	A-XXXVI
+25	m1	50	Antihandling Device, and Mine Cluster Antipersonnel Mine with Directional Effects, Wide Area Antitank Mine, and Mine Cluster	yes		112	A-XXXVI
+25	m2	00	Unspecified	yes		112	A-XXXVII
+27	entity	110000	Military	yes		112	A-XXXVIII
+27	entity	110200	Activity/Task	yes		112	A-XXXVIII
+27	entity	110201	Explosive Ordnance Disposal	yes		112	A-XXXVIII
+27	entity	110202	Field Artillery Observer	yes		112	A-XXXVIII
+27	entity	110203	Joint Fire Support	yes		112	A-XXXVIII
+27	entity	110204	Liaison	yes		112	A-XXXVIII
+27	entity	110205	Messenger	yes		112	A-XXXVIII
+27	entity	110206	Military Police	yes		112	A-XXXVIII
+27	entity	110207	Observer	yes		112	A-XXXVIII
+27	entity	110208	Security	yes		112	A-XXXVIII
+27	entity	110209	Sniper	yes		112	A-XXXVIII
+27	entity	110210	Special Operation Forces	yes		112	A-XXXVIII
+27	entity	110211	Designated Marksman	yes		112	A-XXXVIII
+27	entity	110212	Medic	yes		112	A-XXXVIII
+27	entity	110213	Signaler	yes		112	A-XXXVIII
+27	entity	110214	Reconnaissance	yes		112	A-XXXVIII
+27	entity	110215	Infantry	yes		112	A-XXXVIII
+27	entity	110216	Close Protection	yes		112	A-XXXVIII
+27	entity	110217	Crowd and Riot Control	yes		112	A-XXXVIII
+27	entity	110218	SWAT	yes		112	A-XXXVIII
+27	entity	110219	Demolition	yes		112	A-XXXVIII
+27	entity	110220	Commander (CDR)	yes		112	A-XXXVIII
+27	entity	110221	Second in Command (SIC)	yes		112	A-XXXVIII
+27	entity	110300	Lethal Weapons	yes		112	A-XXXVIII
+27	entity	110301	Rifle	yes		112	A-XXXVIII
+27	entity	110302	Single Shot Rifle	yes		113	A-XXXVIII
+27	entity	110303	Semiautomatic Rifle	yes		113	A-XXXVIII
+27	entity	110304	Automatic Rifle	yes		113	A-XXXVIII
+27	entity	110305	Machine Gun	yes		113	A-XXXVIII
+27	entity	110306	Machine Gun - Light	yes		113	A-XXXVIII
+27	entity	110307	Machine Gun - Medium	yes		113	A-XXXVIII
+27	entity	110308	Machine Gun - Heavy	yes		113	A-XXXVIII
+27	entity	110309	Grenade Launcher	yes		113	A-XXXVIII
+27	entity	110310	Grenade Launcher - Light	yes		113	A-XXXVIII
+27	entity	110311	Grenade Launcher - Medium	yes		113	A-XXXVIII
+27	entity	110312	Grenade Launcher - Heavy	yes		113	A-XXXVIII
+27	entity	110313	Flame Thrower	yes		113	A-XXXVIII
+27	entity	110314	Mortar	yes		113	A-XXXVIII
+27	entity	110315	Single Rocket Launcher	yes		113	A-XXXVIII
+27	entity	110316	Antitank Rocket Launcher	yes		113	A-XXXVIII
+27	entity	110400	Non-Lethal Weapons	yes		113	A-XXXVIII
+27	entity	110401	Non-Lethal Weapon	yes		113	A-XXXVIII
+27	entity	110402	Non-Lethal Grenade Launcher	yes		113	A-XXXVIII
+27	entity	110403	Taser	yes		113	A-XXXVIII
+27	m1	00	Unspecified	yes		113	A-XXXIX
+27	m1	11	Field Artillery Observer	yes		113	A-XXXIX
+27	m1	12	Joint Fire Support	yes		113	A-XXXIX
+27	m1	13	Liaison	yes		113	A-XXXIX
+27	m1	14	Messenger	yes		113	A-XXXIX
+27	m1	15	Military Police	yes		113	A-XXXIX
+27	m1	16	Observer	yes		113	A-XXXIX
+27	m1	17	Designated Marksman	yes		113	A-XXXIX
+27	m1	21	Reconnaissance	yes		113	A-XXXIX
+27	m1	22	Infantry	yes		113	A-XXXIX
+27	m1	23	Commander (CDR)	yes		113	A-XXXIX
+27	m1	24	Second in Command (SIC)	yes		113	A-XXXIX
+27	m1	25	Demolition	yes		113	A-XXXIX
+27	m1	26	Police	yes		113	A-XXXIX
+27	m1	46	Individual	yes		113	A-XXXIX
+27	m2	00	Unspecified	yes		113	A-XL
+27	m2	03	Video Imagery (Combat Camera)	yes		113	A-XL
+27	m2	04	Functional Staff Area J1	yes		113	A-XL
+27	m2	05	Functional Staff Area J2	yes		113	A-XL
+27	m2	06	Functional Staff Area J3	yes		114	A-XL
+27	m2	07	Functional Staff Area J4	yes		114	A-XL
+27	m2	08	Functional Staff Area J5	yes		114	A-XL
+27	m2	09	Functional Staff Area J6	yes		114	A-XL
+27	m2	10	Functional Staff Area J7	yes		114	A-XL
+27	m2	11	Functional Staff Area J8	yes		114	A-XL
+27	m2	12	Functional Staff Area J9	yes		114	A-XL
+27	m2	14	Rank OF-1/O-2	yes		114	A-XL
+27	m2	15	Rank OF-3	yes		114	A-XL
+27	m2	16	Rank OF-4	yes		114	A-XL
+27	m2	17	Rank OF-5	yes		114	A-XL
+27	m2	18	Rank OF-6	yes		114	A-XL
+27	m2	19	Rank OF-7	yes		114	A-XL
+27	m2	20	Rank OF-8	yes		114	A-XL
+27	m2	21	Rank OF-9	yes		114	A-XL
+27	m2	22	Rank OF-10	yes		114	A-XL
+27	m2	23	Rank OF-11	yes		114	A-XL
+27	m2	25	Rank E-1	yes		114	A-XL
+27	m2	26	Rank E-2	yes		114	A-XL
+27	m2	27	Rank E-3	yes		114	A-XL
+27	m2	28	Rank E-4	yes		114	A-XL
+27	m2	29	Rank E-5	yes		114	A-XL
+27	m2	30	Rank E-6	yes		114	A-XL
+27	m2	31	Rank E-7	yes		114	A-XL
+27	m2	32	Rank E-8	yes		114	A-XL
+27	m2	33	Rank E-9	yes		114	A-XL
+27	m2	34	Rank WO-1	yes		114	A-XL
+27	m2	35	Rank WO-2	yes		114	A-XL
+27	m2	36	Rank WO-3	yes		114	A-XL
+27	m2	37	Rank WO-4	yes		114	A-XL
+27	m2	38	Rank WO-5	yes		114	A-XL
+30	entity	000000	Unspecified	yes		114	A-XLI
+30	entity	110000	Military	yes		114	A-XLI
+30	entity	120000	Military Combatant	yes		114	A-XLI
+30	entity	120100	Carrier	yes		114	A-XLI
+30	entity	120200	Surface Combatant, Line	yes		114	A-XLI
+30	entity	120201	Battleship	yes		114	A-XLI
+30	entity	120202	Cruiser	yes		114	A-XLI
+30	entity	120203	Destroyer	yes		114	A-XLI
+30	entity	120204	Frigate	yes		114	A-XLI
+30	entity	120205	Corvette	yes		115	A-XLI
+30	entity	120206	Littoral Combatant Ship	yes		115	A-XLI
+30	entity	120300	Amphibious Warfare Ship	yes		115	A-XLI
+30	entity	120301	Amphibious Command Ship	yes		115	A-XLI
+30	entity	120302	Amphibious Assault, Non-specified	yes		115	A-XLI
+30	entity	120303	Amphibious Assault Ship, General	yes		115	A-XLI
+30	entity	120304	Amphibious Assault Ship, Multipurpose	yes		115	A-XLI
+30	entity	120305	Amphibious Assault Ship, Helicopter	yes		115	A-XLI
+30	entity	120306	Amphibious Transport Dock	yes		115	A-XLI
+30	entity	120307	Landing Ship	yes		115	A-XLI
+30	entity	120308	Landing Craft	yes		115	A-XLI
+30	entity	120400	Mine Warfare Ship	yes		115	A-XLI
+30	entity	120401	Mine Layer	yes		115	A-XLI
+30	entity	120402	Mine Sweeper	yes		115	A-XLI
+30	entity	120403	Mine Sweeper, Drone	yes		115	A-XLI
+30	entity	120404	Mine Hunter	yes		115	A-XLI
+30	entity	120405	Mine Countermeasures	yes		115	A-XLI
+30	entity	120406	Mine Countermeasures, Support Ship	yes		115	A-XLI
+30	entity	120500	Patrol Boat	yes		115	A-XLI
+30	entity	120501	Patrol Craft, Submarine Chaser/Escort, General	yes		115	A-XLI
+30	entity	120502	Patrol Ship, General	yes		115	A-XLI
+30	entity	120600	Decoy	yes		115	A-XLI
+30	entity	120700	Unmanned Surface Water Vehicle (USV)	yes		115	A-XLI
+30	entity	120800	Speedboat	yes		115	A-XLI
+30	entity	120801	Rigid–Hull Inflatable Boat (RHIB)	yes		115	A-XLI
+30	entity	120900	Jet Ski	yes		115	A-XLI
+30	entity	121000	Navy Task Organization	yes		115	A-XLI
+30	entity	121001	Navy Task Element	yes		115	A-XLI
+30	entity	121002	Navy Task Force	yes		115	A-XLI
+30	entity	121003	Navy Task Group	yes		115	A-XLI
+30	entity	121004	Navy Task Unit	yes		115	A-XLI
+30	entity	121005	Convoy	yes		115	A-XLI
+30	entity	121100	Sea-Based X-Band Radar	yes		115	A-XLI
+30	entity	121200	Tactical Air Navigation (TACAN)	yes		115	A-XLI
+30	entity	130000	Military Non Combatant	yes		115	A-XLI
+30	entity	130100	Auxiliary Ship	yes		115	A-XLI
+30	entity	130101	Ammunition Ship	yes		115	A-XLI
+30	entity	130102	Naval Stores Ship	yes		115	A-XLI
+30	entity	130103	Auxiliary Flag Ship	yes		115	A-XLI
+30	entity	130104	Intelligence Collector	yes		115	A-XLI
+30	entity	130105	Oceanographic Research Ship	yes		116	A-XLI
+30	entity	130106	Survey Ship	yes		116	A-XLI
+30	entity	130107	Hospital Ship	yes		116	A-XLI
+30	entity	130108	Naval Cargo Ship	yes		116	A-XLI
+30	entity	130109	Combat Support Ship, Fast	yes		116	A-XLI
+30	entity	130110	Oiler, Replenishment	yes		116	A-XLI
+30	entity	130111	Repair Ship	yes		116	A-XLI
+30	entity	130112	Submarine Tender	yes		116	A-XLI
+30	entity	130113	Tug, Ocean Going	yes		116	A-XLI
+30	entity	130200	Service Craft/Yard	yes		116	A-XLI
+30	entity	130201	Barge, not Self–Propelled	yes		116	A-XLI
+30	entity	130202	Barge, Self–Propelled	yes		116	A-XLI
+30	entity	130203	Tug, Harbor	yes		116	A-XLI
+30	entity	130204	Launch	yes		116	A-XLI
+30	entity	140000	Civilian	yes		116	A-XLI
+30	entity	140100	Merchant Ship	yes		116	A-XLI
+30	entity	140101	Cargo, General	yes		116	A-XLI
+30	entity	140102	Container Ship	yes		116	A-XLI
+30	entity	140103	Dredge	yes		116	A-XLI
+30	entity	140104	Roll On/Roll Off	yes		116	A-XLI
+30	entity	140105	Ferry	yes		116	A-XLI
+30	entity	140106	Heavy Lift	yes		116	A-XLI
+30	entity	140107	Hovercraft	yes		116	A-XLI
+30	entity	140108	Lash Carrier (with Barges)	yes		116	A-XLI
+30	entity	140109	Oiler/Tanker	yes		116	A-XLI
+30	entity	140110	Passenger	yes		116	A-XLI
+30	entity	140111	Tug, Ocean Going	yes		116	A-XLI
+30	entity	140112	Tow	yes		116	A-XLI
+30	entity	140113	Transport Ship, Hazardous Material	yes		116	A-XLI
+30	entity	140114	Junk/Dhow	yes		116	A-XLI
+30	entity	140115	Barge, not Self–Propelled	yes		116	A-XLI
+30	entity	140116	Hospital Ship	yes		116	A-XLI
+30	entity	140200	Fishing Vessel	yes		116	A-XLI
+30	entity	140201	Drifter	yes		116	A-XLI
+30	entity	140202	Trawler	yes		116	A-XLI
+30	entity	140203	Dredger	yes		116	A-XLI
+30	entity	140300	Law Enforcement Vessel	yes		116	A-XLI
+30	entity	140400	Leisure Craft, Sailing	yes		116	A-XLI
+30	entity	140500	Leisure Craft, Motorized	yes		116	A-XLI
+30	entity	140501	Rigid–Hull Inflatable Boat (RHIB)	yes		116	A-XLI
+30	entity	140502	Speedboat	yes		116	A-XLI
+30	entity	140600	Jet Ski	yes		116	A-XLI
+30	entity	140700	Unmanned Surface Water Vehicle (USV)	yes		117	A-XLI
+30	entity	150000	Own Ship	yes		117	A-XLI
+30	entity	160000	Fused Track	yes		117	A-XLI
+30	entity	170000	Manual Track	yes		117	A-XLI
+30	m1	00	Unspecified	yes		117	A-XLII
+30	m1	02	Antiair Warfare	yes		117	A-XLII
+30	m1	08	Missile Defense	yes		117	A-XLII
+30	m1	11	Remote Multi-mission Vehicle (RMV)	yes		117	A-XLII
+30	m1	17	Torpedo	yes		117	A-XLII
+30	m1	21	Ballistic Missile Defense, Long-Range Surveillance and Track (LRS&T)	yes		117	A-XLII
+30	m1	22	Sea-Base X-Band	yes		117	A-XLII
+30	m2	00	Unspecified	yes		117	A-XLIII
+30	m2	01	Nuclear Powered	yes		117	A-XLIII
+30	m2	05	Dock	yes		117	A-XLIII
+30	m2	06	Logistics	yes		117	A-XLIII
+30	m2	07	Tank	yes		117	A-XLIII
+30	m2	08	Vehicle	yes		117	A-XLIII
+30	m2	09	Fast	yes		117	A-XLIII
+30	m2	10	Air–Cushioned (US)	yes		117	A-XLIII
+30	m2	11	Air–Cushioned (NATO)	yes		117	A-XLIII
+30	m2	12	Hydrofoil	yes		117	A-XLIII
+35	entity	000000	Unspecified	yes		117	A-XLIV
+35	entity	110000	Military	yes		117	A-XLIV
+35	entity	110100	Submarine	yes		117	A-XLIV
+35	entity	110101	Submarine, Surfaced	yes		117	A-XLIV
+35	entity	110102	Submarine, Snorkeling	yes		117	A-XLIV
+35	entity	110103	Submarine, Bottomed	yes		117	A-XLIV
+35	entity	110200	Other Submersible	yes		117	A-XLIV
+35	entity	110300	Nonsubmarine	yes		117	A-XLIV
+35	entity	110400	Unmanned Underwater Vehicle (UUV)	yes		118	A-XLIV
+35	entity	110500	Diver	yes		118	A-XLIV
+35	entity	120000	Civilian	yes		118	A-XLIV
+35	entity	120100	Submersible	yes		118	A-XLIV
+35	entity	120200	Unmanned Underwater Vehicle (UUV)	yes		118	A-XLIV
+35	entity	120300	Diver	yes		118	A-XLIV
+35	entity	130000	Weapon	yes		118	A-XLIV
+35	entity	130100	Torpedo	yes		118	A-XLIV
+35	entity	130200	Improvised Explosive Device (IED)	yes		118	A-XLIV
+35	entity	130300	Decoy	yes		118	A-XLIV
+35	entity	140000	Echo Tracker Classifier (ETC) / Possible Contact (POSCON)	yes		118	A-XLIV
+35	entity	150000	Fused Track	yes		118	A-XLIV
+35	entity	160000	Manual Track	yes		118	A-XLIV
+35	m1	00	Unspecified	yes		118	A-XLV
+35	m1	02	Auxiliary	yes		118	A-XLV
+35	m1	13	Possible Submarine Low 1	yes		118	A-XLV
+35	m1	14	Possible Submarine Low 2	yes		118	A-XLV
+35	m1	15	Possible Submarine High 3	yes		118	A-XLV
+35	m1	16	Possible Submarine High 4	yes		118	A-XLV
+35	m1	17	Probable Submarine	yes		118	A-XLV
+35	m1	18	Certain Submarine	yes		118	A-XLV
+35	m1	19	Anti-torpedo Torpedo	yes		118	A-XLV
+35	m2	00	Unspecified	yes		118	A-XLVI
+35	m2	01	Air Independent Propulsion	yes		118	A-XLVI
+35	m2	02	Diesel Electric, General	yes		118	A-XLVI
+35	m2	03	Diesel – Type 1	yes		118	A-XLVI
+35	m2	04	Diesel – Type 2	yes		118	A-XLVI
+35	m2	05	Diesel – Type 3	yes		118	A-XLVI
+35	m2	06	Nuclear Powered, General	yes		118	A-XLVI
+35	m2	07	Nuclear – Type 1	yes		118	A-XLVI
+35	m2	08	Nuclear – Type 2	yes		118	A-XLVI
+35	m2	09	Nuclear – Type 3	yes		118	A-XLVI
+35	m2	10	Nuclear – Type 4	yes		118	A-XLVI
+35	m2	11	Nuclear – Type 5	yes		118	A-XLVI
+35	m2	12	Nuclear – Type 6	yes		119	A-XLVI
+35	m2	13	Nuclear – Type 7	yes		119	A-XLVI
+36	entity	000000	Unspecified	yes		119	A-XLVII
+36	entity	110000	Sea Mine, General	yes		119	A-XLVII
+36	entity	110100	Sea Mine, Bottom	yes		119	A-XLVII
+36	entity	110200	Sea Mine, Moored	yes		119	A-XLVII
+36	entity	110300	Sea Mine, Floating	yes		119	A-XLVII
+36	entity	110400	Sea Mine, Rising	yes		119	A-XLVII
+36	entity	110500	Sea Mine, Other Position	yes		119	A-XLVII
+36	entity	110700	Small Object, Mine–Like	yes		119	A-XLVII
+36	entity	110800	Exercise Mine, General	yes		119	A-XLVII
+36	entity	110801	Exercise Mine, Bottom	yes		119	A-XLVII
+36	entity	110802	Exercise Mine, Moored	yes		119	A-XLVII
+36	entity	110803	Exercise Mine, Floating	yes		119	A-XLVII
+36	entity	110804	Exercise Mine, Rising	yes		119	A-XLVII
+36	entity	110900	Neutralized Mine, General	yes		119	A-XLVII
+36	entity	110901	Neutralized Mine, Bottom	yes		119	A-XLVII
+36	entity	110902	Neutralized Mine, Moored	yes		119	A-XLVII
+36	entity	110903	Neutralized Mine, Floating	yes		119	A-XLVII
+36	entity	110904	Neutralized Mine, Rising	yes		119	A-XLVII
+36	entity	110905	Neutralized Mine, Other Position	yes		119	A-XLVII
+36	entity	120000	Unexploded Ordnance	yes		119	A-XLVII
+36	entity	130000	Sea Mine Decoy	yes		119	A-XLVII
+36	entity	130100	Sea Mine Decoy, Bottom	yes		119	A-XLVII
+36	entity	130200	Sea Mine Decoy, Moored	yes		119	A-XLVII
+36	entity	140000	Mine–Like Contact (MILCO)	yes		119	A-XLVII
+36	entity	140100	MILCO - General	yes		119	A-XLVII
+36	entity	140101	MILCO - General, Confidence Level 1	yes		119	A-XLVII
+36	entity	140102	MILCO - General, Confidence Level 2	yes		119	A-XLVII
+36	entity	140103	MILCO - General, Confidence Level 3	yes		119	A-XLVII
+36	entity	140104	MILCO - General, Confidence Level 4	yes		119	A-XLVII
+36	entity	140105	MILCO - General, Confidence Level 5	yes		119	A-XLVII
+36	entity	140200	MILCO - Bottom	yes		119	A-XLVII
+36	entity	140201	MILCO - Bottom, Confidence Level 1	yes		119	A-XLVII
+36	entity	140202	MILCO - Bottom, Confidence Level 2	yes		119	A-XLVII
+36	entity	140203	MILCO - Bottom, Confidence Level 3	yes		119	A-XLVII
+36	entity	140204	MILCO - Bottom, Confidence Level 4	yes		120	A-XLVII
+36	entity	140205	MILCO - Bottom, Confidence Level 5	yes		120	A-XLVII
+36	entity	140300	MILCO - Moored	yes		120	A-XLVII
+36	entity	140301	MILCO - Moored, Confidence Level 1	yes		120	A-XLVII
+36	entity	140302	MILCO - Moored, Confidence Level 2	yes		120	A-XLVII
+36	entity	140303	MILCO - Moored, Confidence Level 3	yes		120	A-XLVII
+36	entity	140304	MILCO - Moored, Confidence Level 4	yes		120	A-XLVII
+36	entity	140305	MILCO - Moored, Confidence Level 5	yes		120	A-XLVII
+36	entity	140400	MILCO - Floating	yes		120	A-XLVII
+36	entity	140401	MILCO - Floating, Confidence Level 1	yes		120	A-XLVII
+36	entity	140402	MILCO - Floating, Confidence Level 2	yes		120	A-XLVII
+36	entity	140403	MILCO - Floating, Confidence Level 3	yes		120	A-XLVII
+36	entity	140404	MILCO - Floating, Confidence Level 4	yes		120	A-XLVII
+36	entity	140405	MILCO - Floating, Confidence Level 5	yes		120	A-XLVII
+36	entity	150000	Mine–Like Echo (MILEC), General	yes		120	A-XLVII
+36	entity	150100	Mine–Like Echo, Bottom	yes		120	A-XLVII
+36	entity	150200	Mine–Like Echo, Moored	yes		120	A-XLVII
+36	entity	150300	Mine–Like Echo, Floating	yes		120	A-XLVII
+36	entity	160000	Negative Reacquisition, General	yes		120	A-XLVII
+36	entity	160100	Negative Reacquisition, Bottom	yes		120	A-XLVII
+36	entity	160200	Negative Reacquisition, Moored	yes		120	A-XLVII
+36	entity	160300	Negative Reacquisition, Floating	yes		120	A-XLVII
+36	entity	170000	Obstructor	yes		120	A-XLVII
+36	entity	170100	Neutralized Obstructor	yes		120	A-XLVII
+36	entity	180000	General Mine Anchor	yes		120	A-XLVII
+36	entity	190000	Non-Mine Mine–Like Object (NMLO), General	yes		120	A-XLVII
+36	entity	190100	Non-Mine Mine–Like Object, Bottom	yes		120	A-XLVII
+36	entity	190200	Non-Mine Mine–Like Object, Moored	yes		120	A-XLVII
+36	entity	190300	Non-Mine Mine–Like Object, Floating	yes		120	A-XLVII
+36	entity	200000	Environmental Report Location	yes		120	A-XLVII
+36	entity	210000	Dive Report Location	yes		120	A-XLVII
+40	entity	000000	Unspecified	yes		121	A-XLVIII
+40	entity	110000	Incident	yes		121	A-XLVIII
+40	entity	110100	Criminal Activity Incident	yes		121	A-XLVIII
+40	entity	110101	Arrest/Apprehend/Detain	yes		121	A-XLVIII
+40	entity	110102	Arson	yes		121	A-XLVIII
+40	entity	110104	Drive-by Shooting	yes		121	A-XLVIII
+40	entity	110106	Extortion	yes		121	A-XLVIII
+40	entity	110107	Graffiti	yes		121	A-XLVIII
+40	entity	110108	Killing	yes		121	A-XLVIII
+40	entity	110109	Poisoning	yes		121	A-XLVIII
+40	entity	110110	Civil Rioting	yes		121	A-XLVIII
+40	entity	110111	Booby Trap	yes		121	A-XLVIII
+40	entity	110113	Black Marketing	yes		121	A-XLVIII
+40	entity	110114	Vandalism/Loot/Ransack/Plunder	yes		121	A-XLVIII
+40	entity	110115	Jail Break	yes		121	A-XLVIII
+40	entity	110116	Robbery	yes		121	A-XLVIII
+40	entity	110117	Theft	yes		121	A-XLVIII
+40	entity	110118	Burglary	yes		121	A-XLVIII
+40	entity	110119	Smuggling	yes		121	A-XLVIII
+40	entity	110120	Rock Throwing	yes		121	A-XLVIII
+40	entity	110121	Dead Body	yes		121	A-XLVIII
+40	entity	110122	Sabotage	yes		121	A-XLVIII
+40	entity	110123	Suspicious Activity	yes		121	A-XLVIII
+40	entity	110200	Bomb/Bombing	yes		121	A-XLVIII
+40	entity	110201	Bomb Threat	yes		121	A-XLVIII
+40	entity	110300	IED Event	yes		121	A-XLVIII
+40	entity	110301	IED Explosion	yes		121	A-XLVIII
+40	entity	110302	Premature IED Explosion	yes		121	A-XLVIII
+40	entity	110303	IED Cache	yes		121	A-XLVIII
+40	entity	110304	IED Suicide Bomber	yes		121	A-XLVIII
+40	entity	110400	Shooting	yes		121	A-XLVIII
+40	entity	110401	Sniping	yes		121	A-XLVIII
+40	entity	110500	Drug Operation	yes		121	A-XLVIII
+40	entity	110501	Trafficking	yes		121	A-XLVIII
+40	entity	110600	Explosion	yes		121	A-XLVIII
+40	entity	110601	Grenade Explosion	yes		121	A-XLVIII
+40	entity	110602	Incendiary Explosion	yes		121	A-XLVIII
+40	entity	110603	Mine Explosion	yes		121	A-XLVIII
+40	entity	110604	Mortar Fire Explosion	yes		121	A-XLVIII
+40	entity	110605	Rocket Explosion	yes		121	A-XLVIII
+40	entity	110606	Bomb Explosion	yes		121	A-XLVIII
+40	entity	110700	Home/House	yes		121	A-XLVIII
+40	entity	120000	Civil Disturbance	yes		122	A-XLVIII
+40	entity	120100	Demonstration	yes		122	A-XLVIII
+40	entity	130000	Operation	yes		122	A-XLVIII
+40	entity	130100	Patrolling	yes		122	A-XLVIII
+40	entity	130200	Military Information Support Operation (MISO)	yes		122	A-XLVIII
+40	entity	130201	Communication Propaganda	yes		122	A-XLVIII
+40	entity	130300	Foraging/Searching	yes		122	A-XLVIII
+40	entity	130400	Recruitment	yes		122	A-XLVIII
+40	entity	130401	Willing	yes		122	A-XLVIII
+40	entity	130402	Unwilling/Coerced	yes		122	A-XLVIII
+40	entity	130500	Mine Laying	yes		122	A-XLVIII
+40	entity	130600	Spy	yes		122	A-XLVIII
+40	entity	130700	Warrant Served	yes		122	A-XLVIII
+40	entity	130800	Exfiltration	yes		122	A-XLVIII
+40	entity	130900	Infiltration	yes		122	A-XLVIII
+40	entity	131000	Meeting	yes		122	A-XLVIII
+40	entity	131001	Polling Place/Election	yes		122	A-XLVIII
+40	entity	131200	Emergency Operation	yes		122	A-XLVIII
+40	entity	131201	Emergency Collection Evacuation Point	yes		122	A-XLVIII
+40	entity	131202	Emergency Food Distribution	yes		122	A-XLVIII
+40	entity	131203	Emergency Incident Command Center	yes		122	A-XLVIII
+40	entity	131204	Emergency Operations Center	yes		122	A-XLVIII
+40	entity	131205	Emergency Public Information Center	yes		122	A-XLVIII
+40	entity	131206	Emergency Shelter	yes		122	A-XLVIII
+40	entity	131207	Emergency Staging Area	yes		122	A-XLVIII
+40	entity	131208	Emergency Water Distribution Center	yes		122	A-XLVIII
+40	entity	131300	Emergency Medical Operation	yes		122	A-XLVIII
+40	entity	131301	EMT Station Location	yes		122	A-XLVIII
+40	entity	131302	Health Department	yes		122	A-XLVIII
+40	entity	131303	Medical Facilities Outpatient	yes		122	A-XLVIII
+40	entity	131304	Morgue	yes		122	A-XLVIII
+40	entity	131305	Pharmacy	yes		122	A-XLVIII
+40	entity	131306	Triage	yes		122	A-XLVIII
+40	entity	131400	Fire Fighting Operation	yes		122	A-XLVIII
+40	entity	131401	Fire Hydrant	yes		122	A-XLVIII
+40	entity	131403	Other Water Supply Location	yes		122	A-XLVIII
+40	entity	131500	Law Enforcement Operation	yes		122	A-XLVIII
+40	entity	131501	Bureau of Alcohol, Tobacco, Firearms and Explosives (ATF) (Department of Justice)	yes		122	A-XLVIII
+40	entity	131502	Border Patrol	yes		122	A-XLVIII
+40	entity	131503	Customs Service	yes		122	A-XLVIII
+40	entity	131504	Drug Enforcement Administration (DEA)	yes		122	A-XLVIII
+40	entity	131505	Department of Justice (DOJ)	yes		123	A-XLVIII
+40	entity	131506	Federal Bureau of Investigation (FBI)	yes		123	A-XLVIII
+40	entity	131507	Police	yes		123	A-XLVIII
+40	entity	131508	Prison	yes		123	A-XLVIII
+40	entity	131509	United States Secret Service (USSS)	yes		123	A-XLVIII
+40	entity	131510	Transportation Security Administration (TSA)	yes		123	A-XLVIII
+40	entity	131511	Coast Guard	yes		123	A-XLVIII
+40	entity	131512	US Marshals Service	yes		123	A-XLVIII
+40	entity	131513	Internal Security Force	yes		123	A-XLVIII
+40	entity	140000	Fire Event	yes		123	A-XLVIII
+40	entity	140100	Fire Origin	yes		123	A-XLVIII
+40	entity	140200	Smoke	yes		123	A-XLVIII
+40	entity	140300	Hot Spot	yes		123	A-XLVIII
+40	entity	140400	Non-Residential Fire	yes		123	A-XLVIII
+40	entity	140500	Residential Fire	yes		123	A-XLVIII
+40	entity	140600	School Fire	yes		123	A-XLVIII
+40	entity	140700	Special Needs Fire	yes		123	A-XLVIII
+40	entity	140800	Wildfire	yes		123	A-XLVIII
+40	entity	150000	Hazardous Materials	yes		123	A-XLVIII
+40	entity	150100	Hazardous Materials Incident	yes		123	A-XLVIII
+40	entity	150101	Chemical Agent	yes		123	A-XLVIII
+40	entity	150102	Corrosive Material	yes		123	A-XLVIII
+40	entity	150103	Hazardous when Wet	yes		123	A-XLVIII
+40	entity	150104	Explosive Material	yes		123	A-XLVIII
+40	entity	150105	Flammable Gas	yes		123	A-XLVIII
+40	entity	150106	Flammable Liquid	yes		123	A-XLVIII
+40	entity	150107	Flammable Solid	yes		123	A-XLVIII
+40	entity	150108	Non-Flammable Gas	yes		123	A-XLVIII
+40	entity	150109	Organic Peroxide	yes		123	A-XLVIII
+40	entity	150110	Oxidizer	yes		123	A-XLVIII
+40	entity	150111	Radioactive Material	yes		123	A-XLVIII
+40	entity	150112	Spontaneously Combustible Material	yes		123	A-XLVIII
+40	entity	150113	Toxic Gas	yes		123	A-XLVIII
+40	entity	150114	Toxic Infectious Material	yes		123	A-XLVIII
+40	entity	150115	Unexploded Ordnance	yes		123	A-XLVIII
+40	entity	160000	Transportation Incident	yes		123	A-XLVIII
+40	entity	160100	Air	yes		123	A-XLVIII
+40	entity	160200	Marine	yes		123	A-XLVIII
+40	entity	160300	Rail	yes		123	A-XLVIII
+40	entity	160400	Vehicle	yes		123	A-XLVIII
+40	entity	160500	Wheeled Vehicle Explosion	yes		124	A-XLVIII
+40	entity	170000	Natural Event	yes		124	A-XLVIII
+40	entity	170100	Geologic	yes		124	A-XLVIII
+40	entity	170101	Aftershock	yes		124	A-XLVIII
+40	entity	170102	Avalanche	yes		124	A-XLVIII
+40	entity	170103	Earthquake Epicenter	yes		124	A-XLVIII
+40	entity	170104	Landslide	yes		124	A-XLVIII
+40	entity	170105	Subsidence	yes		124	A-XLVIII
+40	entity	170106	Volcanic Eruption	yes		124	A-XLVIII
+40	entity	170107	Volcanic Threat	yes		124	A-XLVIII
+40	entity	170108	Cave Entrance	yes		124	A-XLVIII
+40	entity	170200	Hydro-Meteorological	yes		124	A-XLVIII
+40	entity	170201	Drought	yes		124	A-XLVIII
+40	entity	170202	Flood	yes		124	A-XLVIII
+40	entity	170203	Tsunami	yes		124	A-XLVIII
+40	entity	170300	Infestation	yes		124	A-XLVIII
+40	entity	170301	Bird	yes		124	A-XLVIII
+40	entity	170302	Insect	yes		124	A-XLVIII
+40	entity	170303	Microbial	yes		124	A-XLVIII
+40	entity	170304	Reptile	yes		124	A-XLVIII
+40	entity	170305	Rodent	yes		124	A-XLVIII
+40	entity	180000	Individual	yes		124	A-XLVIII
+40	entity	180100	Religious Leader	yes		124	A-XLVIII
+40	entity	180200	Speaker	yes		124	A-XLVIII
+40	m1	00	Unspecified	yes		124	A-XLIX
+40	m1	04	House–to–House	yes		124	A-XLIX
+40	m1	06	Murder	yes		124	A-XLIX
+40	m1	09	Written Military Information Support Operations	yes		124	A-XLIX
+40	m1	10	Pirate	yes		124	A-XLIX
+40	m1	11	False	yes		124	A-XLIX
+40	m1	12	Find	yes		124	A-XLIX
+40	m1	13	Found and Cleared	yes		124	A-XLIX
+40	m1	14	Hoax (Decoy)	yes		124	A-XLIX
+40	m1	15	Attempted	yes		124	A-XLIX
+40	m1	17	Incident	yes		124	A-XLIX
+40	m1	18	Theft	yes		124	A-XLIX
+40	m1	21	Eviction	yes		124	A-XLIX
+40	m1	22	Raid	yes		124	A-XLIX
+40	m1	24	Meeting	yes		124	A-XLIX
+40	m2	00	Unspecified	yes		125	A-L
+40	m2	04	Meeting	yes		125	A-L
+45	entity	110000	Pressure Systems	no		125	A-LI
+45	entity	110100	Low Pressure Center	yes		125	A-LI
+45	entity	110101	Cyclone Center	yes		125	A-LI
+45	entity	110102	Tropopause Low	yes		125	A-LI
+45	entity	110200	High Pressure Center	yes		125	A-LI
+45	entity	110201	Anticyclone Center	yes		125	A-LI
+45	entity	110202	Tropopause High	yes		125	A-LI
+45	entity	110300	Frontal Systems	yes		125	A-LI
+45	entity	110301	Cold Front	yes		125	A-LI
+45	entity	110302	Upper Cold Front	yes		125	A-LI
+45	entity	110303	Cold Frontogenesis	yes		125	A-LI
+45	entity	110304	Cold Frontolysis	yes		125	A-LI
+45	entity	110305	Warm Front	yes		125	A-LI
+45	entity	110306	Upper Warm Front	yes		125	A-LI
+45	entity	110307	Warm Frontogenesis	yes		125	A-LI
+45	entity	110308	Warm Frontolysis	yes		125	A-LI
+45	entity	110309	Occluded Front	yes		125	A-LI
+45	entity	110310	Upper Occluded Front	yes		125	A-LI
+45	entity	110311	Occluded Frontolysis	yes		125	A-LI
+45	entity	110312	Stationary Front	yes		125	A-LI
+45	entity	110313	Upper Stationary Front	yes		125	A-LI
+45	entity	110314	Stationary Frontogenesis	yes		125	A-LI
+45	entity	110315	Stationary Frontolysis	yes		125	A-LI
+45	entity	110400	Lines	no		125	A-LI
+45	entity	110401	Trough Axis	yes		125	A-LI
+45	entity	110402	Trough	yes		125	A-LI
+45	entity	110403	Ridge Axis	yes		125	A-LI
+45	entity	110404	Severe Squall Line	yes		125	A-LI
+45	entity	110405	Instability Line	yes		125	A-LI
+45	entity	110406	Shear Line	yes		125	A-LI
+45	entity	110407	Inter–Tropical Convergence Zone	yes		125	A-LI
+45	entity	110408	Convergence Line	yes		125	A-LI
+45	entity	110409	Inter–Tropical Discontinuity	yes		125	A-LI
+45	entity	110500	Pressure Tendency	no		125	A-LI
+45	entity	110501	Rise Then Fall Higher	yes		126	A-LI
+45	entity	110502	Rise Then Steady	yes		126	A-LI
+45	entity	110503	Rise	yes		126	A-LI
+45	entity	110504	Rise Then Rise Higher	yes		126	A-LI
+45	entity	110505	Steady	yes		126	A-LI
+45	entity	110506	Fall Then Rise Lower	yes		126	A-LI
+45	entity	110507	Fall Then Steady	yes		126	A-LI
+45	entity	110508	Fall	yes		126	A-LI
+45	entity	110509	Rise Then Fall Lower	yes		126	A-LI
+45	entity	120000	Turbulence	no		126	A-LI
+45	entity	120100	Light	yes		126	A-LI
+45	entity	120200	Moderate	yes		126	A-LI
+45	entity	120300	Severe	yes		126	A-LI
+45	entity	120400	Extreme	yes		126	A-LI
+45	entity	120500	Mountain Waves	yes		126	A-LI
+45	entity	130000	Icing	no		126	A-LI
+45	entity	130100	Clear Icing	no		126	A-LI
+45	entity	130101	Light	yes		126	A-LI
+45	entity	130102	Moderate	yes		126	A-LI
+45	entity	130103	Severe	yes		126	A-LI
+45	entity	130200	Rime Icing	no		126	A-LI
+45	entity	130201	Light	yes		126	A-LI
+45	entity	130202	Moderate	yes		126	A-LI
+45	entity	130203	Severe	yes		126	A-LI
+45	entity	130300	Mixed Icing	no		126	A-LI
+45	entity	130301	Light	yes		126	A-LI
+45	entity	130302	Moderate	yes		126	A-LI
+45	entity	130303	Severe	yes		126	A-LI
+45	entity	140000	Winds	no		126	A-LI
+45	entity	140100	Calm Winds	yes		126	A-LI
+45	entity	140300	Jet Stream	yes		126	A-LI
+45	entity	140400	Stream Line	yes		126	A-LI
+45	entity	150000	Cloud Cover	no		126	A-LI
+45	entity	150100	Cloud Coverage Symbols	no		126	A-LI
+45	entity	150101	Clear Sky	yes		126	A-LI
+45	entity	150102	Few Coverage	yes		126	A-LI
+45	entity	150103	Scattered Coverage	yes		126	A-LI
+45	entity	150104	Broken Coverage	yes		126	A-LI
+45	entity	150105	Overcast Coverage	yes		126	A-LI
+45	entity	150106	Sky Totally or Partially Obscured	yes		126	A-LI
+45	entity	160000	Weather Symbols	no		126	A-LI
+45	entity	160100	Rain	no		127	A-LI
+45	entity	160101	Intermittent Light	yes		127	A-LI
+45	entity	160102	Continuous Light	yes		127	A-LI
+45	entity	160103	Intermittent Moderate	yes		127	A-LI
+45	entity	160104	Intermittent Moderate/ Continuous Moderate	yes		127	A-LI
+45	entity	160105	Intermittent Heavy	yes		127	A-LI
+45	entity	160106	Intermittent Heavy/ Continuous Heavy	yes		127	A-LI
+45	entity	160200	Freezing Rain	no		127	A-LI
+45	entity	160201	Light	yes		127	A-LI
+45	entity	160202	Moderate/Heavy	yes		127	A-LI
+45	entity	160300	Rain Showers	no		127	A-LI
+45	entity	160301	Light	yes		127	A-LI
+45	entity	160302	Moderate/Heavy	yes		127	A-LI
+45	entity	160303	Torrential	yes		127	A-LI
+45	entity	160400	Drizzle	no		127	A-LI
+45	entity	160401	Intermittent Light	yes		127	A-LI
+45	entity	160402	Intermittent Light/ Continuous Light	yes		127	A-LI
+45	entity	160403	Intermittent Moderate	yes		127	A-LI
+45	entity	160404	Intermittent Moderate/ Continuous Moderate	yes		127	A-LI
+45	entity	160405	Intermittent Heavy	yes		127	A-LI
+45	entity	160406	Intermittent Heavy/ Continuous Heavy	yes		127	A-LI
+45	entity	160500	Freezing Drizzle	no		127	A-LI
+45	entity	160501	Light	yes		127	A-LI
+45	entity	160502	Moderate/Heavy	yes		127	A-LI
+45	entity	160600	Rain and Snow Mixed	no		127	A-LI
+45	entity	160601	Rain or Drizzle and Snow – Light	yes		127	A-LI
+45	entity	160602	Rain or Drizzle and Snow – Moderate/Heavy	yes		127	A-LI
+45	entity	160603	Rain and Snow Showers – Light	yes		127	A-LI
+45	entity	160604	Rain and Snow Showers – Moderate/Heavy	yes		127	A-LI
+45	entity	160700	Snow	no		127	A-LI
+45	entity	160701	Intermittent Light	yes		127	A-LI
+45	entity	160702	Intermittent Light/ Continuous Light	yes		127	A-LI
+45	entity	160703	Intermittent Moderate	yes		127	A-LI
+45	entity	160704	Intermittent Moderate/ Continuous Moderate	yes		127	A-LI
+45	entity	160705	Intermittent Heavy	yes		128	A-LI
+45	entity	160706	Intermittent Heavy/ Continuous Heavy	yes		128	A-LI
+45	entity	160707	Blowing Snow – Light/ Moderate	yes		128	A-LI
+45	entity	160708	Blowing Snow – Heavy	yes		128	A-LI
+45	entity	160800	Snow Grains	yes		128	A-LI
+45	entity	160900	Snow Showers	no		128	A-LI
+45	entity	160901	Light	yes		128	A-LI
+45	entity	160902	Moderate/Heavy	yes		128	A-LI
+45	entity	161000	Hail	no		128	A-LI
+45	entity	161001	Light not Associated with Thunder	yes		128	A-LI
+45	entity	161002	Moderate/Heavy not Associated with Thunder	yes		128	A-LI
+45	entity	161100	Ice Crystals (Diamond Dust)	yes		128	A-LI
+45	entity	161200	Ice Pellets (Sleet)	no		128	A-LI
+45	entity	161201	Light	yes		128	A-LI
+45	entity	161202	Moderate	yes		128	A-LI
+45	entity	161203	Heavy	yes		128	A-LI
+45	entity	161300	Inversion	yes		128	A-LI
+45	entity	161400	Storms	no		128	A-LI
+45	entity	161401	Thunderstorm – No Precipitation	yes		128	A-LI
+45	entity	161402	Thunderstorm Light to Moderate with Rain/Snow – No Hail	yes		128	A-LI
+45	entity	161403	Thunderstorm Heavy with Rain/Snow – No Hail	yes		128	A-LI
+45	entity	161404	Thunderstorm Light to Moderate – with Hail	yes		128	A-LI
+45	entity	161405	Thunderstorm Heavy – with Hail	yes		128	A-LI
+45	entity	161406	Funnel Cloud (Tornado/Waterspout)	yes		128	A-LI
+45	entity	161407	Squall	yes		128	A-LI
+45	entity	161408	Lightning	yes		128	A-LI
+45	entity	161500	Fog	no		128	A-LI
+45	entity	161501	Shallow Patches	yes		128	A-LI
+45	entity	161502	Shallow Continuous	yes		128	A-LI
+45	entity	161503	Patchy	yes		128	A-LI
+45	entity	161504	Sky Visible	yes		128	A-LI
+45	entity	161505	Sky Obscured	yes		128	A-LI
+45	entity	161506	Freezing, Sky Visible	yes		128	A-LI
+45	entity	161507	Freezing, Sky Obscured	yes		128	A-LI
+45	entity	161600	Mist	yes		128	A-LI
+45	entity	161700	Smoke	yes		129	A-LI
+45	entity	161800	Haze	yes		129	A-LI
+45	entity	161900	Dust or Sand	no		129	A-LI
+45	entity	161901	Light to Moderate	yes		129	A-LI
+45	entity	161902	Severe	yes		129	A-LI
+45	entity	161903	Dust Devil	yes		129	A-LI
+45	entity	161904	Blowing Dust or Sand	yes		129	A-LI
+45	entity	162000	Tropical Storm Systems	no		129	A-LI
+45	entity	162001	Tropical Depression	yes		129	A-LI
+45	entity	162002	Tropical Storm	yes		129	A-LI
+45	entity	162003	Hurricane/Typhoon	yes		129	A-LI
+45	entity	162004	Tropical Storm Wind Areas and Date/Time Labels	yes		129	A-LI
+45	entity	162100	Volcanic Eruption	yes		129	A-LI
+45	entity	162101	Volcanic Ash	yes		129	A-LI
+45	entity	162200	Tropopause Level	yes		129	A-LI
+45	entity	162300	Freezing Level	yes		129	A-LI
+45	entity	162400	Precipitation of Unknown Type and Intensity	yes		129	A-LI
+45	entity	170000	Bounded Areas of Weather	no		129	A-LI
+45	entity	170100	Instrument Flight Rule (IFR)	yes		129	A-LI
+45	entity	170200	Marginal Visual Flight Rule (MVFR)	yes		129	A-LI
+45	entity	170300	Turbulence	yes		129	A-LI
+45	entity	170400	Icing	yes		129	A-LI
+45	entity	170500	Liquid Precipitation – Non- Convective Continuous or Intermittent	yes		129	A-LI
+45	entity	170501	Liquid Precipitation – Convective	yes		129	A-LI
+45	entity	170600	Freezing /Frozen Precipitation	yes		129	A-LI
+45	entity	170700	Thunderstorm	yes		129	A-LI
+45	entity	170800	Fog	yes		129	A-LI
+45	entity	170900	Dust or Sand	yes		129	A-LI
+45	entity	171000	Operator–Defined Freeform	yes		129	A-LI
+45	entity	180000	Isopleths	no		129	A-LI
+45	entity	180100	Isobar – Surface	yes		129	A-LI
+45	entity	180200	Contour – Upper Air	yes		129	A-LI
+45	entity	180300	Isotherm	yes		129	A-LI
+45	entity	180400	Isotach	yes		129	A-LI
+45	entity	180500	Isodrosotherm	yes		129	A-LI
+45	entity	180600	Thickness	yes		129	A-LI
+45	entity	180700	Operator–Defined Freeform	yes		129	A-LI
+45	entity	190000	State of the Ground	no		130	A-LI
+45	entity	190100	Without Snow or Measurable Ice Cover	no		130	A-LI
+45	entity	190101	Surface Dry Without Cracks or Appreciable Dust or Loose Sand	yes		130	A-LI
+45	entity	190102	Surface Moist	yes		130	A-LI
+45	entity	190103	Surface Wet, Standing Water in Small or Large Pools	yes		130	A-LI
+45	entity	190104	Surface Flooded	yes		130	A-LI
+45	entity	190105	Surface Frozen	yes		130	A-LI
+45	entity	190106	Glaze (Thin Ice) on Ground	yes		130	A-LI
+45	entity	190107	Loose Dry Dust or Sand not Covering Ground Completely	yes		130	A-LI
+45	entity	190108	Thin Loose Dry Dust or Sand Covering Ground Completely	yes		130	A-LI
+45	entity	190109	Moderate/Thick Loose Dry Dust or Sand Covering Ground Completely	yes		130	A-LI
+45	entity	190110	Extremely Dry with Cracks	yes		130	A-LI
+45	entity	190200	With Snow or Measurable Ice Cover	no		130	A-LI
+45	entity	190201	Predominately Ice Covered	yes		130	A-LI
+45	entity	190202	Compact or Wet Snow (with or without Ice) Covering Less Than One–Half of Ground	yes		130	A-LI
+45	entity	190203	Compact or Wet Snow (with or without Ice) Covering at Least One–Half of Ground, but Ground not Completely Covered	yes		130	A-LI
+45	entity	190204	Even Layer of Compact or Wet Snow Covering Ground Completely	yes		130	A-LI
+45	entity	190205	Uneven Layer of Compact or Wet Snow Covering Ground Completely	yes		130	A-LI
+45	entity	190206	Loose Dry Snow Covering Less Than One–Half of Ground	yes		130	A-LI
+45	entity	190207	Loose Dry Snow Covering at least One–Half of Ground, but Ground not Completely Covered	yes		130	A-LI
+45	entity	190208	Even Layer of Loose Dry Snow Covering Ground Completely	yes		130	A-LI
+45	entity	190209	Uneven Layer of Loose Dry Snow Covering Ground Completely	yes		130	A-LI
+45	entity	190210	Snow Covering Ground Completely, Deep Drifts	yes		131	A-LI
+46	entity	110000	Ice Systems	no		131	A-LII
+46	entity	110100	Icebergs	no		131	A-LII
+46	entity	110101	Many Icebergs	yes		131	A-LII
+46	entity	110102	Belts and Strips	yes		131	A-LII
+46	entity	110103	General	yes		131	A-LII
+46	entity	110104	Many Icebergs – General	yes		131	A-LII
+46	entity	110105	Bergy Bit	yes		131	A-LII
+46	entity	110106	Many Bergy Bits	yes		131	A-LII
+46	entity	110107	Growler	yes		131	A-LII
+46	entity	110108	Many Growlers	yes		131	A-LII
+46	entity	110109	Floeberg	yes		131	A-LII
+46	entity	110110	Ice Island	yes		131	A-LII
+46	entity	110200	Ice Concentration	no		131	A-LII
+46	entity	110201	Bergy Water	yes		131	A-LII
+46	entity	110202	Water with Radar Targets	yes		131	A-LII
+46	entity	110203	Ice Free	yes		131	A-LII
+46	entity	110300	Dynamic Processes	no		131	A-LII
+46	entity	110301	Convergence	yes		131	A-LII
+46	entity	110302	Divergence	yes		131	A-LII
+46	entity	110303	Shearing or Shear Zone	yes		131	A-LII
+46	entity	110304	Ice Drift (Direction)	yes		131	A-LII
+46	entity	110400	Sea Ice	no		131	A-LII
+46	entity	110401	Ice Thickness (Observed)	yes		131	A-LII
+46	entity	110402	Ice Thickness (Estimated)	yes		131	A-LII
+46	entity	110403	Melt Puddles or Flooded Ice	yes		131	A-LII
+46	entity	110500	Limits	no		131	A-LII
+46	entity	110501	Limits of Visual Observation	yes		131	A-LII
+46	entity	110502	Limits of Under Cast	yes		131	A-LII
+46	entity	110503	Limits of Radar Observation	yes		131	A-LII
+46	entity	110504	Observed Ice Edge or Boundary	yes		131	A-LII
+46	entity	110505	Estimated Ice Edge or Boundary	yes		131	A-LII
+46	entity	110506	Ice Edge or Boundary from Radar	yes		132	A-LII
+46	entity	110600	Openings in the Ice	no		132	A-LII
+46	entity	110601	Cracks	yes		132	A-LII
+46	entity	110602	Cracks at a Specific Location	yes		132	A-LII
+46	entity	110603	Lead	yes		132	A-LII
+46	entity	110604	Frozen Lead	yes		132	A-LII
+46	entity	110700	Snow Cover	yes		132	A-LII
+46	entity	110701	Sastrugi (with Orientation)	yes		132	A-LII
+46	entity	110800	Topographical Features	no		132	A-LII
+46	entity	110801	Ridges or Hummocks	yes		132	A-LII
+46	entity	110802	Rafting	yes		132	A-LII
+46	entity	110803	Jammed Brash Barrier	yes		132	A-LII
+46	entity	120000	Hydrography	no		132	A-LII
+46	entity	120100	Depth	no		132	A-LII
+46	entity	120101	Soundings	yes		132	A-LII
+46	entity	120102	Depth Curve	yes		132	A-LII
+46	entity	120103	Depth Contour	yes		132	A-LII
+46	entity	120104	Depth Area	yes		132	A-LII
+46	entity	120200	Coastal Hydrography	no		132	A-LII
+46	entity	120201	Coastline	yes		132	A-LII
+46	entity	120202	Island	yes		132	A-LII
+46	entity	120203	Beach	yes		132	A-LII
+46	entity	120204	Water	yes		132	A-LII
+46	entity	120205	Foreshore – Line	yes		132	A-LII
+46	entity	120206	Foreshore – Area	yes		132	A-LII
+46	entity	120300	Ports and Harbors	no		132	A-LII
+46	entity	120301	Ports	no		132	A-LII
+46	entity	120302	Berths (Onshore)	yes		132	A-LII
+46	entity	120303	Berths (Anchor)	yes		132	A-LII
+46	entity	120304	Anchorage – Point	yes		132	A-LII
+46	entity	120305	Anchorage – Line	yes		132	A-LII
+46	entity	120306	Anchorage – Area	yes		132	A-LII
+46	entity	120307	Call in Point	yes		132	A-LII
+46	entity	120308	Pier/Wharf/Quay	yes		132	A-LII
+46	entity	120309	Fishing Harbor – Point	yes		132	A-LII
+46	entity	120310	Fish Weirs – Point	yes		132	A-LII
+46	entity	120311	Fish Stakes – Point	yes		132	A-LII
+46	entity	120312	Fish Traps – Area	yes		132	A-LII
+46	entity	120313	Facilities	no		132	A-LII
+46	entity	120314	Drydock	yes		132	A-LII
+46	entity	120315	Landing Place	yes		132	A-LII
+46	entity	120316	Offshore Loading Facility – Point	yes		133	A-LII
+46	entity	120317	Offshore Loading Facility – Line	yes		133	A-LII
+46	entity	120318	Offshore Loading Facility – Area	yes		133	A-LII
+46	entity	120319	Ramp – Above Water	yes		133	A-LII
+46	entity	120320	Ramp – Below Water	yes		133	A-LII
+46	entity	120321	Landing Ring	yes		133	A-LII
+46	entity	120322	Ferry Crossing	yes		133	A-LII
+46	entity	120323	Cable Ferry Crossing	yes		133	A-LII
+46	entity	120324	Dolphin	yes		133	A-LII
+46	entity	120325	Shoreline Protection	no		133	A-LII
+46	entity	120326	Breakwater/Groin/Jetty – Above Water	yes		133	A-LII
+46	entity	120327	Breakwater/Groin/Jetty – Below Water	yes		133	A-LII
+46	entity	120328	Seawall	yes		133	A-LII
+46	entity	120400	Aids to Navigation	no		133	A-LII
+46	entity	120401	Beacon	yes		133	A-LII
+46	entity	120402	Buoy Default	yes		133	A-LII
+46	entity	120403	Marker	yes		133	A-LII
+46	entity	120404	Perches/Stakes – Point	yes		133	A-LII
+46	entity	120405	Perches/Stakes – Area	yes		133	A-LII
+46	entity	120406	Light	yes		133	A-LII
+46	entity	120407	Leading Line	yes		133	A-LII
+46	entity	120408	Light Vessel/Light Ship	yes		133	A-LII
+46	entity	120409	Lighthouse	yes		133	A-LII
+46	entity	120500	Dangers/Hazards	no		133	A-LII
+46	entity	120501	Rock Submerged	yes		133	A-LII
+46	entity	120502	Rock Awashed	yes		133	A-LII
+46	entity	120503	Underwater Danger/Hazard	yes		133	A-LII
+46	entity	120504	Foul Ground – Point	yes		133	A-LII
+46	entity	120505	Foul Ground – Area	yes		133	A-LII
+46	entity	120506	Kelp/Seaweed – Point	yes		133	A-LII
+46	entity	120507	Kelp/Seaweed – Area	yes		133	A-LII
+46	entity	120508	Snags/Stumps	yes		133	A-LII
+46	entity	120509	Wreck (Uncovers)	yes		133	A-LII
+46	entity	120510	Wreck (Submerged)	yes		133	A-LII
+46	entity	120511	Breakers	yes		133	A-LII
+46	entity	120512	Reef	yes		133	A-LII
+46	entity	120513	Eddies/Overfalls/Tide Rips	yes		133	A-LII
+46	entity	120514	Discolored Water	yes		133	A-LII
+46	entity	120600	Bottom Features	no		134	A-LII
+46	entity	120601	Bottom Characteristics - Sand	yes		134	A-LII
+46	entity	120602	Bottom Characteristics - Mud	yes		134	A-LII
+46	entity	120603	Bottom Characteristics - Clay	yes		134	A-LII
+46	entity	120604	Bottom Characteristics - Silt	yes		134	A-LII
+46	entity	120605	Bottom Characteristics - Stones	yes		134	A-LII
+46	entity	120606	Bottom Characteristics - Gravel	yes		134	A-LII
+46	entity	120607	Bottom Characteristics - Pebbles	yes		134	A-LII
+46	entity	120608	Bottom Characteristics - Cobbles	yes		134	A-LII
+46	entity	120609	Bottom Characteristics - Rock	yes		134	A-LII
+46	entity	120610	Bottom Characteristics - Coral	yes		134	A-LII
+46	entity	120611	Bottom Characteristics - Shell	yes		134	A-LII
+46	entity	120612	Qualifying Terms - Fine	yes		134	A-LII
+46	entity	120613	Qualifying Terms - Medium	yes		134	A-LII
+46	entity	120614	Qualifying Terms - Coarse	yes		134	A-LII
+46	entity	120700	Tide and Current	no		134	A-LII
+46	entity	120701	Water Turbulence	yes		134	A-LII
+46	entity	120702	Current Flow – Ebb	yes		134	A-LII
+46	entity	120703	Current Flow – Flood	yes		134	A-LII
+46	entity	120704	Tide Data Point	yes		134	A-LII
+46	entity	120705	Tide Gauge	yes		134	A-LII
+46	entity	130000	Oceanography	no		134	A-LII
+46	entity	130100	Bioluminescence	no		134	A-LII
+46	entity	130101	Visual Detection Ratio (VDR) Level 1–2	yes		134	A-LII
+46	entity	130102	VDR Level 2–3	yes		134	A-LII
+46	entity	130103	VDR Level 3–4	yes		134	A-LII
+46	entity	130104	VDR Level 4–5	yes		134	A-LII
+46	entity	130105	VDR Level 5–6	yes		134	A-LII
+46	entity	130106	VDR Level 6–7	yes		134	A-LII
+46	entity	130107	VDR Level 7–8	yes		134	A-LII
+46	entity	130108	VDR Level 8–9	yes		134	A-LII
+46	entity	130109	VDR Level 9–10	yes		134	A-LII
+46	entity	130200	Beach Slope	no		134	A-LII
+46	entity	130201	Flat	yes		134	A-LII
+46	entity	130202	Gentle	yes		134	A-LII
+46	entity	130203	Moderate	yes		134	A-LII
+46	entity	130204	Steep	yes		134	A-LII
+46	entity	140000	Geophysics/Acoustics	no		134	A-LII
+46	entity	140100	Mine Warfare (MIW) Bottom Descriptors	no		135	A-LII
+46	entity	140101	MIW Bottom Sediments - Solid Rock	yes		135	A-LII
+46	entity	140102	MIW Bottom Sediments - Clay	yes		135	A-LII
+46	entity	140103	MIW Bottom Sediments - Very Coarse Sand	yes		135	A-LII
+46	entity	140104	MIW Bottom Sediments - Coarse Sand	yes		135	A-LII
+46	entity	140105	MIW Bottom Sediments - Medium Sand	yes		135	A-LII
+46	entity	140106	MIW Bottom Sediments - Fine Sand	yes		135	A-LII
+46	entity	140107	MIW Bottom Sediments - Very Fine Sand	yes		135	A-LII
+46	entity	140108	MIW Bottom Sediments - Very Fine Silt	yes		135	A-LII
+46	entity	140109	MIW Bottom Sediments - Fine Silt	yes		135	A-LII
+46	entity	140110	MIW Bottom Sediments - Medium Silt	yes		135	A-LII
+46	entity	140111	MIW Bottom Sediments - Coarse Silt	yes		135	A-LII
+46	entity	140112	MIW Bottom Sediments - Boulders	yes		135	A-LII
+46	entity	140113	MIW Bottom Sediments - Cobbles, Oyster Shells	yes		135	A-LII
+46	entity	140114	MIW Bottom Sediments - Pebbles, Shells	yes		135	A-LII
+46	entity	140115	MIW Bottom Sediments - Sand and Shells	yes		135	A-LII
+46	entity	140116	MIW Bottom Sediment - Land	yes		135	A-LII
+46	entity	140117	MIW Bottom Sediment - No Data	yes		135	A-LII
+46	entity	140118	Bottom Roughness - Smooth	yes		135	A-LII
+46	entity	140119	Bottom Roughness - Moderate	yes		135	A-LII
+46	entity	140120	Bottom Roughness - Rough	yes		135	A-LII
+46	entity	140121	Clutter (Bottom) - Low	yes		135	A-LII
+46	entity	140122	Clutter (Bottom) - Medium	yes		135	A-LII
+46	entity	140123	Clutter (Bottom) - High	yes		135	A-LII
+46	entity	140124	Impact Burial - 0%	yes		135	A-LII
+46	entity	140125	Impact Burial - 0–10%	yes		135	A-LII
+46	entity	140126	Impact Burial - 10–20%	yes		135	A-LII
+46	entity	140127	Impact Burial - 20–75%	yes		135	A-LII
+46	entity	140128	Impact Burial - >75%	yes		136	A-LII
+46	entity	140129	MIW Bottom Category A	yes		136	A-LII
+46	entity	140130	MIW Bottom Category B	yes		136	A-LII
+46	entity	140131	MIW Bottom Category C	yes		136	A-LII
+46	entity	140132	MIW Bottom Type - A1	yes		136	A-LII
+46	entity	140133	MIW Bottom Type - A2	yes		136	A-LII
+46	entity	140134	MIW Bottom Type - A3	yes		136	A-LII
+46	entity	140135	MIW Bottom Type - B1	yes		136	A-LII
+46	entity	140136	MIW Bottom Type - B2	yes		136	A-LII
+46	entity	140137	MIW Bottom Type - B3	yes		136	A-LII
+46	entity	140138	MIW Bottom Type - C1	yes		136	A-LII
+46	entity	140139	MIW Bottom Type - C2	yes		136	A-LII
+46	entity	140140	MIW Bottom Type - C3	yes		136	A-LII
+46	entity	150000	Limits	no		136	A-LII
+46	entity	150100	Maritime Limit Boundary	yes		136	A-LII
+46	entity	150200	Maritime Area	yes		136	A-LII
+46	entity	150300	Restricted Area	yes		136	A-LII
+46	entity	150400	Swept Area	yes		136	A-LII
+46	entity	150500	Training Area	yes		136	A-LII
+46	entity	150600	Operator–Defined	yes		136	A-LII
+46	entity	160000	Man–Made Structures	no		136	A-LII
+46	entity	160100	Submarine Cable	yes		136	A-LII
+46	entity	160200	Submerged Crib	yes		136	A-LII
+46	entity	160300	Canal	yes		136	A-LII
+46	entity	160400	Ford	yes		136	A-LII
+46	entity	160500	Lock	yes		136	A-LII
+46	entity	160600	Oil/Gas Rig	yes		136	A-LII
+46	entity	160700	Oil/Gas Rig Field	yes		136	A-LII
+46	entity	160800	Pipelines/Pipe	yes		136	A-LII
+46	entity	160900	Pile/Piling/Post	yes		136	A-LII
+47	entity	110000	Space	no		136	A-LIII
+50	entity	000000	Unspecified	yes		137	A-LIV
+50	entity	110000	Signal Intercept	yes		137	A-LIV
+50	entity	110100	Communications	yes		137	A-LIV
+50	entity	110200	Jammer	yes		137	A-LIV
+50	entity	110300	Radar	yes		137	A-LIV
+50	m1	00	Unspecified	yes		137	A-LV
+50	m1	01	Anti-Aircraft Fire Control	yes		137	A-LV
+50	m1	02	Airborne Search and Bombing	yes		137	A-LV
+50	m1	03	Airborne Intercept	yes		137	A-LV
+50	m1	04	Altimeter	yes		137	A-LV
+50	m1	05	Airborne Reconnaissance and Mapping	yes		137	A-LV
+50	m1	06	Air Traffic Control	yes		137	A-LV
+50	m1	07	Beacon Transponder (not IFF)	yes		137	A-LV
+50	m1	08	Battlefield Surveillance	yes		137	A-LV
+50	m1	09	Controlled Approach	yes		137	A-LV
+50	m1	10	Controlled Intercept	yes		137	A-LV
+50	m1	11	Cellular/Mobile	yes		137	A-LV
+50	m1	12	Coastal Surveillance	yes		137	A-LV
+50	m1	13	Decoy/Mimic	yes		137	A-LV
+50	m1	14	Data Transmission	yes		137	A-LV
+50	m1	15	Earth Surveillance	yes		137	A-LV
+50	m1	16	Early Warning	yes		137	A-LV
+50	m1	17	Fire Control	yes		137	A-LV
+50	m1	18	Ground Mapping	yes		137	A-LV
+50	m1	19	Height Finding	yes		137	A-LV
+50	m1	20	Harbor Surveillance	yes		137	A-LV
+50	m1	21	Identification, Friend or Foe (Interrogator)	yes		137	A-LV
+50	m1	22	Instrument Landing System	yes		137	A-LV
+50	m1	23	Ionospheric Sounding	yes		137	A-LV
+50	m1	24	Identification, Friend or Foe (Transponder)	yes		137	A-LV
+50	m1	25	Barrage Jammer	yes		137	A-LV
+50	m1	26	Click Jammer	yes		137	A-LV
+50	m1	27	Deceptive Jammer	yes		137	A-LV
+50	m1	28	Frequency Swept Jammer	yes		137	A-LV
+50	m1	29	Jammer (general)	yes		137	A-LV
+50	m1	30	Noise Jammer	yes		137	A-LV
+50	m1	31	Pulsed Jammer	yes		137	A-LV
+50	m1	32	Repeater Jammer	yes		137	A-LV
+50	m1	33	Spot Noise Jammer	yes		137	A-LV
+50	m1	34	Transponder Jammer	yes		137	A-LV
+50	m1	35	Missile Acquisition	yes		137	A-LV
+50	m1	36	Missile Control	yes		137	A-LV
+50	m1	37	Missile Downlink	yes		138	A-LV
+50	m1	38	Meteorological	yes		138	A-LV
+50	m1	39	Multi-Function	yes		138	A-LV
+50	m1	40	Missile Guidance	yes		138	A-LV
+50	m1	41	Missile Homing	yes		138	A-LV
+50	m1	42	Missile Tracking	yes		138	A-LV
+50	m1	43	Navigational/General	yes		138	A-LV
+50	m1	44	Navigational/Distance Measuring Equipment	yes		138	A-LV
+50	m1	45	Navigation/Terrain Following	yes		138	A-LV
+50	m1	46	Navigational/Weather Avoidance	yes		138	A-LV
+50	m1	47	Omni-Line of Sight (LOS)	yes		138	A-LV
+50	m1	48	Proximity Fuse	yes		138	A-LV
+50	m1	49	Point-to-Point Line of Sight (LOS)	yes		138	A-LV
+50	m1	50	Instrumentation	yes		138	A-LV
+50	m1	51	Range Only	yes		138	A-LV
+50	m1	52	Sonobuoy	yes		138	A-LV
+50	m1	53	Satellite Downlink	yes		138	A-LV
+50	m1	54	Space	yes		138	A-LV
+50	m1	55	Surface Search	yes		138	A-LV
+50	m1	56	Shell Tracking	yes		138	A-LV
+50	m1	57	Satellite Uplink	yes		138	A-LV
+50	m1	58	Target Acquisition	yes		138	A-LV
+50	m1	59	Target Illumination	yes		138	A-LV
+50	m1	60	Tropospheric Scatter	yes		138	A-LV
+50	m1	61	Target Tracking	yes		138	A-LV
+50	m1	62	Unknown	yes		138	A-LV
+50	m1	63	Video Remoting	yes		138	A-LV
+50	m1	64	Experimental	yes		138	A-LV
+50	m2	00	Unspecified	yes		138	A-LVI
+60	entity	000000	Unspecified	yes		138	A-LVII
+60	entity	110000	Cyberspace Unit	yes		138	A-LVII
+60	entity	110100	Combat Mission Team	yes		138	A-LVII
+60	entity	110200	National Mission Team	yes		138	A-LVII
+60	entity	110300	Cyber Protection Team	yes		138	A-LVII
+60	entity	110600	Defensive Cyberspace	yes		138	A-LVII
+60	entity	110700	Offensive Cyberspace	yes		138	A-LVII
+60	entity	110800	Internet Service Provider	yes		138	A-LVII
+60	entity	110900	Security	yes		139	A-LVII
+60	entity	111000	Operations	yes		139	A-LVII
+60	entity	120000	Threat Actor	yes		139	A-LVII
+60	entity	120200	Insider	yes		139	A-LVII
+60	entity	130000	Agent	yes		139	A-LVII
+60	entity	130100	Firewall	yes		139	A-LVII
+60	entity	130200	Firmware	yes		139	A-LVII
+60	entity	140000	Application	yes		139	A-LVII
+60	entity	140300	Search Engine	yes		139	A-LVII
+60	entity	140400	Social Media	yes		139	A-LVII
+60	entity	150000	Threat	yes		139	A-LVII
+60	entity	150100	Malware	yes		139	A-LVII
+60	entity	150200	Phishing	yes		139	A-LVII
+60	entity	160000	Data	yes		139	A-LVII
+60	entity	160100	Digital Currency	yes		139	A-LVII
+60	entity	160200	Persona	yes		139	A-LVII
+60	entity	170000	Endpoint	yes		139	A-LVII
+60	entity	170100	Server	yes		139	A-LVII
+60	entity	170200	Workstation	yes		139	A-LVII
+60	entity	170300	Portable Electronic Device (PED)	yes		139	A-LVII
+60	entity	170301	Smartphone	yes		139	A-LVII
+60	entity	170302	Tablet	yes		139	A-LVII
+60	entity	170303	Laptop	yes		139	A-LVII
+60	entity	170304	Health Monitor	yes		139	A-LVII
+60	entity	170305	Smartvest	yes		139	A-LVII
+60	entity	170306	Smartwatch	yes		139	A-LVII
+60	entity	170307	Wearable	yes		139	A-LVII
+60	entity	170400	Internet of Things Device	yes		139	A-LVII
+60	entity	170500	Printer	yes		139	A-LVII
+60	entity	170600	Router	yes		139	A-LVII
+60	entity	170700	Switch	yes		139	A-LVII
+60	entity	180000	Network	yes		139	A-LVII
+60	m1	00	Unspecified	yes		139	A-LVIII
+60	m1	01	Defensive Cyberspace	yes		139	A-LVIII
+60	m1	02	Offensive Cyberspace	yes		139	A-LVIII
+60	m1	03	Social	yes		139	A-LVIII
+60	m1	06	Radio Frequency	yes		139	A-LVIII
+60	m1	08	Continuity of Operations	yes		139	A-LVIII
+60	m1	09	Internet Service Provider (ISP)	yes		139	A-LVIII
+60	m1	10	Finance	yes		139	A-LVIII
+60	m1	11	Out of Band	yes		140	A-LVIII
+60	m1	12	Cloud	yes		140	A-LVIII
+60	m1	13	Data	yes		140	A-LVIII
+60	m1	14	Service	yes		140	A-LVIII
+60	m2	00	Unspecified	yes		140	A-LIX
+60	m2	01	Secured	yes		140	A-LIX
+60	m2	02	Open	yes		140	A-LIX
+60	m2	03	Response Actions	yes		140	A-LIX
+60	m2	05	Internal Defense Measures	yes		140	A-LIX
+60	m2	06	Advanced Persistent Threat	yes		140	A-LIX
+60	m2	07	Nation State	yes		140	A-LIX
+60	m2	08	Nation State Sponsored	yes		140	A-LIX
+60	m2	10	Service	yes		140	A-LIX
+common	common_m1	100	Unmanned Aircraft (UA)/ Unmanned Aerial Vehicle (UAV)/Unmanned Aircraft System (UAS)/Drone	yes		67	A-IX
+common	common_m1	101	Robotic	yes		67	A-IX
+common	common_m1	102	Fixed Wing	yes	Not used by USAF	67	A-IX
+common	common_m1	103	Rotary Wing	yes		67	A-IX
+common	common_m1	104	Tilt-Rotor	yes		67	A-IX
+common	common_m1	105	VSTOL/VTOL or Helicopter Equipped	yes		67	A-IX
+common	common_m1	106	Attack/Strike	yes		67	A-IX
+common	common_m1	107	Armored	yes		67	A-IX
+common	common_m1	108	Ballistic Missile/Ballistic Missile Defense Shooter	yes		67	A-IX
+common	common_m1	109	Bridge/Bridging	yes		67	A-IX
+common	common_m1	110	Cargo	yes		67	A-IX
+common	common_m1	111	Utility	yes		67	A-IX
+common	common_m1	112	Light	yes		67	A-IX
+common	common_m1	113	Medium	yes		67	A-IX
+common	common_m1	114	Heavy	yes		67	A-IX
+common	common_m1	115	Cyberspace	yes		67	A-IX
+common	common_m1	116	Command Post Node	yes		67	A-IX
+common	common_m1	117	Joint Network Node	yes		67	A-IX
+common	common_m1	118	Retransmission Site	yes		67	A-IX
+common	common_m1	119	Brigade	yes		67	A-IX
+common	common_m1	120	Close Protection	yes		67	A-IX
+common	common_m1	121	Combat	yes		67	A-IX
+common	common_m1	122	Command and Control	yes		67	A-IX
+common	common_m1	123	Crowd and Riot Control	yes		67	A-IX
+common	common_m1	124	Explosive Ordnance Disposal	yes		67	A-IX
+common	common_m1	125	Intelligence Surveillance Reconnaissance	yes		67	A-IX
+common	common_m1	126	Maintenance	yes		67	A-IX
+common	common_m1	127	Medevac/Medic/Medical	yes		67	A-IX
+common	common_m1	128	Search and Rescue	yes		67	A-IX
+common	common_m1	129	Security	yes		67	A-IX
+common	common_m1	130	Sniper	yes		67	A-IX
+common	common_m1	131	Special Operations Forces	yes		67	A-IX
+common	common_m1	132	Special Weapons and Tactics (SWAT)	yes		67	A-IX
+common	common_m1	133	Guided Missile	yes		67	A-IX
+common	common_m1	134	Other Guided Missile	yes		67	A-IX
+common	common_m1	135	Petroleum/Petroleum Oil and Lubricants	yes		67	A-IX
+common	common_m1	136	Water	yes		67	A-IX
+common	common_m1	137	Weapon(s)	yes		67	A-IX
+common	common_m1	138	Chemical	yes		67	A-IX
+common	common_m1	140	Radiological	yes		67	A-IX
+common	common_m1	141	Nuclear	yes		67	A-IX
+common	common_m1	142	Decontamination	yes		67	A-IX
+common	common_m1	143	Civilian	yes		67	A-IX
+common	common_m1	144	Government Organization/ Government Organization Member	yes		67	A-IX
+common	common_m1	145	Accident	yes		68	A-IX
+common	common_m1	146	Assassination	yes		68	A-IX
+common	common_m1	147	Execution	yes		68	A-IX
+common	common_m1	148	Kidnapping	yes		68	A-IX
+common	common_m1	149	Piracy	yes		68	A-IX
+common	common_m1	150	Rape	yes		68	A-IX
+common	common_m1	151	Antisubmarine Warfare	yes		68	A-IX
+common	common_m1	152	Escort	yes		68	A-IX
+common	common_m1	153	Mine Countermeasures	yes		68	A-IX
+common	common_m1	154	Mine Warfare	yes		68	A-IX
+common	common_m1	155	Surface Warfare	yes		68	A-IX
+common	common_m1	156	Command	yes		68	A-IX
+common	common_m1	157	Company	yes		68	A-IX
+common	common_m1	158	Platoon/Detachment	yes		68	A-IX
+common	common_m1	159	Regiment/Group	yes		68	A-IX
+common	common_m1	160	Section	yes		68	A-IX
+common	common_m1	161	Squad	yes		68	A-IX
+common	common_m1	162	Team/Crew	yes		68	A-IX
+common	common_m1	163	Battalion	yes		68	A-IX
+common	common_m1	164	Directed Energy	yes		68	A-IX
+common	common_m1	165	Hijacker	yes		68	A-IX
+common	common_m1	166	Electromagnetic Warfare	yes		68	A-IX
+common	common_m1	168	Laboratory	yes		68	A-IX
+common	common_m1	170	Non-Governmental Organization	yes		68	A-IX
+common	common_m1	171	Railway	yes		68	A-IX
+common	common_m1	174	Clear	yes		68	A-IX
+common	common_m1	175	Jamming	yes		68	A-IX
+common	common_m1	176	Wired	yes		68	A-IX
+common	common_m1	177	Wireless	yes		68	A-IX
+common	common_m1	178	Low Altitude	yes		68	A-IX
+common	common_m1	179	Medium Altitude	yes		68	A-IX
+common	common_m1	182	Reserve	yes		68	A-IX
+common	common_m1	183	Military	yes		68	A-IX
+common	common_m2	100	Airborne	yes		68	A-X
+common	common_m2	101	Bicycle Equipped	yes		68	A-X
+common	common_m2	102	Railway	yes		68	A-X
+common	common_m2	103	Ski	yes		68	A-X
+common	common_m2	104	Tracked	yes		68	A-X
+common	common_m2	105	Wheeled (Limited Cross Country)	yes		68	A-X
+common	common_m2	106	Wheeled X (Cross Country)	yes		68	A-X
+common	common_m2	107	Fixed Wing	yes		68	A-X
+common	common_m2	108	Rotary Wing	yes		68	A-X
+common	common_m2	109	Robotic	yes		68	A-X
+common	common_m2	110	Autonomous Control	yes		68	A-X
+common	common_m2	111	Remotely Piloted	yes		68	A-X
+common	common_m2	112	Expendable	yes		69	A-X
+common	common_m2	113	Mountain	yes		69	A-X
+common	common_m2	114	Long Range	yes		69	A-X
+common	common_m2	115	Medium Range	yes		69	A-X
+common	common_m2	116	Short Range	yes		69	A-X
+common	common_m2	117	Close Range	yes		69	A-X
+common	common_m2	118	Heavy	yes		69	A-X
+common	common_m2	119	Medium	yes		69	A-X
+common	common_m2	120	Light and Medium	yes		69	A-X
+common	common_m2	121	Light	yes		69	A-X
+common	common_m2	122	Cyberspace	yes		69	A-X
+common	common_m2	123	Security Force Assistance	yes		69	A-X
+common	common_m2	124	Medical Bed	yes		69	A-X
+common	common_m2	125	Multifunctional	yes		69	A-X
+common	common_m2	127	Laboratory	yes		69	A-X
+common	common_m2	129	Over-snow (prime mover)	yes		69	A-X
+common	common_m2	131	Supply	yes		69	A-X
+common	common_m2	133	Electromagnetic Warfare	yes		69	A-X
+common	common_m2	134	Jamming	yes		69	A-X
+common	common_m2	135	Reserve	yes		69	A-X
+common	common_m2	136	Military	yes		69	A-X

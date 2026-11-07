@@ -19,7 +19,7 @@ mod affiliation;
 mod base_geometry;
 mod direction;
 mod engagement;
-mod icon;
+pub(crate) mod icon;
 mod modifier;
 mod pipeline;
 mod stack;

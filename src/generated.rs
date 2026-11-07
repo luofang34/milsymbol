@@ -12,3 +12,5 @@ pub(crate) mod pool;
 pub(crate) mod tables;
 #[rustfmt::skip]
 pub(crate) mod vars;
+#[rustfmt::skip]
+pub(crate) mod standards;

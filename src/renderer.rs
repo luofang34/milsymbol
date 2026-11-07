@@ -117,7 +117,8 @@ impl Renderer {
     /// ));
     /// ```
     pub fn check_sidc(&self, sidc: &str) -> Result<Sidc, SidcCheckError> {
-        let parsed = Sidc::parse_for(sidc, self.inner.config.standard)?;
+        let parsed =
+            Sidc::parse_with_mode(sidc, self.inner.config.standard, self.inner.config.mode)?;
         match self.render_checked(parsed.as_str(), SymbolOptions::default(), true) {
             Ok(_) => Ok(parsed),
             Err(RenderError::MalformedSidc(e)) => Err(SidcCheckError::Malformed(e)),
@@ -138,7 +139,8 @@ impl Renderer {
     ) -> Result<Symbol, RenderError> {
         if strict {
             let standard = options.style.standard.unwrap_or(self.inner.config.standard);
-            Sidc::parse_for(sidc, standard).map_err(RenderError::MalformedSidc)?;
+            Sidc::parse_with_mode(sidc, standard, self.inner.config.mode)
+                .map_err(RenderError::MalformedSidc)?;
         }
         let symbol = self.render(sidc, options)?;
         if strict {
@@ -197,6 +199,12 @@ impl core::fmt::Debug for RendererBuilder {
 }
 
 impl RendererBuilder {
+    /// Selects standards conformance or exact milsymbol.js 3.0.4 compatibility.
+    pub fn mode(mut self, mode: crate::RenderMode) -> Self {
+        self.config.mode = mode;
+        self
+    }
+
     /// Replaces the whole configuration.
     pub fn config(mut self, config: RendererConfig) -> Self {
         self.config = config;

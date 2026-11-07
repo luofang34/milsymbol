@@ -29,28 +29,33 @@ fn field_error(sidc: &str) -> Option<(&'static str, usize)> {
 }
 
 #[test]
-fn version_16_parses_only_under_version_2_rules() {
-    for sidc in [
-        "16031000001211000000",
-        "1603100000121100A000",
-        "160310000012110000001000000123",
-        "160325000013030000000000000000",
-    ] {
-        assert!(Sidc::parse(sidc).is_err(), "{sidc}");
-        assert!(Sidc::parse_for(sidc, Standard::App6).is_err(), "{sidc}");
+fn code_edition_is_independent_of_display_standard() {
+    for version in ["13", "14", "15", "16"] {
+        for standard in [Standard::Mil2525, Standard::App6, Standard::App6EVersion2] {
+            for rest in [
+                "031000001211000000",
+                "03100000121100A000",
+                "336400001300000000",
+            ] {
+                let sidc = format!("{version}{rest}");
+                assert!(
+                    Sidc::parse_for(&sidc, standard).is_ok(),
+                    "{sidc} {standard:?}"
+                );
+            }
+        }
+    }
+    for version in ["15", "16"] {
+        let sidc = format!("{version}031000001211000000");
         assert!(
-            Sidc::parse_for(sidc, Standard::App6EVersion2).is_ok(),
-            "{sidc}"
+            Sidc::parse_with_mode(
+                &sidc,
+                Standard::Mil2525,
+                milsymbol::RenderMode::Milsymbol304
+            )
+            .is_err()
         );
     }
-    // Other versions parse as before.
-    for sidc in ["14031000001211000000", "140310000012110000000010000000"] {
-        assert_eq!(
-            Sidc::parse(sidc).ok(),
-            Sidc::parse_for(sidc, Standard::App6EVersion2).ok()
-        );
-    }
-    assert!(Sidc::parse_for("1403100000121100A000", Standard::App6EVersion2).is_err());
 }
 
 #[test]
@@ -69,12 +74,10 @@ fn version_2_fields_reject_codes_it_does_not_define() {
     assert_eq!(field_error("1603A000001211000000"), Some(("symbol set", 5)));
     // Lower case is not hexadecimal in a SIDC.
     assert_eq!(field_error("1603100000121100a000"), Some(("character", 17)));
-    // No symbol sets 12 and 39; no icons for 64; no restricted-target context.
+    // Neither current code table assigns symbol sets 12 and 39.
     for (sidc, field) in [
         ("16031200001100000000", "symbol set"),
         ("16033900001100000000", "symbol set"),
-        ("16036400001300000000", "symbol set"),
-        ("16331000001211000000", "context"),
     ] {
         assert_eq!(field_error(sidc).map(|(f, _)| f), Some(field), "{sidc}");
     }
@@ -83,10 +86,11 @@ fn version_2_fields_reject_codes_it_does_not_define() {
 #[test]
 fn renderer_checks_version_16_by_its_standard() {
     assert!(v2().check_sidc("16031000001211000000").is_ok());
-    assert!(matches!(
-        Renderer::default().check_sidc("16031000001211000000"),
-        Err(SidcCheckError::Malformed(_))
-    ));
+    assert!(
+        Renderer::default()
+            .check_sidc("16031000001211000000")
+            .is_ok()
+    );
     // Well formed, but Version 2 has no special entity subtype 95.
     assert!(matches!(
         v2().check_sidc("16031000001211950000"),
@@ -105,11 +109,11 @@ fn version_16_is_edition_e_and_ignores_digit_23() -> Result<(), milsymbol::Rende
     let default = Renderer::default()
         .symbol("16031000001211000000")
         .render()?;
-    assert_eq!(default.metadata().edition, None);
-    // Digit 23 is a frame shape in version 14, reserved in version 16.
+    assert_eq!(default.metadata().edition, Some(Edition::E));
+    // APP-6 display reserves digit 23 for every numeric edition.
     let shaped = "140310000012110000000010000000";
     assert_eq!(svg(&r, shaped)?, svg(&app6(), shaped)?);
-    assert_ne!(svg(&r, shaped)?, svg(&r, "140310000012110000000000000000")?);
+    assert_eq!(svg(&r, shaped)?, svg(&r, "140310000012110000000000000000")?);
     let reserved = r.symbol("160310000012110000000010000000").render()?;
     assert_eq!(
         reserved.to_svg(),
@@ -123,29 +127,31 @@ fn version_16_is_edition_e_and_ignores_digit_23() -> Result<(), milsymbol::Rende
 }
 
 #[test]
-fn codes_version_2_changed_draw_as_unknown() -> Result<(), milsymbol::RenderError> {
-    let r = v2();
-    for (v16, v14) in [
-        // Land unit sector 1 modifier 71: accident in APP-6(D).
+fn reassigned_codes_use_the_selected_edition() -> Result<(), milsymbol::RenderError> {
+    for (new, old) in [
         ("16031000001211007100", "14031000001211007100"),
-        // Activities 131000: a meeting before Version 2.
         ("16034000001310000000", "14034000001310000000"),
-        // Common sector 1 modifier 155, removed by Version 2.
-        (
-            "160330000012010055001000000000",
-            "140330000012010055001000000000",
-        ),
+        ("16032000000000001500", "14032000000000001500"),
+        ("16036000001201000000", "14036000001201000000"),
     ] {
-        let issues = r.symbol(v16).render()?.sidc_validity().issues;
-        assert_eq!(issues, [ValidityIssue::UnknownIcon], "{v16}");
-        assert!(
-            app6().symbol(v14).render()?.sidc_validity().is_valid(),
-            "{v14}"
-        );
+        let modern = v2().symbol(new).render()?;
+        assert!(modern.sidc_validity().is_valid(), "{new}");
+        assert_ne!(modern.to_svg(), svg(&app6(), old)?, "{new}");
     }
-    // A hexadecimal sector 1 modifier this crate has no icon for.
-    let hex = r.symbol("1603100000121100A000").render()?;
-    assert_eq!(hex.sidc_validity().issues, [ValidityIssue::UnknownIcon]);
+    // Common modifier 155 is not assigned by the current APP-6 table.
+    assert_eq!(
+        v2().symbol("160330000012010055001000000000")
+            .render()?
+            .sidc_validity()
+            .issues,
+        [ValidityIssue::UnknownIcon]
+    );
+    assert!(
+        v2().symbol("1603100000121100A000")
+            .render()?
+            .sidc_validity()
+            .is_valid()
+    );
     Ok(())
 }
 
@@ -224,7 +230,7 @@ fn undefined_version_2_amplifier_is_rejected_by_every_validation_entry_point()
 }
 
 #[test]
-fn extensions_can_supply_icons_filtered_out_of_version_2() -> Result<(), milsymbol::RenderError> {
+fn extensions_can_supply_unassigned_version_2_icons() -> Result<(), milsymbol::RenderError> {
     struct Replacement;
     impl milsymbol::IconExtension for Replacement {
         fn icon(
@@ -237,7 +243,7 @@ fn extensions_can_supply_icons_filtered_out_of_version_2() -> Result<(), milsymb
                 key,
                 milsymbol::IconKey::Entity {
                     symbol_set: "40",
-                    entity: "131000"
+                    entity: "999991"
                 }
             )
             .then(|| milsymbol::ir::Node::circle(100.0, 100.0, 20.0))
@@ -247,7 +253,7 @@ fn extensions_can_supply_icons_filtered_out_of_version_2() -> Result<(), milsymb
         .standard(Standard::App6EVersion2)
         .icons(Replacement)
         .build();
-    let sidc = "16034000001310000000";
+    let sidc = "16034000009999910000";
     assert!(v2().check_sidc(sidc).is_err());
     assert!(renderer.check_sidc(sidc).is_ok());
     for visible in [true, false] {

@@ -18,65 +18,46 @@ assert!(symbol.sidc_validity().is_valid());
 
 # Supported standards
 
-| SIDC | Standards |
+[`RenderMode::Standards`] is the default. The SIDC version selects code
+meanings; [`Standard`] selects the current display rules independently.
+
+| SIDC version | Code meanings |
 |---|---|
-| Numeric (20 or 30 digits) | MIL-STD-2525D, 2525E; APP-6D, APP-6E (versions `10`–`12` → D, `13`–`14` → E); APP-6(E) Version 2 (version `16`, opt-in) |
-| Letter (10–15 characters) | MIL-STD-2525B (incl. change 2), 2525C; APP-6B |
+| `10`–`12` | Edition D tables from milsymbol.js |
+| `13`, `14` | MIL-STD-2525E / APP-6(E)(1) tables from milsymbol.js |
+| `15` | MIL-STD-2525E Change 1, March 2025 |
+| `16` | APP-6(E) Version 2, October 2025 |
+| Letter forms | MIL-STD-2525B/C and APP-6B tables from milsymbol.js |
 
-By default, later revisions are not recognised, as in milsymbol.js 3.0.4.
-`Sidc::parse` rejects as malformed the version digits `15` (MIL-STD-2525E
-Change 1) and `16` (APP-6(E) Version 2), the contexts `3`–`8` (restricted
-target and no strike entity), symbol set `64` (cyberspace non-unit) and the
-letters `A`–`F` that APP-6(E) Version 2 allows in every position. Rendering
-still draws a version `15` or `16` SIDC with the edition E icons, except that
-digit 23 (frame shape) is ignored and land unit sector 2 modifier `11`
-(dental) is drawn as the letter D. Codes that APP-6(E) Version 2 added draw
-as unknown, and codes it reassigned draw their earlier meaning.
+All edition E versions accept restricted/no-strike contexts `3`–`8`, symbol
+set `64` and uppercase hexadecimal code characters. For numeric SIDCs,
+`Standard::Mil2525` draws with MIL-STD-2525E Change 1 display rules;
+`Standard::App6` and `Standard::App6EVersion2` draw with APP-6(E)(2) rules.
+APP-6 reserves digits 23–27. MIL uses digit 23 to override the frame shape.
 
-[`Standard::App6EVersion2`] reads version `16` SIDCs as APP-6(E) Version 2
-defines them and draws every other SIDC as [`Standard::App6`] does.
-[`Sidc::parse_for`](sidc::Sidc::parse_for) with it accepts version `16`,
-hexadecimal digits in its code fields, and digits 23–27 (reserved) only as
-zeros. A version `16` SIDC draws a built-in icon only for a code that Annex A
-of Version 2 lists, with the meaning Version 2 gives it; every other code
-draws as unknown, among them the codes Version 2 added. Symbol sets that
-Version 2 marks as used by the US only draw as MIL-STD-2525E. The contexts
-`3`–`8` and symbol set `64` are malformed under these rules too.
+[`catalog::standards`] exposes the pinned editions' codes, names, source
+pages and drawing scope. Single-point symbols are drawable; hierarchy rows
+have no icon. Lines and areas requiring geographic control points are
+explicitly classified as multipoint and are unsupported. APP-6's US-only
+sets use the pinned MIL tables. Unknown entity/modifier codes draw an unknown
+marker; `.strict()` rejects them.
 
 ```
-use milsymbol::{Renderer, Standard};
-use milsymbol::sidc::Sidc;
+use milsymbol::{Renderer, RenderMode, Standard};
+let app6 = Renderer::builder().standard(Standard::App6).build();
+let group = app6.symbol("16034000001310000000").strict().render()?;
+assert!(group.sidc_validity().is_valid());
 
-for sidc in [
-    "16031000001211000000", // APP-6(E) Version 2
-    "14331000001211000000", // restricted target
-    "14036400001401000000", // cyberspace non-unit
-    "1403100000121100A000", // sector 1 modifier A0
-] {
-    assert!(Sidc::parse(sidc).is_err());
-}
-let r = Renderer::default();
-let svg = |sidc: &str| r.symbol(sidc).render().map(|s| s.to_svg());
-assert_eq!(svg("14031000001211000000")?, svg("16031000001211000000")?);
-assert_ne!(svg("14031000001100000011")?, svg("16031000001100000011")?);
-assert_ne!(
-    svg("140310000012110000000010000000")?,
-    svg("160310000012110000000010000000")?,
-);
-
-let v2 = Renderer::builder().standard(Standard::App6EVersion2).build();
-assert!(v2.check_sidc("16031000001211000000").is_ok());
-assert!(Sidc::parse_for("1603100000121100A000", Standard::App6EVersion2).is_ok());
-// Activities 131000 is a meeting before Version 2 and an organized group in
-// it; the built-in icon shows a meeting, so it draws as unknown.
-let group = v2.symbol("16034000001310000000").render()?;
-assert!(!group.sidc_validity().is_valid());
+// Exact upstream output is an explicit renderer choice.
+let upstream = Renderer::builder().mode(RenderMode::Milsymbol304).build();
+assert!(upstream.check_sidc("16031000001211000000").is_err());
 # Ok::<(), milsymbol::RenderError>(())
 ```
 
-Whether 2525 or APP-6 rules apply is a renderer setting
-([`RendererBuilder::standard`]) that a symbol can override
-(`style.standard`).
+[`RenderMode::Milsymbol304`] preserves the pinned JavaScript oracle's SVG
+and semantic output. Use [`Sidc::parse_with_mode`](sidc::Sidc::parse_with_mode)
+when parsing separately for that mode. Fonts, line widths and other details
+left open by the standards retain upstream behavior.
 
 # Layers
 
@@ -84,8 +65,7 @@ Whether 2525 or APP-6 rules apply is a renderer setting
 - [`options`], [`Renderer`] and [`SymbolBuilder`]: what to draw and how.
 - [`Symbol::drawing`] ([`drawing`]): the picture as flat typed items, the
   input for any renderer other than SVG.
-- [`Symbol::to_svg`]: the SVG renderer, byte-identical to milsymbol.js
-  (except for version `16` SIDCs under [`Standard::App6EVersion2`]).
+- [`Symbol::to_svg`]: the SVG renderer; exact upstream bytes in compatibility mode.
 - [`ir`] and [`compat`]: milsymbol.js's own instruction tree and string
   representations, for extensions and differential testing.
 
@@ -352,7 +332,7 @@ icon tables are generated Rust data, and every composition rule is ported.
 
 With the `serde` feature, [`options::SymbolOptions`], [`options::Style`]
 and [`RendererConfig`] implement `Serialize` and `Deserialize`. Their
-serialized shapes are stable for the 0.4 series. Fields added later are
+serialized shapes use named fields. Omitted fields are
 tolerated on input, because these three types deserialize missing fields to
 their defaults (`serde(default)`); output from this version keeps
 deserializing. The `text` field of `SymbolOptions` (a map from field name

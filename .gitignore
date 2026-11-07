@@ -31,3 +31,6 @@ flamegraph*.svg
 * 2.*
 *.bak
 *.orig
+
+# Python developer tooling
+__pycache__/

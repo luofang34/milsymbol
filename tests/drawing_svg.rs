@@ -277,3 +277,30 @@ fn clipped_extension_drawings_match_their_svg() -> TestResult {
     clip_case(nested_clips(), "nested clips")?;
     clip_case(scaled_clip(), "scaled clip")
 }
+
+#[test]
+fn standards_drawings_match_their_svg() -> TestResult {
+    use milsymbol::catalog::standards::{self, CodeKind, Scope};
+    let mut totals = Totals::new();
+    for (version, standard) in [
+        (15, milsymbol::Standard::Mil2525),
+        (16, milsymbol::Standard::App6),
+    ] {
+        let renderer = Renderer::builder().standard(standard).build();
+        for (index, entry) in standards::entries(version)
+            .filter(|e| e.kind == CodeKind::Entity && e.scope == Scope::Point)
+            .enumerate()
+        {
+            let sidc = format!("{version}03{}0000{}0000", entry.symbol_set, entry.code);
+            let mut options = milsymbol::options::SymbolOptions::default();
+            if let Some(field) = entry.input_field() {
+                options.set_text(field, "123");
+            }
+            let symbol = renderer.symbol(sidc.as_str()).options(options).render()?;
+            totals.check(&sidc, &symbol, index % 25 == 0);
+        }
+    }
+    totals.finish("standards");
+    assert_eq!(totals.ignored_paints, 0);
+    Ok(())
+}

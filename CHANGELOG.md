@@ -1,8 +1,19 @@
 # Changelog
 
-## 0.4.3 — Unreleased
+## 0.5.0 — Unreleased
 
-Output for existing configurations is unchanged.
+- `RenderMode::Standards` is the default. Numeric display uses the pinned
+  MIL-STD-2525E Change 1 or APP-6(E) Version 2 rules; SIDC version digits
+  independently select code meanings. `RenderMode::Milsymbol304` preserves
+  upstream SVG and semantic output.
+- Versions 15/16 use mechanically extracted code tables and native drawing
+  paths with source citations. Edition E accepts contexts 3–8, set 64 and
+  hexadecimal code characters. Geographic multipoint graphics are excluded.
+- `catalog::standards` exposes names, scopes, citations and variable input
+  fields for the pinned editions.
+- `NumericSidc::with_context` returns `Result` so contexts unavailable to an
+  edition cannot be constructed silently. Add `?` when updating numeric SIDCs.
+
 
 - New `Symbol::to_data_url`, `write_data_url` and `write_data_url_with`, the
   `data:image/svg+xml;utf8,…` URL of milsymbol.js `toDataURL()`.
@@ -14,23 +25,6 @@ Output for existing configurations is unchanged.
   and shares built-in colour sets. Rendering, cloning, and writing to a
   sufficiently sized SVG or data-URL buffer require no heap allocations for
   those symbols.
-- New `Standard::App6EVersion2`: APP-6 rules, with version `16` SIDCs read
-  as APP-6(E) Version 2 (October 2025) defines them. A version `16` SIDC
-  draws edition E icons, ignores the reserved digits 23–27, and draws a
-  built-in icon only for a code Annex A of Version 2 lists, with the meaning
-  it gives that code. Codes Version 2 removed, the special entity subtypes
-  95–98, and thirteen codes the built-in (APP-6 rules) icons show with
-  another meaning or without their icon draw as unknown, as do the codes
-  Version 2 added, which have no icons yet. Every other SIDC draws as with
-  `Standard::App6`; a test checks this over the whole oracle corpus.
-- New `Sidc::parse_for(sidc, standard)`. With `Standard::App6EVersion2` it
-  accepts version `16`, hexadecimal digits in its code fields (sector 1
-  modifiers `A0`–`A7`) and zeros in digits 23–27; otherwise it is
-  `Sidc::parse`. `Renderer::check_sidc`, strict rendering and
-  `Symbol::sidc_validity` judge a SIDC by the standard it is drawn with.
-- The `standard` option accepts `"APP6E2"`.
-- The README's APP-6 examples are APP-6(E) Version 2 SIDCs.
-
 ## 0.4.2 — 2026-10-08
 
 Documentation only; the code and SVG output are unchanged.

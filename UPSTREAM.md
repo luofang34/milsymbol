@@ -24,9 +24,44 @@ initialised milsymbol*. In-place mutations that happen *within* one render
 change the stroke of `GR.IC.ENGINEER` for every symbol-set 15 icon that uses
 it) are reproduced.
 
+## Standards mode
+
+`RenderMode::Standards` is the default. Numeric code meanings follow the
+SIDC edition; display follows the renderer's selected MIL or APP standard.
+The authoritative PDFs are pinned by SHA-256 in `tools/standards/pin.json`.
+`RenderMode::Milsymbol304` is the exact upstream mode used by the differential
+oracle tests described below.
+
+`tests/data/standards/` contains mechanically extracted code/header tables,
+frame proportions with figure citations, and explicit single-point/multipoint
+classifications. `deviations.tsv` identifies the source rules and affected
+output fields; the standards differential test applies it to the oracle
+corpus. Native conformance tests exercise the classified code tables,
+frame dimensions, context, colors, leadership and variable graphic inputs.
+
+To regenerate code tables, install Poppler and run `tools/standards/extract.sh`
+with the two pinned PDF paths. To regenerate native drawing paths:
+
+```sh
+python3 -m venv target/standards-env
+target/standards-env/bin/pip install -r tools/standards/requirements.txt
+target/standards-env/bin/python tools/standards/graphics.py MIL.pdf APP.pdf
+```
+
+The PDFs are developer inputs and are not distributed with the crate. The
+converter verifies their hashes, joins code rows to drawing tables, flattens
+PDF vector geometry, and traces embedded raster drawings into native paths.
+It removes reference octagons, positioning labels and example input values.
+Color declarations and input fields are retained separately. Drawing selection,
+source-table errata, image crops and input positions are explicit JSON inputs
+under `tools/standards/`; every emitted catalog entry cites its code source and
+converted geometry source. The output is `src/generated/standards.rs` and
+`tests/data/standards/scope.tsv`. Neither Python nor JavaScript is required by
+ordinary Cargo builds or tests. NATO attribution is in `NOTICE`.
+
 ## What is generated, and how
 
-Everything under `src/generated/` is produced by `tools/codegen` (extraction,
+The upstream tables under `src/generated/` are produced by `tools/codegen` (extraction,
 which runs upstream JavaScript) and `cargo xtask emit` (Rust), and must not
 be edited by hand. Regenerate with:
 
@@ -170,16 +205,6 @@ suite and native regression tests check the observable differences.
   appears in canonical options only when enabled. Custom text nodes returned
   by icon extensions keep their own fonts. Font metrics and icon bounds are
   not recalculated, so wider fonts can extend beyond the template bounds.
-- **Opt-in APP-6(E) Version 2.** `Standard::App6EVersion2` (option
-  `standard: "APP6E2"`) draws a version `16` SIDC by the code tables of
-  APP-6(E) Version 2 rather than as a version upstream does not recognise:
-  edition E icons, digits 23–27 ignored, and a built-in icon only for a code
-  Version 2 lists, with the meaning it gives that code. Upstream has no such
-  mode, so no oracle covers it. Native tests check that every other corpus
-  SIDC draws as with `Standard::App6`, and that each built-in code draws
-  either exactly as in its version `14` SIDC or as unknown. The code lists in
-  module `compose::icon::app6e2`, and the codes whose built-in icon shows
-  another meaning, cite the standard's Annex A tables by number and page.
 - **JavaScript exceptions become typed errors.** Inputs on which upstream
   throws (an unknown `colorMode`, `undefined` instructions reaching
   `ms.outline` or `_scale`) return `RenderError` instead of rendering.

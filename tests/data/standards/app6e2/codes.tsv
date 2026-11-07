@@ -1,0 +1,2157 @@
+symbol_set	kind	code	name	icon	remarks	page	table
+01	entity	000000	Unspecified Air	yes		726	A-11
+01	entity	110000	Military	yes		726	A-11
+01	entity	110100	Fixed Wing	yes		726	A-11
+01	entity	110101	Medical Evacuation (MEDEVAC)	yes		726	A-11
+01	entity	110102	Attack/Strike	yes		726	A-11
+01	entity	110103	Bomber	yes		726	A-11
+01	entity	110104	Fighter	yes		726	A-11
+01	entity	110105	Fighter/Bomber	yes		726	A-11
+01	entity	110107	Cargo	yes		726	A-11
+01	entity	110108	Jammer	yes		726	A-11
+01	entity	110109	Tanker	yes		726	A-11
+01	entity	110110	Patrol	yes		726	A-11
+01	entity	110111	Reconnaissance	yes		726	A-11
+01	entity	110112	Trainer	yes		726	A-11
+01	entity	110113	Utility	yes		726	A-11
+01	entity	110114	Vertical or Short Take-off and Landing (VSTOL)	yes		726	A-11
+01	entity	110115	Airborne Command Post (ACP)	yes		726	A-11
+01	entity	110116	Airborne Early Warning (AEW)	yes		726	A-11
+01	entity	110117	Antisurface Warfare	yes		726	A-11
+01	entity	110118	Antisubmarine Warfare	yes		726	A-11
+01	entity	110119	Communications	yes		726	A-11
+01	entity	110120	Combat Search and Rescue (CSAR)	yes		727	A-11
+01	entity	110121	Electromagnetic Support Measures(ESM)	yes		727	A-11
+01	entity	110122	Government	yes		727	A-11
+01	entity	110123	Mine Countermeasures (MCM)	yes		727	A-11
+01	entity	110124	Personnel Recovery	yes		727	A-11
+01	entity	110125	Search and Rescue	yes		727	A-11
+01	entity	110126	Special Operations Forces	yes		727	A-11
+01	entity	110127	Ultra Light	yes		727	A-11
+01	entity	110128	Photographic Reconnaissance	yes		727	A-11
+01	entity	110129	Very Important Person (VIP)	yes		727	A-11
+01	entity	110130	Suppression of Enemy Air Defence	yes		727	A-11
+01	entity	110131	Passenger	yes		727	A-11
+01	entity	110132	Escort	yes		727	A-11
+01	entity	110133	Electromagnetic Attack (EA)	yes		727	A-11
+01	entity	110200	Rotary Wing	yes		727	A-11
+01	entity	110300	Unmanned Aircraft (UA) / Unmanned Aerial Vehicle (UAV) / Unmanned Aircraft System (UAS) / Remotely Piloted Vehicle (RPV)	yes		727	A-11
+01	entity	110400	Vertical Take-off UAV (VT–UAV)	yes		727	A-11
+01	entity	110500	Lighter Than Air	yes		727	A-11
+01	entity	110600	Airship	yes		727	A-11
+01	entity	110700	Tethered Lighter Than Air	yes		728	A-11
+01	entity	120000	Civilian	yes		728	A-11
+01	entity	120100	Fixed Wing	yes		728	A-11
+01	entity	120200	Rotary Wing	yes		728	A-11
+01	entity	120300	Unmanned Aircraft (UA) / Unmanned Aerial Vehicle (UAV) / Unmanned Aircraft System (UAS) / Remotely Piloted Vehicle (RPV)	yes		728	A-11
+01	entity	120400	Lighter Than Air	yes		728	A-11
+01	entity	120500	Airship	yes		728	A-11
+01	entity	120600	Tethered Lighter Than Air	yes		728	A-11
+01	entity	120700	Medical Evacuation (Medevac)	yes		728	A-11
+01	entity	130000	Weapon	yes		728	A-11
+01	entity	130100	Bomb	yes		728	A-11
+01	entity	130200	Decoy	yes		728	A-11
+01	entity	140000	Manual Track	yes		728	A-11
+01	m1	00	Not Applicable	yes		729	A-12
+01	m1	02	Bomber	yes		729	A-12
+01	m1	04	Fighter	yes		729	A-12
+01	m1	05	Interceptor	yes		729	A-12
+01	m1	06	Tanker	yes		729	A-12
+01	m1	09	Passenger	yes		729	A-12
+01	m1	10	Ultra Light	yes		729	A-12
+01	m1	11	Airborne Command Post (ACP)	yes		729	A-12
+01	m1	12	Airborne Early Warning (AEW)	yes		729	A-12
+01	m1	13	Government	yes		729	A-12
+01	m1	16	Jammer	yes		729	A-12
+01	m1	17	Patrol	yes		729	A-12
+01	m1	18	Reconnaissance	yes		729	A-12
+01	m1	19	Trainer	yes		729	A-12
+01	m1	20	Photographic Reconnaissance	yes		729	A-12
+01	m1	23	Communications	yes		729	A-12
+01	m1	24	Electromagnetic Support Measures (ESM)	yes		729	A-12
+01	m1	29	Very Important Person (VIP) Transport	yes		729	A-12
+01	m1	30	Combat Search and Rescue (CSAR)	yes		729	A-12
+01	m1	31	Suppression of Enemy Air Defences	yes		729	A-12
+01	m1	33	Fighter/Bomber	yes		729	A-12
+01	m1	34	Intensive Care	yes		729	A-12
+01	m1	36	Multimission	yes		729	A-12
+01	m1	38	ASW Helo- LAMPS	yes		729	A-12
+01	m1	39	ASW Helo – SH-60R	yes		729	A-12
+01	m1	42	Maritime Patrol Aircraft (MPA)	yes		729	A-12
+01	m2	00	Not Applicable	yes		730	A-13
+01	m2	04	Boom–Only	yes		730	A-13
+01	m2	05	Drogue–Only	yes		730	A-13
+01	m2	06	Boom and Drogue	yes		730	A-13
+01	m2	11	Downlinked	yes		730	A-13
+02	entity	000000	Unspecified Missile	yes		731	A-14
+02	entity	110000	Missile	yes		731	A-14
+02	m1	00	Unspecified	yes		731	A-15
+02	m1	01	Air	yes		731	A-15
+02	m1	02	Surface	yes		731	A-15
+02	m1	03	Subsurface	yes		731	A-15
+02	m1	04	Space	yes		731	A-15
+02	m1	05	Anti–Ballistic	yes		731	A-15
+02	m1	06	Ballistic	yes		731	A-15
+02	m1	07	Cruise	yes		731	A-15
+02	m1	08	Interceptor	yes		731	A-15
+02	m1	09	Hypersonic	yes		731	A-15
+02	m2	00	Unspecified	yes		731	A-16
+02	m2	01	Air	yes		731	A-16
+02	m2	02	Surface	yes		731	A-16
+02	m2	03	Subsurface	yes		731	A-16
+02	m2	04	Space	yes		731	A-16
+02	m2	05	Launched	yes		731	A-16
+02	m2	07	Patriot	yes		731	A-16
+02	m2	08	Standard Missile-2 (SM-2)	yes		731	A-16
+02	m2	09	Standard Missile-6 (SM-6)	yes		731	A-16
+02	m2	10	Evolved Sea Sparrow Missile (ESSM)	yes		731	A-16
+02	m2	11	Rolling Airframe Missile (RAM)	yes		731	A-16
+02	m2	12	Short Range	yes		731	A-16
+02	m2	13	Medium Range	yes		731	A-16
+02	m2	14	Intermediate Range	yes		731	A-16
+02	m2	15	Long Range	yes		731	A-16
+02	m2	16	Intercontinental	yes		731	A-16
+05	entity	000000	Unspecified Military	yes		732	A-17
+05	entity	110000	Military	yes		732	A-17
+05	entity	110100	Space Vehicle	yes		732	A-17
+05	entity	110200	Re–Entry Vehicle	yes		732	A-17
+05	entity	110300	Planet Lander	yes		732	A-17
+05	entity	110400	Orbiter Shuttle	yes		732	A-17
+05	entity	110500	Capsule	yes		732	A-17
+05	entity	110600	Satellite, General	yes		732	A-17
+05	entity	110700	Satellite	yes		732	A-17
+05	entity	110800	Antisatellite Weapon	yes		732	A-17
+05	entity	110900	Astronomical Satellite	yes		732	A-17
+05	entity	111000	Biosatellite	yes		732	A-17
+05	entity	111100	Communications Satellite	yes		732	A-17
+05	entity	111200	Earth Observation Satellite	yes		732	A-17
+05	entity	111300	Miniaturized Satellite	yes		732	A-17
+05	entity	111400	Navigational Satellite	yes		732	A-17
+05	entity	111500	Reconnaissance Satellite	yes		732	A-17
+05	entity	111600	Space Station	yes		732	A-17
+05	entity	111700	Tethered Satellite	yes		732	A-17
+05	entity	111800	Weather Satellite	yes		732	A-17
+05	entity	111900	Space Launched Vehicle (SLV)	yes		732	A-17
+05	entity	120000	Civilian	yes		732	A-17
+05	entity	120100	Orbiter Shuttle	yes		732	A-17
+05	entity	120200	Capsule	yes		732	A-17
+05	entity	120300	Satellite	yes		732	A-17
+05	entity	120400	Astronomical Satellite	yes		732	A-17
+05	entity	120500	Biosatellite	yes		733	A-17
+05	entity	120600	Communications Satellite	yes		733	A-17
+05	entity	120700	Earth Observation Satellite	yes		733	A-17
+05	entity	120800	Miniaturized Satellite	yes		733	A-17
+05	entity	120900	Navigational Satellite	yes		733	A-17
+05	entity	121000	Space Station	yes		733	A-17
+05	entity	121100	Tethered Satellite	yes		733	A-17
+05	entity	121200	Weather Satellite	yes		733	A-17
+05	entity	121300	Planetary Lander	yes		733	A-17
+05	entity	121400	Space Vehicle	yes		733	A-17
+05	entity	130000	Manual Track	yes		733	A-17
+05	m1	00	Unspecified	yes		733	A-18
+05	m1	01	Low Earth Orbit (LEO)	yes		733	A-18
+05	m1	02	Medium Earth Orbit (MEO)	yes		733	A-18
+05	m1	03	High Earth Orbit (HEO)	yes		733	A-18
+05	m1	04	Geosynchronous Orbit (GSO)	yes		733	A-18
+05	m1	05	Geostationary Orbit (GEO)	yes		733	A-18
+05	m1	06	Molniya Orbit (MO)	yes		733	A-18
+05	m2	00	Unspecified	yes		734	A-19
+05	m2	01	Optical	yes		734	A-19
+05	m2	02	Infrared	yes		734	A-19
+05	m2	03	Radar	yes		734	A-19
+05	m2	04	Signals Intelligence (SIGINT)	yes		734	A-19
+05	m2	07	High Power Microwave (ASAT)	yes	Only used with Antisatellite Weapon Main Icon.	734	A-19
+05	m2	08	Laser (ASAT)	yes	Only used with Antisatellite Weapon Main Icon.	734	A-19
+05	m2	09	Mine (ASAT)	yes	Only used with Antisatellite Weapon Main Icon.	734	A-19
+05	m2	10	Maintenance	yes		734	A-19
+05	m2	11	Refuel	yes		734	A-19
+05	m2	12	Tug	yes		734	A-19
+10	entity	000000	Unspecified Command and Control	yes	Reserved for amplifier field AA only (see Table 1-5)	735	A-20
+10	entity	110000	Command and Control	no	Currently there is no associated symbol. It is included for training or hierarchical explanation purposes.	735	A-20
+10	entity	110100	Broadcast Transmitter Antennae	yes		735	A-20
+10	entity	110200	Civil Affairs	yes		735	A-20
+10	entity	110300	Civil–Military Cooperation	yes		735	A-20
+10	entity	110400	Information Operations	yes		735	A-20
+10	entity	110500	Liaison	yes		735	A-20
+10	entity	110501	Reconnaissance and Liaison Element	yes		735	A-20
+10	entity	110600	Psychological Operation (PSYOP)	yes		735	A-20
+10	entity	110601	Broadcast Transmitter Antennae	yes		735	A-20
+10	entity	110700	Radio	yes		735	A-20
+10	entity	110800	Radio Relay	yes		735	A-20
+10	entity	110900	Radio Teletype Centre	yes		735	A-20
+10	entity	111000	Signal	yes		735	A-20
+10	entity	111001	Radio	yes		735	A-20
+10	entity	111002	Radio Relay	yes		735	A-20
+10	entity	111003	Teletype	yes		735	A-20
+10	entity	111005	Video Imagery (Combat Camera)	yes		735	A-20
+10	entity	111200	Video Imagery (Combat Camera)	yes		735	A-20
+10	entity	111300	Space	yes		735	A-20
+10	entity	111400	Special Troops	yes		735	A-20
+10	entity	111500	Multi-Domain Operations	yes		735	A-20
+10	entity	120000	Movement and Manoeuvre	no	Currently there is no associated symbol. It is included for training or hierarchical explanation purposes.	735	A-20
+10	entity	120100	Air Assault with Organic Lift	yes		736	A-20
+10	entity	120200	Air Traffic Services/Airfield Operations	yes		736	A-20
+10	entity	120400	Anti-armour	yes		736	A-20
+10	entity	120401	Armoured	yes		736	A-20
+10	entity	120402	Motorized	yes		736	A-20
+10	entity	120500	Armour	yes		736	A-20
+10	entity	120501	Reconnaissance/Cavalry	yes		736	A-20
+10	entity	120502	Amphibious	yes		736	A-20
+10	entity	120600	Army Aviation/Aviation Rotary Wing	yes		736	A-20
+10	entity	120601	Reconnaissance	yes		736	A-20
+10	entity	120700	Aviation Composite	yes		736	A-20
+10	entity	120800	Aviation Fixed Wing	yes		736	A-20
+10	entity	120801	Reconnaissance	yes		736	A-20
+10	entity	120900	Combat	yes		736	A-20
+10	entity	121000	Combined Arms	yes		736	A-20
+10	entity	121100	Infantry	yes		736	A-20
+10	entity	121101	Amphibious	yes		736	A-20
+10	entity	121102	Armoured/Tracked	yes		736	A-20
+10	entity	121103	Main Gun System, Infantry/Heavy Weapon	yes		736	A-20
+10	entity	121104	Motorized	yes		736	A-20
+10	entity	121105	Mechanised Infantry with Main Gun System/Heavy Weapon	yes		736	A-20
+10	entity	121106	Main Gun System/Heavy Weapon	yes		736	A-20
+10	entity	121200	Observer	yes		736	A-20
+10	entity	121300	Reconnaissance/Cavalry	yes		736	A-20
+10	entity	121301	Reconnaissance and Surveillance	yes		736	A-20
+10	entity	121302	Marine	yes		736	A-20
+10	entity	121303	Motorized	yes		736	A-20
+10	entity	121400	Sea Air Land (SEAL)	yes		736	A-20
+10	entity	121500	Sniper	yes		736	A-20
+10	entity	121600	Surveillance	yes		736	A-20
+10	entity	121700	Special Forces	yes		736	A-20
+10	entity	121800	Special Operations Forces (SOF)	yes		736	A-20
+10	entity	121801	Fixed Wing PSYOPS	yes		737	A-20
+10	entity	121802	Ground	yes		737	A-20
+10	entity	121805	Underwater Demolition	yes		737	A-20
+10	entity	121900	Unmanned Aircraft System (UAS)	yes		737	A-20
+10	entity	122000	Ranger	yes		737	A-20
+10	entity	122100	Combined Combat Unit	yes		737	A-20
+10	entity	130000	Fires	no	Currently there is no associated symbol. It is included for training or hierarchical explanation purposes.	737	A-20
+10	entity	130100	Air Defence	yes		737	A-20
+10	entity	130101	Main Gun System	yes		737	A-20
+10	entity	130102	Missile	yes		737	A-20
+10	entity	130103	Air and Missile Defence	yes		737	A-20
+10	entity	130200	Air/Land Naval Gunfire Liaison	yes		737	A-20
+10	entity	130300	Field Artillery	yes		737	A-20
+10	entity	130301	Self-Propelled Artillery	yes		737	A-20
+10	entity	130303	Reconnaissance	yes		737	A-20
+10	entity	130400	Field Artillery Observer	yes		737	A-20
+10	entity	130500	Joint Fire Support	yes		737	A-20
+10	entity	130600	Meteorological	yes		737	A-20
+10	entity	130700	Missile	yes		737	A-20
+10	entity	130800	Mortar	yes		737	A-20
+10	entity	130802	Self-Propelled Wheeled	yes		737	A-20
+10	entity	130900	Survey	yes		737	A-20
+10	entity	140000	Protection	no	Currently there is no associated symbol. It is included for training or hierarchical explanation purposes.	737	A-20
+10	entity	140100	Chemical Biological Radiological and Nuclear	yes		737	A-20
+10	entity	140102	Motorized	yes		737	A-20
+10	entity	140103	Reconnaissance	yes		737	A-20
+10	entity	140104	Reconnaissance Armoured	yes		737	A-20
+10	entity	140105	Reconnaissance Motorised	yes		737	A-20
+10	entity	140106	CBRN and High-Yield Explosives	yes		738	A-20
+10	entity	140200	Combat Support (Manoeuvre Enhancement)	yes		738	A-20
+10	entity	140300	Criminal Investigation Division	yes		738	A-20
+10	entity	140400	Diving	yes		738	A-20
+10	entity	140500	Dog	yes		738	A-20
+10	entity	140600	Drilling	yes		738	A-20
+10	entity	140700	Engineer	yes		738	A-20
+10	entity	140701	Armour	yes		738	A-20
+10	entity	140702	Motorized	yes		738	A-20
+10	entity	140703	Reconnaissance	yes		738	A-20
+10	entity	140800	Explosive Ordnance Disposal (EOD)	yes		738	A-20
+10	entity	140900	Field Camp Construction	yes		738	A-20
+10	entity	141000	Fire Fighting	yes		738	A-20
+10	entity	141100	Geospatial Support/Geospatial Information Support	yes		738	A-20
+10	entity	141200	Military Police	yes		738	A-20
+10	entity	141300	Mine	yes		738	A-20
+10	entity	141400	Mine Clearing	yes		738	A-20
+10	entity	141500	Mine Launching	yes		738	A-20
+10	entity	141600	Mine Laying	yes		738	A-20
+10	entity	141700	Security	yes		738	A-20
+10	entity	141702	Motorized	yes		738	A-20
+10	entity	141800	Search and Rescue	yes		738	A-20
+10	entity	141801	Isolated Personnel	yes		738	A-20
+10	entity	142000	Shore Patrol / Security Police	yes		738	A-20
+10	entity	142100	Geospatial Information	yes		738	A-20
+10	entity	142200	Missile Defence	yes		738	A-20
+10	entity	150000	Intelligence	no	Currently there is no associated symbol. It is included for training or hierarchical explanation purposes.	738	A-20
+10	entity	150100	Analysis	yes		738	A-20
+10	entity	150200	Counterintelligence	yes		738	A-20
+10	entity	150300	Direction Finding	yes		739	A-20
+10	entity	150400	Ranging	yes		739	A-20
+10	entity	150500	Electromagnetic Warfare	yes		739	A-20
+10	entity	150501	Analysis	yes		739	A-20
+10	entity	150502	Direction Finding	yes		739	A-20
+10	entity	150503	Intercept	yes		739	A-20
+10	entity	150600	Intercept (Search and Recording)	yes		739	A-20
+10	entity	150700	Interrogation	yes		739	A-20
+10	entity	150900	Joint Intelligence Centre	yes		739	A-20
+10	entity	151000	Military Intelligence	yes		739	A-20
+10	entity	151100	Search	yes		739	A-20
+10	entity	151200	Sensor	yes		739	A-20
+10	entity	151300	Military History	yes		739	A-20
+10	entity	160000	Sustainment	yes		739	A-20
+10	entity	160100	Administrative	yes		739	A-20
+10	entity	160200	All Classes of Supply	yes		739	A-20
+10	entity	160400	Ammunition	yes		739	A-20
+10	entity	160500	Band	yes		739	A-20
+10	entity	160501	Army Music	yes		739	A-20
+10	entity	160600	Combat Service Support	yes		739	A-20
+10	entity	160700	Finance	yes		739	A-20
+10	entity	160800	Judge Advocate General	yes		739	A-20
+10	entity	160900	Labour	yes		739	A-20
+10	entity	161000	Laundry/Bath	yes		739	A-20
+10	entity	161100	Maintenance	yes		739	A-20
+10	entity	161200	Material	yes		739	A-20
+10	entity	161300	Medical	yes		739	A-20
+10	entity	161400	Medical Treatment Facility	yes		739	A-20
+10	entity	161500	Morale, Welfare and Recreation	yes		739	A-20
+10	entity	161600	Mortuary Affairs/Graves Registration	yes		739	A-20
+10	entity	161700	Multiple Classes of Supply	yes		739	A-20
+10	entity	161800	NATO Supply Class I	yes		739	A-20
+10	entity	161900	NATO Supply Class II	yes		739	A-20
+10	entity	162000	NATO Supply Class III	yes		739	A-20
+10	entity	162100	NATO Supply Class IV	yes		739	A-20
+10	entity	162200	NATO Supply Class V	yes		739	A-20
+10	entity	162300	Ordnance	yes		740	A-20
+10	entity	162400	Personnel Services	yes		740	A-20
+10	entity	162500	Petroleum, Oil and Lubricants	yes		740	A-20
+10	entity	162800	Public Affairs/Public Information	yes		740	A-20
+10	entity	162900	Quartermaster	yes		740	A-20
+10	entity	163100	Religious Support	yes		740	A-20
+10	entity	163200	Replacement Holding Unit	yes		740	A-20
+10	entity	163500	Joint Information Bureau	yes		740	A-20
+10	entity	163600	Transportation	yes		740	A-20
+10	entity	163700	US Supply Class I	yes		740	A-20
+10	entity	164000	US Supply Class IV	yes		740	A-20
+10	entity	164200	US Supply Class VI	yes		740	A-20
+10	entity	164300	US Supply Class VII	yes		740	A-20
+10	entity	164400	US Supply Class VIII	yes		740	A-20
+10	entity	164500	US Supply Class IX	yes		740	A-20
+10	entity	164600	US Supply Class X	yes		740	A-20
+10	entity	164800	Water Purification	yes		740	A-20
+10	entity	164900	Broadcast	yes		740	A-20
+10	entity	165100	Interpreter/Translator	yes		740	A-20
+10	entity	165200	Support	yes		740	A-20
+10	entity	165300	Army Field Support	yes		740	A-20
+10	entity	165400	Contractor Support	yes		740	A-20
+10	entity	165500	Parachute Rigger	yes		740	A-20
+10	entity	165600	Human Resources	yes		740	A-20
+10	entity	165800	National Support Element (NSE)	yes		740	A-20
+10	entity	170000	Naval	no	Currently there is no associated symbol. It is included for training or hierarchical explanation purposes.	740	A-20
+10	entity	170100	Naval	yes		740	A-20
+10	entity	180000	Named Headquarters	no	Currently there is no associated symbol. It is included for training or hierarchical explanation purposes.	740	A-20
+10	entity	180100	Allied Command Europe Rapid Reaction Corps (ARRC)	yes		741	A-20
+10	entity	180200	Allied Command Operations	yes		741	A-20
+10	entity	180300	International Security Assistance Force (ISAF)	yes		741	A-20
+10	entity	180400	Multinational (MN)	yes		741	A-20
+10	entity	190000	Emergency Operation	yes		741	A-20
+10	entity	200000	Law Enforcement	no	Currently there is no associated symbol. It is included for training or hierarchical explanation purposes.	741	A-20
+10	entity	200100	Bureau of Alcohol, Tobacco, Firearms and Explosives (ATF) (Department of Justice)	yes		741	A-20
+10	entity	200400	Drug Enforcement Administration (DEA)	yes		741	A-20
+10	entity	200600	Federal Bureau of Investigation (FBI)	yes		741	A-20
+10	entity	200700	Police	yes		741	A-20
+10	entity	200900	United States Secret Service (USSS)	yes		741	A-20
+10	entity	201000	Transportation Security Administration (TSA)	yes		741	A-20
+10	entity	201100	Coast Guard	yes		741	A-20
+10	entity	201300	Internal Security Force	yes		741	A-20
+10	entity	210000	Cyberspace Operation	yes		741	A-20
+10	m1	00	Unspecified	yes		742	A-21
+10	m1	01	Tactical Satellite Communications	yes		742	A-21
+10	m1	02	Area	yes		742	A-21
+10	m1	05	Border	yes		742	A-21
+10	m1	11	Communications Contingency Package	yes		742	A-21
+10	m1	12	Construction	yes		742	A-21
+10	m1	13	Cross Cultural Communication	yes		742	A-21
+10	m1	16	Detention	yes		742	A-21
+10	m1	17	Direct Communications	yes		742	A-21
+10	m1	18	Diving	yes		742	A-21
+10	m1	20	Dog	yes		742	A-21
+10	m1	21	Drilling	yes		742	A-21
+10	m1	22	Electro–Optical	yes		742	A-21
+10	m1	23	Enhanced	yes		742	A-21
+10	m1	25	Fire Direction Centre	yes		742	A-21
+10	m1	26	Force	yes		742	A-21
+10	m1	27	Forward	yes		742	A-21
+10	m1	28	Ground Station Module	yes		742	A-21
+10	m1	29	Landing Support	yes		742	A-21
+10	m1	32	Meteorological	yes		742	A-21
+10	m1	34	Missile	yes		742	A-21
+10	m1	35	Mobility Advisor and Support	yes		742	A-21
+10	m1	36	Mobile Subscriber Equipment	yes		742	A-21
+10	m1	37	Mobility Support	yes		742	A-21
+10	m1	39	Multinational	yes		742	A-21
+10	m1	40	Multinational Specialized Unit	yes		742	A-21
+10	m1	41	Multiple Rocket Launcher	yes		742	A-21
+10	m1	42	NATO Medical Role 1	yes		742	A-21
+10	m1	43	NATO Medical Role 2	yes		742	A-21
+10	m1	44	NATO Medical Role 3	yes		742	A-21
+10	m1	45	NATO Medical Role 4	yes		742	A-21
+10	m1	46	Naval	yes		742	A-21
+10	m1	49	Operations	yes		742	A-21
+10	m1	50	Radar	yes		742	A-21
+10	m1	51	Radio Frequency Identification (RFID) Interrogator / Sensor	yes		742	A-21
+10	m1	55	Sensor	yes		742	A-21
+10	m1	57	Signals Intelligence	yes		742	A-21
+10	m1	59	Single Rocket Launcher	yes		742	A-21
+10	m1	60	Smoke	yes		742	A-21
+10	m1	62	Sound Ranging	yes		742	A-21
+10	m1	65	Survey	yes		742	A-21
+10	m1	66	Technical Exploitation	yes		742	A-21
+10	m1	67	Target Acquisition	yes		742	A-21
+10	m1	68	Topographic/Geospatial	yes		742	A-21
+10	m1	70	Video Imagery (Combat Camera)	yes		742	A-21
+10	m1	71	Mobility Assault	yes		742	A-21
+10	m1	72	Amphibious Warfare Ship	yes		743	A-21
+10	m1	73	Load Handling System	yes		743	A-21
+10	m1	74	Palletised Load System	yes		743	A-21
+10	m1	77	Support	yes		743	A-21
+10	m1	79	Route, Reconnaissance and Clearance	yes		743	A-21
+10	m1	81	NATO Medical Role 2 Basic	yes		742	A-21
+10	m1	82	NATO Medical Role 2 Enhanced	yes		742	A-21
+10	m1	83	NATO Medical Role 2 Forward	yes		742	A-21
+10	m1	84	Assault	yes		743	A-21
+10	m1	86	Criminal Investigation Division	yes		743	A-21
+10	m1	87	Digital	yes		743	A-21
+10	m1	88	Network or Network Operations	yes		743	A-21
+10	m1	89	Air Terminal	yes		743	A-21
+10	m1	90	Pipeline	yes		743	A-21
+10	m1	91	Postal	yes		743	A-21
+10	m1	98	Headquarters or headquarters staff element	yes		743	A-21
+10	m1	A0	Direction Finding	yes		743	A-21
+10	m1	A1	Electric Generation	yes		743	A-21
+10	m1	A2	General Engineering Support	yes		743	A-21
+10	m1	A3	Interception	yes		743	A-21
+10	m1	A4	Intermodal	yes		743	A-21
+10	m1	A6	Non-Combatant Generic Vessel	yes		743	A-21
+10	m1	A7	Search	yes		743	A-21
+10	m2	00	Unspecified	yes		744	A-22
+10	m2	02	Arctic	yes		744	A-22
+10	m2	03	Battle Damage Repair	yes		744	A-22
+10	m2	05	Casualty Staging	yes		744	A-22
+10	m2	06	Clearing	yes		744	A-22
+10	m2	08	Control	yes		744	A-22
+10	m2	09	Decontamination	yes		744	A-22
+10	m2	10	Demolition	yes		744	A-22
+10	m2	11	Dental	yes		744	A-22
+10	m2	12	Digital	yes		744	A-22
+10	m2	13	Enhanced Position Location Reporting System (EPLRS)	yes		744	A-22
+10	m2	14	Equipment	yes		744	A-22
+10	m2	16	High Altitude	yes		744	A-22
+10	m2	17	Intermodal	yes		744	A-22
+10	m2	18	Intensive Care	yes		744	A-22
+10	m2	21	Launcher	yes		744	A-22
+10	m2	23	Low Altitude	yes		744	A-22
+10	m2	25	Medium Altitude	yes		744	A-22
+10	m2	28	High to Medium Altitude	yes		744	A-22
+10	m2	29	Multi–Channel	yes		744	A-22
+10	m2	30	Optical (Flash)	yes		744	A-22
+10	m2	31	Pack Animal	yes		744	A-22
+10	m2	32	Patient Evacuation Coordination	yes		744	A-22
+10	m2	33	Preventive Maintenance	yes		744	A-22
+10	m2	34	Psychological	yes		744	A-22
+10	m2	35	Radio Relay Line of Sight	yes		744	A-22
+10	m2	37	Recovery (Unmanned Systems)	yes		744	A-22
+10	m2	38	Recovery (Maintenance)	yes		744	A-22
+10	m2	39	Rescue Coordination Centre	yes		744	A-22
+10	m2	40	Riverine	yes		744	A-22
+10	m2	41	Single Channel	yes		744	A-22
+10	m2	44	Strategic	yes		744	A-22
+10	m2	45	Support	yes		744	A-22
+10	m2	46	Tactical	yes		744	A-22
+10	m2	47	Towed	yes		744	A-22
+10	m2	48	Troop	yes		744	A-22
+10	m2	49	Vertical or Short Take–Off and Landing (VTOL/VSTOL)	yes		744	A-22
+10	m2	50	Veterinary	yes		744	A-22
+10	m2	52	High to Low Altitude	yes		744	A-22
+10	m2	53	Medium to Low Altitude	yes		744	A-22
+10	m2	54	Attack	yes		744	A-22
+10	m2	55	Refuel	yes		744	A-22
+10	m2	56	Utility	yes		744	A-22
+10	m2	57	Combat Search and Rescue (CSAR)	yes		744	A-22
+10	m2	58	Guerrilla	yes		744	A-22
+10	m2	59	Air Assault	yes		744	A-22
+10	m2	60	Amphibious	yes		744	A-22
+10	m2	61	Very Heavy	yes		745	A-22
+10	m2	64	Barge, Self-Propelled	yes		745	A-22
+10	m2	65	Barge, Not Self-Propelled	yes		745	A-22
+10	m2	66	Launch	yes		745	A-22
+10	m2	67	Landing Craft	yes		745	A-22
+10	m2	68	Landing Ship	yes		745	A-22
+10	m2	69	Service Craft/Yard	yes		745	A-22
+10	m2	70	Tug Harbour	yes		745	A-22
+10	m2	71	Ocean Going Tug Boat	yes		745	A-22
+10	m2	72	Surface Deployment and Distribution Command	yes		745	A-22
+10	m2	73	Non-Combatant Generic Vessel	yes		745	A-22
+10	m2	74	Composite	yes		745	A-22
+10	m2	75	Shelter	yes		745	A-22
+10	m2	81	Surgical	yes		745	A-22
+10	m2	82	Blood Support	yes		745	A-22
+10	m2	83	Combat and Operational Stress Control	yes		745	A-22
+10	m2	86	Optometry	yes		745	A-22
+10	m2	87	Preventative Medicine	yes		745	A-22
+10	m2	90	Direction Finding	yes		745	A-22
+10	m2	91	Interception	yes		745	A-22
+10	m2	92	Mobility Advisor and Support	yes		745	A-22
+10	m2	93	Search	yes		745	A-22
+10	m2	94	Fire Direction Centre	yes		745	A-22
+11	entity	000000	Unspecified Civilian	yes		746	A-23
+11	entity	110000	Civilian	no	Currently there is no associated symbol. It is included for training or hierarchical explanation purposes.	746	A-23
+11	entity	110100	Environmental Protection	yes		746	A-23
+11	entity	110200	Government Organization	yes		746	A-23
+11	entity	110300	Individual	yes		746	A-23
+11	entity	110400	Group	yes		746	A-23
+11	entity	110500	Individual victim; killed by criminal activity	yes		746	A-23
+11	entity	110600	Group of victims; killed by criminal activity	yes		746	A-23
+11	entity	110700	Victim of an Attempted Crime	yes		746	A-23
+11	entity	110800	Spy	yes		746	A-23
+11	entity	110900	Composite Loss	yes		746	A-23
+11	entity	111000	Emergency Medical Operation	yes		746	A-23
+11	m1	00	Unspecified	yes		747	A-24
+11	m1	03	Murder Victims	yes		747	A-24
+11	m1	09	Displaced Person(s), Refugee(s) and Evacuee(s)	yes		747	A-24
+11	m1	11	Gang Member or Gang	yes		747	A-24
+11	m1	15	Coerced/Impressed Recruit	yes		747	A-24
+11	m1	16	Willing Recruit	yes		747	A-24
+11	m1	18	Targeted Individual or Organization	yes		747	A-24
+11	m1	20	Speaker	yes		747	A-24
+11	m1	23	Other	yes		747	A-24
+11	m1	24	Loot	yes		747	A-24
+11	m2	00	Unspecified	yes		747	A-25
+15	entity	000000	Unspecified	yes		748	A-26
+15	entity	110000	Weapons/ Weapon System	no	Currently there is no associated symbol. It is included for training or hierarchical explanation purposes.	748	A-26
+15	entity	110100	Rifle	yes		748	A-26
+15	entity	110101	Single Shot Rifle	yes		748	A-26
+15	entity	110102	Semiautomatic Rifle	yes		748	A-26
+15	entity	110103	Automatic Rifle	yes		748	A-26
+15	entity	110200	Machine Gun	yes		748	A-26
+15	entity	110201	Light	yes		748	A-26
+15	entity	110202	Medium	yes		748	A-26
+15	entity	110203	Heavy	yes		748	A-26
+15	entity	110300	Grenade Launcher	yes		748	A-26
+15	entity	110301	Light	yes		748	A-26
+15	entity	110302	Medium	yes		748	A-26
+15	entity	110303	Heavy	yes		748	A-26
+15	entity	110400	Flame Thrower	yes		748	A-26
+15	entity	110500	Air Defence Gun	yes		748	A-26
+15	entity	110501	Light	yes		748	A-26
+15	entity	110502	Medium	yes		748	A-26
+15	entity	110503	Heavy	yes		748	A-26
+15	entity	110600	Antitank Gun	yes		748	A-26
+15	entity	110601	Light	yes		748	A-26
+15	entity	110602	Medium	yes		748	A-26
+15	entity	110603	Heavy	yes		748	A-26
+15	entity	110700	Direct Fire Gun	yes		748	A-26
+15	entity	110701	Light	yes		748	A-26
+15	entity	110702	Medium	yes		748	A-26
+15	entity	110703	Heavy	yes		748	A-26
+15	entity	110800	Recoilless Gun	yes		748	A-26
+15	entity	110801	Light	yes		748	A-26
+15	entity	110802	Medium	yes		748	A-26
+15	entity	110803	Heavy	yes		748	A-26
+15	entity	110900	Howitzer	yes		748	A-26
+15	entity	110901	Light	yes		748	A-26
+15	entity	110902	Medium	yes		749	A-26
+15	entity	110903	Heavy	yes		749	A-26
+15	entity	111000	Missile Launcher	yes		749	A-26
+15	entity	111001	Light	yes		749	A-26
+15	entity	111002	Medium	yes		749	A-26
+15	entity	111003	Heavy	yes		749	A-26
+15	entity	111100	Air Defence Missile Launcher	yes		749	A-26
+15	entity	111101	Light	yes		749	A-26
+15	entity	111102	Light, Light Transporter-Launcher and Radar (TLAR)	yes		749	A-26
+15	entity	111103	Light, Light Tactical Landing Approach Radar (TELAR)	yes		749	A-26
+15	entity	111104	Medium	yes		749	A-26
+15	entity	111105	Medium, TLAR	yes		749	A-26
+15	entity	111106	Medium, TELAR	yes		749	A-26
+15	entity	111107	Heavy	yes		749	A-26
+15	entity	111108	Heavy, TLAR	yes		749	A-26
+15	entity	111109	Heavy, TELAR	yes		749	A-26
+15	entity	111200	Antitank Missile Launcher	yes		749	A-26
+15	entity	111201	Light	yes		749	A-26
+15	entity	111202	Medium	yes		749	A-26
+15	entity	111203	Heavy	yes		749	A-26
+15	entity	111300	Surface-to-Surface Missile Launcher	yes		749	A-26
+15	entity	111301	Light	yes		749	A-26
+15	entity	111302	Medium	yes		749	A-26
+15	entity	111303	Heavy	yes		749	A-26
+15	entity	111400	Mortar	yes		749	A-26
+15	entity	111401	Light	yes		749	A-26
+15	entity	111402	Medium	yes		749	A-26
+15	entity	111403	Heavy	yes		749	A-26
+15	entity	111500	Single Rocket Launcher	yes		749	A-26
+15	entity	111501	Light	yes		749	A-26
+15	entity	111502	Medium	yes		749	A-26
+15	entity	111503	Heavy	yes		749	A-26
+15	entity	111600	Multiple Rocket Launcher	yes		749	A-26
+15	entity	111601	Light	yes		750	A-26
+15	entity	111602	Medium	yes		750	A-26
+15	entity	111603	Heavy	yes		750	A-26
+15	entity	111700	Antitank Rocket Launcher	yes		750	A-26
+15	entity	111701	Light	yes		750	A-26
+15	entity	111702	Medium	yes		750	A-26
+15	entity	111703	Heavy	yes		750	A-26
+15	entity	111800	Non-lethal Weapon	yes		750	A-26
+15	entity	111900	Taser Non-lethal	yes		750	A-26
+15	entity	112000	Water Cannon Non-lethal	yes		750	A-26
+15	entity	112100	Non-Lethal Grenade Launcher	yes		750	A-26
+15	entity	120000	Vehicles	no	Currently there is no associated symbol. It is included for training or hierarchical explanation purposes.	750	A-26
+15	entity	120100	Armoured	no	Currently there is no associated symbol. It is included for training or hierarchical explanation purposes.	750	A-26
+15	entity	120101	Armoured Fighting Vehicle	yes		750	A-26
+15	entity	120102	Armoured Fighting Vehicle Command and Control	yes		750	A-26
+15	entity	120103	Armoured Personnel Carrier	yes		750	A-26
+15	entity	120104	Armoured Personnel Carrier Ambulance	yes		750	A-26
+15	entity	120105	Armoured Protected Vehicle	yes		750	A-26
+15	entity	120108	Armoured Personnel Carrier, Recovery	yes		750	A-26
+15	entity	120109	Combat Service Support Vehicle	yes		750	A-26
+15	entity	120111	Light Armoured Reconnaissance	yes		750	A-26
+15	entity	120200	Tank	yes		750	A-26
+15	entity	120201	Light	yes		750	A-26
+15	entity	120202	Medium	yes		750	A-26
+15	entity	120203	Heavy	yes		751	A-26
+15	entity	130000	Engineer Vehicles and Equipment	yes		751	A-26
+15	entity	130100	Bridge	yes		751	A-26
+15	entity	130300	Fixed Bridge	yes		751	A-26
+15	entity	130400	Floating Bridge	yes		751	A-26
+15	entity	130500	Folding Girder Bridge	yes		751	A-26
+15	entity	130600	Hollow Deck Bridge	yes		751	A-26
+15	entity	130700	Drill	yes		751	A-26
+15	entity	130701	Drill Mounted on Utility Vehicle	yes		751	A-26
+15	entity	130800	Earthmover	yes		751	A-26
+15	entity	130801	Multifunctional Earthmover/Digger	yes		751	A-26
+15	entity	130900	Mine Clearing Equipment	yes		751	A-26
+15	entity	130902	Mine Clearing Equipment on Tank Chassis	yes		751	A-26
+15	entity	130903	Assault Breacher Vehicle (ABV) With Combat Dozer Blade	yes		751	A-26
+15	entity	131000	Mine Laying Equipment	yes		751	A-26
+15	entity	131001	Mine Laying Equipment on Utility Vehicle	yes		751	A-26
+15	entity	131002	Armoured Carrier with Volcano	yes		751	A-26
+15	entity	131003	Truck Mounted with Volcano	yes		751	A-26
+15	entity	131100	Dozer, Tank Chassis	yes		751	A-26
+15	entity	131101	Dozer, Armoured	yes		751	A-26
+15	entity	131200	Armoured Assault	yes		751	A-26
+15	entity	131300	Armoured Engineer Recon Vehicle (AERV)	yes		751	A-26
+15	entity	131400	Backhoe	yes		751	A-26
+15	entity	131500	Construction Vehicle	yes		751	A-26
+15	entity	131600	Ferry Transporter	yes		751	A-26
+15	entity	140000	Utility Vehicles	no	Currently there is no associated symbol. It is included for training or hierarchical explanation purposes.	752	A-26
+15	entity	140100	Vehicle (Generic)	yes		752	A-26
+15	entity	140200	Medical	yes		752	A-26
+15	entity	140400	Mobile Emergency Physician	yes		752	A-26
+15	entity	140500	Bus	yes		752	A-26
+15	entity	140600	Semi–Trailer and Truck	yes		752	A-26
+15	entity	140601	Light	yes		752	A-26
+15	entity	140602	Medium	yes		752	A-26
+15	entity	140603	Heavy	yes		752	A-26
+15	entity	140700	Limited Cross Country Truck	yes		752	A-26
+15	entity	140800	Cross Country Truck	yes		752	A-26
+15	entity	140900	Petroleum, Oil and Lubricant	yes		752	A-26
+15	entity	141000	Water	yes		752	A-26
+15	entity	141100	Amphibious Utility Wheeled Vehicle	yes		752	A-26
+15	entity	141200	Tow Truck	yes		752	A-26
+15	entity	141201	Light	yes		752	A-26
+15	entity	141202	Heavy	yes		752	A-26
+15	entity	150000	Train	no	Currently there is no associated symbol. It is included for training or hierarchical explanation purposes.	752	A-26
+15	entity	150100	Locomotive	yes		752	A-26
+15	entity	160000	Civilian Vehicle	no	Currently there is no associated symbol. It is included for training or hierarchical explanation purposes.	752	A-26
+15	entity	160400	Utility Vehicle	yes		752	A-26
+15	entity	160800	Known Insurgent Vehicle	yes		752	A-26
+15	entity	160900	Drug Vehicle	yes		753	A-26
+15	entity	170000	Law Enforcement	no	Reserved for hierarchical purposes.	753	A-26
+15	entity	170100	Bureau of Alcohol, Tobacco, Firearms and Explosives (ATF) (Department of Justice)	yes		753	A-26
+15	entity	170400	Drug Enforcement Administration (DEA)	yes		753	A-26
+15	entity	170600	Federal Bureau of Investigation (FBI)	yes		753	A-26
+15	entity	170700	Police	yes		753	A-26
+15	entity	170800	United States Secret Service (USSS)	yes		753	A-26
+15	entity	170900	Transportation Security Administration (TSA)	yes		753	A-26
+15	entity	171000	Coast Guard	yes		753	A-26
+15	entity	180000	Pack Animals	yes		753	A-26
+15	entity	190000	Missile Support	yes		753	A-26
+15	entity	190100	Transloader	yes		753	A-26
+15	entity	190200	Transporter	yes		753	A-26
+15	entity	190300	Crane/Loading Device	yes		753	A-26
+15	entity	190400	Propellant Transporter	yes		753	A-26
+15	entity	190500	Warhead Transporter	yes		753	A-26
+15	entity	200000	Other Equipment	no	Currently there is no associated symbol. It is included for training or hierarchical explanation purposes.	753	A-26
+15	entity	200100	Antennae	yes		753	A-26
+15	entity	200200	Bomb	yes		753	A-26
+15	entity	200300	Booby Trap	yes		753	A-26
+15	entity	200400	CBRN Equipment	yes		753	A-26
+15	entity	200500	Computer System	yes		753	A-26
+15	entity	200600	Command Launch Equipment (CLE)	yes		753	A-26
+15	entity	200700	Generator Set	yes		753	A-26
+15	entity	200800	Ground-Based Midcourse Defence (GMD) Fire Control (GFC) Centre	yes		754	A-26
+15	entity	200900	In-Flight Interceptor Communications System (IFICS) Data Terminal (IDT)	yes		754	A-26
+15	entity	201000	Directed Energy	yes		754	A-26
+15	entity	201100	Psychological Operation (PSYOP)	yes		754	A-26
+15	entity	201200	Sustainment Shipments	yes		754	A-26
+15	entity	201300	Tent	no	Reserved for hierarchical purposes.	754	A-26
+15	entity	201301	Civilian	yes		754	A-26
+15	entity	201302	Military	yes		754	A-26
+15	entity	201400	Unit Deployment Shipments	yes		754	A-26
+15	entity	201500	Emergency Medical Operation	yes		754	A-26
+15	entity	210000	Land Mines	no	Currently there is no associated symbol. It is included for training or hierarchical explanation purposes.	754	A-26
+15	entity	210100	Land Mine	yes		754	A-26
+15	entity	210200	Antipersonnel Land Mine (APL)	yes		754	A-26
+15	entity	210300	Antitank Mine	yes		754	A-26
+15	entity	210400	Improvised Explosive Device (IED)	yes		754	A-26
+15	entity	210500	Less than lethal	yes		754	A-26
+15	entity	220000	Sensors	no	Currently there is no associated symbol. It is included for training or hierarchical explanation purposes.	754	A-26
+15	entity	220100	Sensor	yes		754	A-26
+15	entity	220200	Sensor Emplaced	yes		754	A-26
+15	entity	220300	Radar	yes		754	A-26
+15	entity	230000	Emergency Operation	yes		755	A-26
+15	entity	230200	Fire Fighting	yes		755	A-26
+15	entity	240000	Manual Track	yes		755	A-26
+15	entity	250000	Rotary Wing	yes		755	A-26
+15	m1	00	Unspecified	yes		755	A-27
+15	m1	03	Early Warning Radar	yes		755	A-27
+15	m1	04	Intrusion	yes		755	A-27
+15	m1	07	Upgraded Early Warning Radar	yes		755	A-27
+15	m1	12	Multi Purpose Blade	yes		755	A-27
+15	m1	13	Tank Width Mine Plow	yes		755	A-27
+15	m2	00	Unspecified	yes		755	A-28
+15	m2	06	Tractor Trailer	yes		755	A-28
+20	entity	000000	Unspecified	yes		755	A-29
+20	entity	110000	Installation	no	Currently there is no associated symbol. It is included for training or hierarchical explanation purposes.	756	A-29
+20	entity	110200	Ammunition and Explosives/Production	yes		756	A-29
+20	entity	110300	Ammunition Cache	yes		756	A-29
+20	entity	110400	Armament Production	yes		756	A-29
+20	entity	110500	Black List Location	yes		756	A-29
+20	entity	110600	Chemical, Biological, Radiological and Nuclear (CBRN)	yes		756	A-29
+20	entity	110700	Engineering Equipment Production	yes		756	A-29
+20	entity	110701	Bridge	yes		756	A-29
+20	entity	110800	Equipment Manufacture	yes		756	A-29
+20	entity	110900	Governmental Organization	yes		756	A-29
+20	entity	110903	Civilian	yes		756	A-29
+20	entity	110904	Military	yes		756	A-29
+20	entity	111000	Gray List Location	yes		756	A-29
+20	entity	111100	Mass Grave Site	yes		756	A-29
+20	entity	111200	Materiel	yes		756	A-29
+20	entity	111300	Mine	yes		756	A-29
+20	entity	111400	Missile and Space System Production	yes		756	A-29
+20	entity	111500	Nuclear (Non CBRN Defence)	yes		756	A-29
+20	entity	111600	Printed Media	yes		756	A-29
+20	entity	111700	Safe House	yes		756	A-29
+20	entity	111800	White List Location	yes		756	A-29
+20	entity	111900	Tented Camp	no	Currently there is no associated symbol. It is included for training or hierarchical explanation purposes.	756	A-29
+20	entity	111901	Displaced Persons/ Refugee/Evacuees Camp	yes		756	A-29
+20	entity	111902	Training Camp	yes		756	A-29
+20	entity	112000	Warehouse/Storage Facility	no	Currently there is no associated symbol. It is included for training or hierarchical explanation purposes.	757	A-29
+20	entity	112001	Grenade	yes		757	A-29
+20	entity	112100	Law Enforcement	no	Currently there is no associated symbol. It is included for training or hierarchical explanation purposes.	757	A-29
+20	entity	112101	Bureau of Alcohol, Tobacco, Firearms and Explosives (ATF) (Department of Justice)	yes		757	A-29
+20	entity	112104	Drug Enforcement Administration (DEA)	yes		757	A-29
+20	entity	112106	Federal Bureau of Investigation (FBI)	yes		757	A-29
+20	entity	112107	Police	yes		757	A-29
+20	entity	112109	United States Secret Service (USSS)	yes		757	A-29
+20	entity	112110	Transportation Security Administration (TSA)	yes		757	A-29
+20	entity	112111	Coast Guard	yes		757	A-29
+20	entity	112200	Emergency Operation	yes		757	A-29
+20	entity	112201	Fire Station	yes		757	A-29
+20	entity	112202	Emergency Medical Operation	yes		757	A-29
+20	entity	112300	Home/House	yes		757	A-29
+20	entity	112400	Non-Governmental Organization (NGO)	yes		757	A-29
+20	entity	120000	Infrastructure	no	Currently there is no associated symbol. It is included for training or hierarchical explanation purposes.	757	A-29
+20	entity	120100	Agriculture and Food	no	Currently there is no associated symbol. It is included for training or hierarchical explanation purposes.	758	A-29
+20	entity	120103	Commercial Food Distribution Centre	yes		758	A-29
+20	entity	120105	Food Distribution	yes		758	A-29
+20	entity	120106	Food Production Centre	yes		758	A-29
+20	entity	120107	Food Retail	yes		758	A-29
+20	entity	120200	Banking Finance and Insurance	yes		758	A-29
+20	entity	120204	Economic Infrastructure Asset	yes		758	A-29
+20	entity	120207	Financial Services, Other	yes		758	A-29
+20	entity	120300	Commercial	no	Currently there is no associated symbol. It is included for training or hierarchical explanation purposes.	758	A-29
+20	entity	120305	Hazardous Material Storage	yes		758	A-29
+20	entity	120306	Industrial Site	yes		758	A-29
+20	entity	120308	Pharmaceutical Manufacturer	yes		758	A-29
+20	entity	120400	Educational Facilities	yes		758	A-29
+20	entity	120401	College/University	yes		758	A-29
+20	entity	120402	School	yes		758	A-29
+20	entity	120500	Energy Facilities	yes		758	A-29
+20	entity	120501	Electric Power	yes		758	A-29
+20	entity	120502	Generation Station	yes		758	A-29
+20	entity	120503	Natural Gas Facility	yes		758	A-29
+20	entity	120505	Petroleum/Gas/Oil	yes		758	A-29
+20	entity	120700	Medical	no	Currently there is no associated symbol. It is included for training or hierarchical explanation purposes.	758	A-29
+20	entity	120701	Medical	yes		758	A-29
+20	entity	120702	Medical Treatment Facility (Hospital)	yes		758	A-29
+20	entity	120800	Military	no	Currently there is no associated symbol. It is included for training or hierarchical explanation purposes.	759	A-29
+20	entity	120801	Military Armoury	yes		759	A-29
+20	entity	120802	Military Base	yes		759	A-29
+20	entity	120803	Airport	yes		759	A-29
+20	entity	120900	Postal Service	yes		759	A-29
+20	entity	120901	Postal Distribution Centre	yes		759	A-29
+20	entity	120902	Post Office	yes		759	A-29
+20	entity	121000	Public Venues	yes		759	A-29
+20	entity	121004	Religious Institution	yes		759	A-29
+20	entity	121200	Telecommunications	no	Currently there is no associated symbol. It is included for training or hierarchical explanation purposes.	759	A-29
+20	entity	121201	Broadcast Transmitter Antennae	yes		759	A-29
+20	entity	121202	Telecommunications (Civilian)	yes		759	A-29
+20	entity	121203	Telecommunications Tower	yes		759	A-29
+20	entity	121300	Transportation	yes		759	A-29
+20	entity	121301	Air Terminal	yes		759	A-29
+20	entity	121302	Air Traffic Control Facility	yes		759	A-29
+20	entity	121304	Ferry Terminal	yes		759	A-29
+20	entity	121305	Helicopter Landing Site	yes		759	A-29
+20	entity	121306	Maintenance Facility	yes		759	A-29
+20	entity	121307	Railhead/Railroad Station	yes		759	A-29
+20	entity	121309	Sea Terminal	yes		759	A-29
+20	entity	121310	Ship Yard	yes		759	A-29
+20	entity	121400	Water Supply	yes		759	A-29
+20	entity	121404	Ground Water Well	yes	.	759	A-29
+20	entity	121410	Water	yes		760	A-29
+20	entity	121411	Water Treatment	yes		760	A-29
+20	m1	00	Unspecified	yes		761	A-30
+20	m1	06	Coal	yes	Used with Electric Power	761	A-30
+20	m1	07	Geothermal	yes	Used with Electric Power	761	A-30
+20	m1	08	Hydroelectric	yes	Used with Electric Power	761	A-30
+20	m1	09	Natural Gas	yes	Used with Electric Power	761	A-30
+20	m1	12	Civilian Telephone	yes	Telecommunication	761	A-30
+20	m1	13	Civilian Television	yes	Telecommunication	761	A-30
+20	m1	15	Displaced Persons, Refugees or Evacuees (DPRE)	yes		761	A-30
+20	m1	16	Training	yes		761	A-30
+20	m2	00	Unspecified	yes		761	A-31
+20	m2	01	Biological	yes	Used with CBRN	761	A-31
+20	m2	02	Chemical	yes	Used with CBRN	761	A-31
+20	m2	03	Nuclear	yes	Used with CBRN	761	A-31
+20	m2	04	Radiological	yes	Used with CBRN	761	A-31
+20	m2	05	Atomic Energy Reactor	yes	Used with CBRN	761	A-31
+20	m2	06	Nuclear Material Production	yes	Used with CBRN	761	A-31
+20	m2	07	Nuclear Material Storage	yes	Used with CBRN	761	A-31
+20	m2	08	Weapons Grade Production	yes	Used with CBRN	761	A-31
+20	m2	11	Displaced Persons, Refugees or Evacuees (DPRE)	yes		761	A-31
+20	m2	12	Training	yes		761	A-31
+25	entity	110000	Command and Control Lines	no	Currently there is no associated symbol. It is included for training or hierarchical explanation purposes.	762	A-32
+25	entity	110100	Boundary	no	Currently there is no associated symbol. It is included for training or hierarchical explanation purposes.	762	A-32
+25	entity	110200	Light Line	yes		762	A-32
+25	entity	110300	Engineer Work Line	yes		762	A-32
+25	entity	110400	Line, Generic	yes		762	A-32
+25	entity	110500	Decision Line	yes		762	A-32
+25	entity	120000	Command and Control Areas	no	Currently there is no associated symbol. It is included for training or hierarchical explanation purposes.	762	A-32
+25	entity	120100	Area of Operations	yes		762	A-32
+25	entity	120200	Named Area of Interest	yes		762	A-32
+25	entity	120300	Target Area of Interest	yes		762	A-32
+25	entity	120400	Airfield Zone	yes		762	A-32
+25	entity	120500	Base Camp	yes		762	A-32
+25	entity	120600	Guerrilla Base	yes		762	A-32
+25	entity	120700	Area, Generic	yes		762	A-32
+25	entity	120800	Bridgehead	yes		762	A-32
+25	entity	130000	Command and Control Points	no	Currently there is no associated symbol. It is included for training or hierarchical explanation purposes.	762	A-32
+25	entity	130100	Action Point (General)	yes		762	A-32
+25	entity	130200	Amnesty Point	yes		762	A-32
+25	entity	130300	Checkpoint	yes		762	A-32
+25	entity	130400	Centre of Main Effort	yes		762	A-32
+25	entity	130500	Contact Point	yes		762	A-32
+25	entity	130600	Coordinating Point	yes		762	A-32
+25	entity	130700	Decision Point	yes		763	A-32
+25	entity	130800	Distress Call	yes		763	A-32
+25	entity	130900	Entry Control Point	yes		763	A-32
+25	entity	131000	Fly-To-Point	no	Currently there is no associated symbol. It is included for training or hierarchical explanation purposes.	763	A-32
+25	entity	131001	Sonobuoy	yes		763	A-32
+25	entity	131002	Weapon	yes		763	A-32
+25	entity	131003	Normal	yes		763	A-32
+25	entity	131100	Linkup Point	yes		763	A-32
+25	entity	131200	Passage Point	yes		763	A-32
+25	entity	131300	Point of Interest	yes		763	A-32
+25	entity	131301	Point of Interest - Launch Event	yes		763	A-32
+25	entity	131400	Rally Point	yes		763	A-32
+25	entity	131500	Release Point	yes		763	A-32
+25	entity	131600	Start Point	yes		763	A-32
+25	entity	131700	Special Point	yes		763	A-32
+25	entity	131800	Waypoint	yes		763	A-32
+25	entity	131900	Airfield	yes		763	A-32
+25	entity	132000	Target Handover	yes		763	A-32
+25	entity	132100	Key Terrain	yes		763	A-32
+25	entity	132200	Control Point (CP)	yes		763	A-32
+25	entity	132300	Vital Ground	yes		763	A-32
+25	entity	140000	Manoeuvre Lines	no	Currently there is no associated symbol. It is included for training or hierarchical explanation purposes.	763	A-32
+25	entity	140100	Forward Line of Troops	yes		763	A-32
+25	entity	140300	Phase Line	yes		763	A-32
+25	entity	140400	Forward Edge of the Battle Area	yes		763	A-32
+25	entity	140500	Field of Fire	yes		763	A-32
+25	entity	140600	Direction of Attack	no	Currently there is no associated symbol. It is included for training or hierarchical explanation purposes.	764	A-32
+25	entity	140601	Aviation	yes		764	A-32
+25	entity	140602	Main Attack	yes		764	A-32
+25	entity	140603	Supporting Attack	yes		764	A-32
+25	entity	140605	Feint	yes		764	A-32
+25	entity	140700	Final Coordination Line	yes		764	A-32
+25	entity	140800	Infiltration Lane	yes		764	A-32
+25	entity	140900	Limit of Advance	yes		764	A-32
+25	entity	141000	Line of Departure	yes		764	A-32
+25	entity	141100	Line of Departure/Line of Contact	yes		764	A-32
+25	entity	141200	Probable Line of Deployment	yes		764	A-32
+25	entity	141300	Airhead Line	yes		764	A-32
+25	entity	141400	Bridgehead Line (BL)	yes		764	A-32
+25	entity	141500	Holding Line (HL)	yes		764	A-32
+25	entity	141600	Release Line	yes		764	A-32
+25	entity	141700	Ambush	yes		764	A-32
+25	entity	141800	Handover Line (HOL)	yes		764	A-32
+25	entity	141900	Battle Handover Line (BHL)	yes		764	A-32
+25	entity	142000	Named Area of Interest Line (NAI)	yes		764	A-32
+25	entity	142100	Mobility Corridor	yes		764	A-32
+25	entity	150000	Manoeuvre Areas	no	Currently there is no associated symbol. It is included for training or hierarchical explanation purposes.	764	A-32
+25	entity	150100	Area	yes		764	A-32
+25	entity	150200	Assembly Area (AA)	yes		764	A-32
+25	entity	150500	Action Area	no	Currently there is no associated symbol. It is included for training or hierarchical explanation purposes.	764	A-32
+25	entity	150501	Joint Tactical Action Area (JTAA)	yes		765	A-32
+25	entity	150502	Submarine Action Area (SAA)	yes		765	A-32
+25	entity	150503	Submarine-Generated Action Area (SGAA)	yes		765	A-32
+25	entity	150600	Drop Zone (DZ)	yes		765	A-32
+25	entity	150700	Extraction Zone (EZ)	yes		765	A-32
+25	entity	150800	Landing Zone (LZ)	yes		765	A-32
+25	entity	150900	Pick–Up Zone (PZ)	yes		765	A-32
+25	entity	151000	Fortified Area	yes		765	A-32
+25	entity	151100	Limited Access Area	yes		765	A-32
+25	entity	151200	Battle Position	yes		765	A-32
+25	entity	151202	Prepared (P) but not Occupied	yes		765	A-32
+25	entity	151203	Strong Point	yes		765	A-32
+25	entity	151204	Contain	yes		765	A-32
+25	entity	151204	Contain	yes		787	A-32
+25	entity	151205	Retain	yes		765	A-32
+25	entity	151300	Engagement Area (EA)	yes		765	A-32
+25	entity	151400	Axis of Advance	no	Currently there is no associated symbol. It is included for training or hierarchical explanation purposes.	765	A-32
+25	entity	151401	Airborne/Aviation	yes		765	A-32
+25	entity	151402	Attack Helicopter	yes		765	A-32
+25	entity	151403	Main Attack	yes		765	A-32
+25	entity	151404	Supporting Attack	yes		765	A-32
+25	entity	151406	Feint	yes		765	A-32
+25	entity	151500	Assault Position	yes		765	A-32
+25	entity	151600	Attack Position	yes		765	A-32
+25	entity	151700	Objective Area	yes		765	A-32
+25	entity	151800	Encirclement	yes		765	A-32
+25	entity	151900	Penetration Box	yes		765	A-32
+25	entity	152000	Attack by Fire	yes		765	A-32
+25	entity	152100	Support by Fire	yes		765	A-32
+25	entity	152200	Search Area/Reconnaissance Area	yes		765	A-32
+25	entity	152300	Avenue of Approach	yes		765	A-32
+25	entity	152400	Restricted Terrain	yes		766	A-32
+25	entity	152500	Severely Restricted Terrain	yes		766	A-32
+25	entity	152600	Area Defence	yes		766	A-32
+25	entity	152700	Frontal Attack	yes		766	A-32
+25	entity	152800	Mobile Defence	yes		766	A-32
+25	entity	152900	Turning Movement	yes		766	A-32
+25	entity	160000	Manoeuvre Points	no	Currently there is no associated symbol. It is included for training or hierarchical explanation purposes.	766	A-32
+25	entity	160100	Observation Post/Outpost (unspecified)	yes		766	A-32
+25	entity	160200	Observation Post/Outpost (specified)	no	Currently there is no associated symbol. It is included for training or hierarchical explanation purposes.	766	A-32
+25	entity	160201	Reconnaissance Outpost	yes		766	A-32
+25	entity	160202	Forward Observer Outpost	yes		766	A-32
+25	entity	160203	CBRN Observation Outpost	yes		766	A-32
+25	entity	160204	Sensor Outpost /Listening Post	yes		766	A-32
+25	entity	160205	Combat Outpost	yes		766	A-32
+25	entity	160300	Target Reference Point	yes		766	A-32
+25	entity	160400	Point of Departure	yes		766	A-32
+25	entity	170000	Airspace Control Areas	no	Currently there is no associated symbol. It is included for training or hierarchical explanation purposes.	766	A-32
+25	entity	170100	Air Corridor	yes		766	A-32
+25	entity	170200	Low Level Transit Route	yes		766	A-32
+25	entity	170300	Temporary Minimum– Risk Route	yes		766	A-32
+25	entity	170400	Safe Lane	yes		766	A-32
+25	entity	170500	Standard Use Army Aircraft Flight Route	yes		766	A-32
+25	entity	170600	Transit Corridor	yes		767	A-32
+25	entity	170700	Special Corridor (SC)	yes		767	A-32
+25	entity	170800	Base Defence Zone	yes		767	A-32
+25	entity	170900	High–Density Airspace Control Zone	yes		767	A-32
+25	entity	171000	Restricted Operations Zone (ROZ)	yes		767	A-32
+25	entity	171100	Air-to-Air Restricted Operating Zone (AARROZ)	yes		767	A-32
+25	entity	171200	Unmanned Aircraft Restricted Operating Zone (UA-ROZ)	yes		767	A-32
+25	entity	171300	Weapon Engagement Zone (WEZ)	yes		767	A-32
+25	entity	171400	Fighter Engagement Zone (FEZ)	yes		767	A-32
+25	entity	171500	Joint Engagement Zone (JEZ)	yes		767	A-32
+25	entity	171600	Missile Engagement Zone (MEZ)	yes		767	A-32
+25	entity	171700	Low (Altitude) Missile Engagement Zone (LOMEZ)	yes		767	A-32
+25	entity	171800	High (Altitude) Missile Engagement Zone (HIMEZ)	yes		767	A-32
+25	entity	171900	Short Range Air Defence Engagement Zone (SHORADEZ)	yes		767	A-32
+25	entity	172000	Weapons Free Zone	yes		767	A-32
+25	entity	180000	Airspace Control Points	no	Currently there is no associated symbol. It is included for training or hierarchical explanation purposes.	767	A-32
+25	entity	180100	Air Control Point	yes		767	A-32
+25	entity	180200	Communications Checkpoint	yes		767	A-32
+25	entity	180300	Isolated Personnel Pick– up Point	yes		767	A-32
+25	entity	180400	Pop–up Point	yes		767	A-32
+25	entity	180500	Air Control Rendezvous	yes		767	A-32
+25	entity	180600	Tactical Air Navigation (TACAN)	yes		768	A-32
+25	entity	180700	Combat Air Patrol (CAP) Station	yes		768	A-32
+25	entity	180800	Airborne Early Warning (AEW) Station	yes		768	A-32
+25	entity	180900	ASW (Helo and F/W) Station	yes		768	A-32
+25	entity	181000	Strike Initial Point	yes		768	A-32
+25	entity	181100	Replenishment Station	yes		768	A-32
+25	entity	181200	Tanking	yes		768	A-32
+25	entity	181300	Antisubmarine Warfare, Rotary Wing	yes		768	A-32
+25	entity	181400	Surface Combat Air Patrol (SUCAP) - Fixed Wing	yes		768	A-32
+25	entity	181500	SUCAP – Rotary Wing	yes		768	A-32
+25	entity	181600	MW – Fixed Wing	yes		768	A-32
+25	entity	181700	MW – Rotary Wing	yes		768	A-32
+25	entity	181800	Tomcat	yes		768	A-32
+25	entity	181900	Rescue	yes		768	A-32
+25	entity	182000	Unmanned Aircraft System (UAS)	yes		768	A-32
+25	entity	182100	Vertical Take-off and Landing (VTOL) Tactical Unmanned Aircraft (VTUA)	yes		768	A-32
+25	entity	182200	Orbit	yes		768	A-32
+25	entity	182300	Orbit – Figure Eight	yes		768	A-32
+25	entity	182400	Orbit – Race Track	yes		768	A-32
+25	entity	182500	Orbit – Random Closed	yes		768	A-32
+25	entity	182600	Isolated Personnel Location	yes		768	A-32
+25	entity	190000	Airspace Control Lines	no	Currently there is no associated symbol. It is included for training or hierarchical explanation purposes.	768	A-32
+25	entity	190100	Identification Friend or Foe (IFF) Off Line	yes		768	A-32
+25	entity	190200	Identification Friend or Foe (IFF) On Line	yes		768	A-32
+25	entity	200000	Maritime Control Areas	no	Currently there is no associated symbol. It is included for training or hierarchical explanation purposes.	769	A-32
+25	entity	200100	Launch Area	no	Currently there is no associated symbol. It is included for training or hierarchical explanation purposes.	769	A-32
+25	entity	200101	Ellipse/Circle	yes		769	A-32
+25	entity	200200	Defended Area	no	Currently there is no associated symbol. It is included for training or hierarchical explanation purposes.	769	A-32
+25	entity	200201	Ellipse/Circle	yes		769	A-32
+25	entity	200202	Rectangle	yes		769	A-32
+25	entity	200300	No Attack (NOTACK) Zone	yes		769	A-32
+25	entity	200400	Ship Area of Interest	yes		769	A-32
+25	entity	200401	Ellipse/Circle	yes		769	A-32
+25	entity	200402	Rectangle	yes		769	A-32
+25	entity	200500	Active Manoeuvre Area	yes		769	A-32
+25	entity	200600	Cued Acquisition Doctrine	yes		769	A-32
+25	entity	200700	Radar Search Doctrine	yes		769	A-32
+25	entity	210000	Maritime Control Points	no	Currently there is no associated symbol. It is included for training or hierarchical explanation purposes.	769	A-32
+25	entity	210100	Plan Ship	yes		769	A-32
+25	entity	210200	Aim Point	yes		769	A-32
+25	entity	210300	Defended Asset	yes		769	A-32
+25	entity	210400	Drop Point	yes		769	A-32
+25	entity	210500	Entry Point	yes		769	A-32
+25	entity	210600	Air Detonation	yes		769	A-32
+25	entity	210700	Ground Zero	yes		769	A-32
+25	entity	210800	Impact Point	yes		769	A-32
+25	entity	210900	Predicted Impact Point	yes		770	A-32
+25	entity	211000	Launched Torpedo	yes		770	A-32
+25	entity	211100	Missile Detection Point	yes		770	A-32
+25	entity	211200	Acoustic Countermeasure (Decoy)	yes		770	A-32
+25	entity	211300	Electromagnetic Countermeasures (ECM) Decoy	yes		770	A-32
+25	entity	211400	Brief Contact	yes		770	A-32
+25	entity	211500	Datum Lost Contact	yes		770	A-32
+25	entity	211600	BT Buoy Drop	yes		770	A-32
+25	entity	211700	Reported Bottomed Sub	yes		770	A-32
+25	entity	211800	Moving Haven	yes		770	A-32
+25	entity	211900	Screen Centre	yes		770	A-32
+25	entity	212000	Lost Contact	yes		770	A-32
+25	entity	212100	Sinker	yes		770	A-32
+25	entity	212200	Trial Track	yes		770	A-32
+25	entity	212300	Acoustic Fix	yes		770	A-32
+25	entity	212400	Electromagnetic Fix	yes		770	A-32
+25	entity	212500	Electromagnetic – Magnetic Anomaly Detection (MAD)	yes		770	A-32
+25	entity	212600	Optical Fix	yes		770	A-32
+25	entity	212700	Formation	yes		770	A-32
+25	entity	212800	Harbour	yes		770	A-32
+25	entity	212900	Harbour Entrance Point	no	Currently there is no associated symbol. It is included for training or hierarchical explanation purposes.	770	A-32
+25	entity	212901	A	yes		770	A-32
+25	entity	212902	O	yes		770	A-32
+25	entity	212903	X	yes		770	A-32
+25	entity	212904	Y	yes		770	A-32
+25	entity	213000	Dip Position	yes		770	A-32
+25	entity	213100	Search	yes		770	A-32
+25	entity	213200	Search Area	yes		770	A-32
+25	entity	213300	Search Centre	yes		770	A-32
+25	entity	213400	Navigational Reference Waypoint	yes		770	A-32
+25	entity	213500	Sonobuoy	yes		771	A-32
+25	entity	213501	Ambient Noise	yes		771	A-32
+25	entity	213502	Air Transportable Communication (ATAC)	yes		771	A-32
+25	entity	213503	Barra	yes		771	A-32
+25	entity	213504	Bathythermograph Transmitting (BT)	yes		771	A-32
+25	entity	213505	Command Active Multi-Beam Sonobuoy (CAMBS)	yes		771	A-32
+25	entity	213506	Command Active Sonobuoy Directional Command Active Sonobuoy System (CASS)	yes		771	A-32
+25	entity	213507	Directional Frequency Analysis and Recording (DIFAR)	yes		771	A-32
+25	entity	213508	Directional Command Active Sonobuoy System (DICASS)	yes		771	A-32
+25	entity	213509	Expendable Reliable Acoustic Path Sonobuoy (ERAPS)	yes		771	A-32
+25	entity	213510	Expired	yes		771	A-32
+25	entity	213511	Kingpin	yes		771	A-32
+25	entity	213512	Low Frequency Analysis and Recording (LOFAR)	yes		771	A-32
+25	entity	213513	Pattern Centre	yes		771	A-32
+25	entity	213514	Range Only	yes		771	A-32
+25	entity	213515	Vertical Line Array Directional Frequency Analysis and Recording (VLAD)	yes		771	A-32
+25	entity	213600	Reference Point	yes		771	A-32
+25	entity	213700	Special Point	yes		771	A-32
+25	entity	213900	Data Link Reference Point	yes		771	A-32
+25	entity	214100	Vital Area Centre	yes		771	A-32
+25	entity	214200	Corridor Tab Point	yes		771	A-32
+25	entity	214300	Enemy Point	yes		771	A-32
+25	entity	214400	Marshall Point	yes		771	A-32
+25	entity	214500	Position and Intended Movement (PIM)	yes		771	A-32
+25	entity	214600	Pre-Landfall Waypoint	yes		772	A-32
+25	entity	214700	Estimated Position (EP)	yes		772	A-32
+25	entity	214800	Waypoint	yes		772	A-32
+25	entity	214900	General Subsurface Station	yes		772	A-32
+25	entity	215000	Submarine Subsurface Station	yes		772	A-32
+25	entity	215100	Submarine Antisubmarine Warfare Subsurface Station	yes		772	A-32
+25	entity	215200	Unmanned Underwater Vehicle Subsurface Station	yes		772	A-32
+25	entity	215300	Antisubmarine Warfare (ASW) Unmanned Underwater Vehicle Subsurface Station	yes		772	A-32
+25	entity	215400	Mine Warfare Unmanned Underwater Vehicle Subsurface Station	yes		772	A-32
+25	entity	215500	Surface Warfare Unmanned Underwater Vehicle Subsurface Station	yes		772	A-32
+25	entity	215600	General Surface Station	yes		772	A-32
+25	entity	215700	Antisubmarine Warfare (ASW) Surface Station	yes		772	A-32
+25	entity	215800	Mine Warfare Surface Station	yes		772	A-32
+25	entity	215900	Non-Combatant Surface Station	yes		772	A-32
+25	entity	216000	Picket Surface Station	yes		772	A-32
+25	entity	216100	Rendezvous Surface Station	yes		772	A-32
+25	entity	216200	Replenishment at Sea Surface Station	yes		772	A-32
+25	entity	216300	Rescue Surface Station	yes		772	A-32
+25	entity	216400	Surface Warfare Surface Station	yes		772	A-32
+25	entity	216500	Unmanned Underwater Vehicle Surface Station	yes		772	A-32
+25	entity	216600	Antisubmarine Warfare (ASW) Unmanned Underwater Vehicle Surface Station	yes		773	A-32
+25	entity	216700	Mine Warfare Unmanned Underwater Vehicle Surface Station	yes		773	A-32
+25	entity	216800	Remote Multi-Mission Vehicle Mine Warfare Unmanned Underwater Surface Station	yes		773	A-32
+25	entity	216900	Surface Warfare Mine Warfare Unmanned Underwater Vehicle Surface Station	yes		773	A-32
+25	entity	217000	Shore Control Station	yes		773	A-32
+25	entity	217100	General Route	yes		773	A-32
+25	entity	217200	Diversion Route	yes		773	A-32
+25	entity	217300	Position and Intended Movement (PIM) Route	yes		773	A-32
+25	entity	217400	Picket Route	yes		773	A-32
+25	entity	217500	Point R Route	yes		773	A-32
+25	entity	217600	Rendezvous Route	yes		773	A-32
+25	entity	217700	Waypoint Route	yes		773	A-32
+25	entity	217800	Clutter, Stationary or Cease Reporting	yes		773	A-32
+25	entity	217900	Tentative or Provisional Track	yes		773	A-32
+25	entity	218000	Distressed Vessel	yes		773	A-32
+25	entity	218100	Ditched Aircraft/Downed Aircraft	yes		773	A-32
+25	entity	218200	Person in Water/Bailout	yes		773	A-32
+25	entity	218300	Iceberg	yes		773	A-32
+25	entity	218400	Navigational	yes		773	A-32
+25	entity	218500	Oil Rig	yes		773	A-32
+25	entity	218600	Sea Mine–Like	yes		773	A-32
+25	entity	218700	Bottom Return/Non-Mine, Mine-Like Bottom Object (NOMBO)	yes		773	A-32
+25	entity	218800	Bottom Return/Non-Mine, Mine-Like Bottom Object (NOMBO)/Installation Manmade	yes		774	A-32
+25	entity	218900	Marine Life	yes		774	A-32
+25	entity	219000	Sea Anomaly (Wake, Current, Knuckle)	yes		774	A-32
+25	entity	219100	Bottom Return/Non-MILCO, Wreck, Dangerous	yes		774	A-32
+25	entity	219200	Bottom Return/Non-MILCO, Wreck, Non Dangerous	yes		774	A-32
+25	entity	220000	Maritime Control Lines	no	Currently there is no associated symbol. It is included for training or hierarchical explanation purposes.	774	A-32
+25	entity	220100	Bearing Line	yes		774	A-32
+25	entity	220101	Electronic	yes		774	A-32
+25	entity	220102	Electromagnetic Warfare (EW)	yes		774	A-32
+25	entity	220103	Acoustic	yes		774	A-32
+25	entity	220104	Acoustic (Ambiguous)	yes		774	A-32
+25	entity	220105	Torpedo	yes		774	A-32
+25	entity	220106	Electro-Optical Intercept	yes		774	A-32
+25	entity	220107	Jammer	yes		774	A-32
+25	entity	220108	Radio Direction Finder (RDF)	yes		774	A-32
+25	entity	220109	Navigational Rhumb Line	yes		774	A-32
+25	entity	230000	Deception	no	Currently there is no associated symbol. It is included for training or hierarchical explanation purposes.	774	A-32
+25	entity	230100	Decoy/Dummy/ Deception	yes		774	A-32
+25	entity	230200	Deceive/Decoy/Dummy/ Feint	yes		774	A-32
+25	entity	230200	Deceive/Feint	yes		788	A-32
+25	entity	240000	Fires Areas	no	Currently there is no associated symbol. It is included for training or hierarchical explanation purposes.	775	A-32
+25	entity	240100	Airspace Coordination Area	no	Currently there is no associated symbol. It is included for training or hierarchical explanation purposes.	775	A-32
+25	entity	240101	Irregular	yes		775	A-32
+25	entity	240102	Rectangular	yes		775	A-32
+25	entity	240103	Circular	yes		775	A-32
+25	entity	240200	Free Fire Area	no	Currently there is no associated symbol. It is included for training or hierarchical explanation purposes.	775	A-32
+25	entity	240201	Irregular	yes		775	A-32
+25	entity	240202	Rectangular	yes		775	A-32
+25	entity	240203	Circular	yes		775	A-32
+25	entity	240300	No Fire Area	no	Currently there is no associated symbol. It is included for training or hierarchical explanation purposes.	775	A-32
+25	entity	240301	Irregular	yes		775	A-32
+25	entity	240302	Rectangular	yes		775	A-32
+25	entity	240303	Circular	yes		775	A-32
+25	entity	240400	Restricted Fire Area	no	Currently there is no associated symbol. It is included for training or hierarchical explanation purposes.	775	A-32
+25	entity	240401	Irregular	yes		775	A-32
+25	entity	240402	Rectangular	yes		775	A-32
+25	entity	240403	Circular	yes		775	A-32
+25	entity	240500	Position Area For Artillery (PAA)	no	Currently there is no associated symbol. It is included for training or hierarchical explanation purposes.	776	A-32
+25	entity	240501	Rectangular	yes		776	A-32
+25	entity	240502	Circular	yes		776	A-32
+25	entity	240503	Irregular	yes		776	A-32
+25	entity	240600	Point Targets	no	Currently there is no associated symbol. It is included for training or hierarchical explanation purposes.	776	A-32
+25	entity	240601	Point or Single Target	yes		776	A-32
+25	entity	240602	Nuclear Target	yes		776	A-32
+25	entity	240603	Target-Recorded	yes		776	A-32
+25	entity	240700	Linear Targets	no	Currently there is no associated symbol. It is included for training or hierarchical explanation purposes.	776	A-32
+25	entity	240701	Linear Target	yes		776	A-32
+25	entity	240702	Linear Smoke Target	yes		776	A-32
+25	entity	240703	Final Protective Fire (FPF)	yes		776	A-32
+25	entity	240800	Area Targets	no	Currently there is no associated symbol. It is included for training or hierarchical explanation purposes.	776	A-32
+25	entity	240801	Area Target	yes		776	A-32
+25	entity	240802	Rectangular Target	yes		776	A-32
+25	entity	240803	Circular Target	yes		776	A-32
+25	entity	240804	Rectangular Target – Single Target (AEGIS Only)	yes		776	A-32
+25	entity	240805	Series or Groups of Targets	yes		776	A-32
+25	entity	240806	Smoke	yes		776	A-32
+25	entity	240808	Bomb Area	yes		776	A-32
+25	entity	240900	Fire Support Station	yes		776	A-32
+25	entity	241000	Fire Support Area	no	Currently there is no associated symbol. It is included for training or hierarchical explanation purposes.	777	A-32
+25	entity	241001	Irregular	yes		777	A-32
+25	entity	241002	Rectangular	yes		777	A-32
+25	entity	241003	Circular	yes		777	A-32
+25	entity	241100	Artillery Target Intelligence Zone (ATI)	no	Currently there is no associated symbol. It is included for training or hierarchical explanation purposes.	777	A-32
+25	entity	241101	Irregular	yes		777	A-32
+25	entity	241102	Rectangular	yes		777	A-32
+25	entity	241103	Circular	yes		777	A-32
+25	entity	241200	Call for Fire Zone (CFFZ)	no	Currently there is no associated symbol. It is included for training or hierarchical explanation purposes.	777	A-32
+25	entity	241201	Irregular	yes		777	A-32
+25	entity	241202	Rectangular	yes		777	A-32
+25	entity	241203	Circular	yes		777	A-32
+25	entity	241300	Censor Zone	no	Currently there is no associated symbol. It is included for training or hierarchical explanation purposes.	777	A-32
+25	entity	241301	Irregular	yes		777	A-32
+25	entity	241302	Rectangular	yes		777	A-32
+25	entity	241303	Circular	yes		777	A-32
+25	entity	241400	Critical Friendly Zone (CFZ)	no	Currently there is no associated symbol. It is included for training or hierarchical explanation purposes.	777	A-32
+25	entity	241401	Irregular	yes		777	A-32
+25	entity	241402	Rectangular	yes		777	A-32
+25	entity	241403	Circular	yes		777	A-32
+25	entity	241500	Dead Space Area	no	Currently there is no associated symbol. It is included for training or hierarchical explanation purposes.	778	A-32
+25	entity	241501	Irregular	yes		778	A-32
+25	entity	241502	Rectangular	yes		778	A-32
+25	entity	241503	Circular	yes		778	A-32
+25	entity	241700	Target Build–up Area	no	Currently there is no associated symbol. It is included for training or hierarchical explanation purposes.	778	A-32
+25	entity	241701	Irregular	yes		778	A-32
+25	entity	241702	Rectangular	yes		778	A-32
+25	entity	241703	Circular	yes		778	A-32
+25	entity	241800	Target Value Area	no	Currently there is no associated symbol. It is included for training or hierarchical explanation purposes.	778	A-32
+25	entity	241801	Irregular	yes		778	A-32
+25	entity	241802	Rectangular	yes		778	A-32
+25	entity	241803	Circular	yes		778	A-32
+25	entity	241900	Zone of Responsibility	no	Currently there is no associated symbol. It is included for training or hierarchical explanation purposes.	778	A-32
+25	entity	241901	Irregular	yes		778	A-32
+25	entity	241902	Rectangular	yes		778	A-32
+25	entity	241903	Circular	yes		778	A-32
+25	entity	242000	Terminally Guided Munition Footprint (TGMF)	yes		778	A-32
+25	entity	242100	Weapon/Sensor Range Fan, Circular	yes		778	A-32
+25	entity	242200	Weapon/Sensor Range Fan, Sector	yes		778	A-32
+25	entity	242300	Kill Box	no	Currently there is no associated symbol. It is included for training or hierarchical explanation purposes.	779	A-32
+25	entity	242301	Irregular, Blue	yes		779	A-32
+25	entity	242302	Rectangular, Blue	yes		779	A-32
+25	entity	242303	Circular, Blue	yes		779	A-32
+25	entity	242304	Irregular, Purple	yes		779	A-32
+25	entity	242305	Rectangular, Purple	yes		779	A-32
+25	entity	242306	Circular, Purple	yes		779	A-32
+25	entity	242400	Artillery Manoeuvre Area (AMA)	yes		779	A-32
+25	entity	242500	Artillery Reserved Area (ARA)	yes		779	A-32
+25	entity	242600	Zone of Fire	yes		779	A-32
+25	entity	242700	PsyOps Zone	no	Currently there is no associated symbol. It is included for training or hierarchical explanation purposes.	779	A-32
+25	entity	242701	Irregular	yes		779	A-32
+25	entity	242702	Rectangular	yes		779	A-32
+25	entity	242703	Circular	yes		779	A-32
+25	entity	250000	Fire Points	no	Currently there is no associated symbol. It is included for training or hierarchical explanation purposes.	779	A-32
+25	entity	250100	Firing Point	yes		779	A-32
+25	entity	250200	Hide Point	yes		779	A-32
+25	entity	250300	Launch Point	yes		779	A-32
+25	entity	250400	Reload Point	yes		779	A-32
+25	entity	250500	Survey Control Point	yes		779	A-32
+25	entity	250600	Known Point	yes		779	A-32
+25	entity	260000	Fire Lines	no	Currently there is no associated symbol. It is included for training or hierarchical explanation purposes.	779	A-32
+25	entity	260100	Fire Support Coordination Line (FSCL)	yes		780	A-32
+25	entity	260200	Coordinated Fire Line (CFL)	yes		780	A-32
+25	entity	260300	No Fire Line	yes		780	A-32
+25	entity	260400	Battlefield Coordination Line	yes		780	A-32
+25	entity	260500	Restrictive Fire Line	yes		780	A-32
+25	entity	260600	Munition Flight Path	yes		780	A-32
+25	entity	270000	Protection Areas	no	Currently there is no associated symbol. It is included for training or hierarchical explanation purposes.	780	A-32
+25	entity	270100	Obstacle Belt	yes		780	A-32
+25	entity	270200	Obstacle Zone	yes		780	A-32
+25	entity	270300	Obstacle Free Zone	yes		780	A-32
+25	entity	270400	Obstacle Restricted Zone	yes		780	A-32
+25	entity	270500	Obstacle Effects	no	Currently there is no associated symbol. It is included for training or hierarchical explanation purposes.	780	A-32
+25	entity	270501	Block	yes		780	A-32
+25	entity	270502	Disrupt	yes		780	A-32
+25	entity	270503	Fix	yes		780	A-32
+25	entity	270504	Turn	yes		780	A-32
+25	entity	270600	Obstacle Bypass	no	Currently there is no associated symbol. It is included for training or hierarchical explanation purposes.	780	A-32
+25	entity	270601	Easy	yes		780	A-32
+25	entity	270602	Difficult	yes		780	A-32
+25	entity	270603	Impossible	yes		780	A-32
+25	entity	270700	Minefield	no	Currently there is no associated symbol. It is included for training or hierarchical explanation purposes.	781	A-32
+25	entity	270701	Static Depiction	yes		781	A-32
+25	entity	270707	Dynamic Depiction	yes		781	A-32
+25	entity	270800	Mined Area	yes		781	A-32
+25	entity	270801	Fenced	yes		781	A-32
+25	entity	271000	Unexploded Explosive Ordnance (UXO) Area	yes		781	A-32
+25	entity	271100	Bridge	yes		781	A-32
+25	entity	271200	Roadblocks, Craters, and Blown Bridges	no	Currently there is no associated symbol. It is included for training or hierarchical explanation purposes.	781	A-32
+25	entity	271201	Planned	yes		781	A-32
+25	entity	271202	Explosives, State of Readiness 1 (Safe)	yes		781	A-32
+25	entity	271203	Explosives, State of Readiness 2 (Armed but Passable)	yes		781	A-32
+25	entity	271204	Roadblock Complete (Executed)	yes		781	A-32
+25	entity	271300	Assault Crossing	yes		781	A-32
+25	entity	271500	Ford Easy	yes		781	A-32
+25	entity	271600	Ford Difficult	yes		781	A-32
+25	entity	271700	Biological Contaminated Area	yes		781	A-32
+25	entity	271701	Toxic Industrial Material	yes		781	A-32
+25	entity	271800	Chemical Contaminated Area	yes		781	A-32
+25	entity	271801	Toxic Industrial Material	yes		781	A-32
+25	entity	271900	Nuclear Contaminated Area	yes		781	A-32
+25	entity	272000	Radiological Contaminated Area	yes		781	A-32
+25	entity	272001	Toxic Industrial Material	yes		781	A-32
+25	entity	272100	Minimum Safe Distance Zone	yes		781	A-32
+25	entity	272101	Multiple Strike - (STRIKWARN)	yes		782	A-32
+25	entity	272200	Radiation Dose Rate Contour Lines	yes		782	A-32
+25	entity	280000	Protection Points	no	Currently there is no associated symbol. It is included for training or hierarchical explanation purposes.	782	A-32
+25	entity	280100	Abatis	yes		782	A-32
+25	entity	280200	Antipersonnel Mine	yes		782	A-32
+25	entity	280201	Antipersonnel Mine with Directional Effects	yes		782	A-32
+25	entity	280300	Antitank Mine	yes		782	A-32
+25	entity	280400	Antitank Mine with Anti-handling Device	yes		782	A-32
+25	entity	280500	Wide Area Antitank Mine	yes		782	A-32
+25	entity	280600	Unspecified Mine	yes		782	A-32
+25	entity	280700	Booby Trap	yes		782	A-32
+25	entity	280800	Engineer Regulating Point	yes		763	A-32
+25	entity	280900	Shelter	yes		782	A-32
+25	entity	281000	Above Ground Shelter	yes		782	A-32
+25	entity	281100	Below Ground Shelter	yes		782	A-32
+25	entity	281200	Fort	yes		782	A-32
+25	entity	281300	Chemical Event	yes		782	A-32
+25	entity	281301	Toxic Industrial Material	yes		782	A-32
+25	entity	281400	Biological Event	yes		782	A-32
+25	entity	281401	Toxic Industrial Material	yes		782	A-32
+25	entity	281500	Nuclear Event	yes		782	A-32
+25	entity	281600	Nuclear Fallout Producing Event	yes		782	A-32
+25	entity	281700	Radiological Event	yes		782	A-32
+25	entity	281701	Toxic Industrial Material	yes		782	A-32
+25	entity	281800	General Decontamination Point/Site	yes		782	A-32
+25	entity	281801	Alternate	yes		782	A-32
+25	entity	281802	Equipment	yes		782	A-32
+25	entity	281803	Troop	yes		782	A-32
+25	entity	281804	Equipment/Troop	yes		782	A-32
+25	entity	281805	Operational	yes		782	A-32
+25	entity	281806	Thorough	yes		782	A-32
+25	entity	281807	Main Equipment	yes		783	A-32
+25	entity	281808	Forward Troop	yes		783	A-32
+25	entity	281809	Wounded Personnel	yes		783	A-32
+25	entity	281900	Tetrahedrons, Dragons Teeth, and Other Similar Obstacles	no	Currently there is no associated symbol. It is included for training or hierarchical explanation purposes.	783	A-32
+25	entity	281901	Fixed and Prefabricated	yes		783	A-32
+25	entity	281902	Movable	yes		783	A-32
+25	entity	281903	Movable and Prefabricated	yes		783	A-32
+25	entity	282000	Vertical Obstructions	no	Currently there is no associated symbol. It is included for training or hierarchical explanation purposes.	783	A-32
+25	entity	282001	Tower, Low	yes		783	A-32
+25	entity	282002	Tower, High	yes		783	A-32
+25	entity	282003	Overhead Wire	yes		783	A-32
+25	entity	290000	Protection Lines	no	Currently there is no associated symbol. It is included for training or hierarchical explanation purposes.	783	A-32
+25	entity	290100	Obstacle Line	yes		783	A-32
+25	entity	290101	Mineline	yes		783	A-32
+25	entity	290200	Antitank Obstacles	no	Currently there is no associated symbol. It is included for training or hierarchical explanation purposes.	783	A-32
+25	entity	290201	Antitank Ditch Under Construction	yes		783	A-32
+25	entity	290202	Antitank Ditch Completed	yes		783	A-32
+25	entity	290203	Antitank Ditch Reinforced, with Antitank Mines	yes		783	A-32
+25	entity	290300	Wire Obstacles	no	Currently there is no associated symbol. It is included for training or hierarchical explanation purposes.	783	A-32
+25	entity	290301	Unspecified	yes		784	A-32
+25	entity	290302	Single Fence	yes		784	A-32
+25	entity	290303	Double Fence	yes		784	A-32
+25	entity	290304	Double Apron Fence	yes		784	A-32
+25	entity	290305	Low Wire Fence	yes		784	A-32
+25	entity	290306	High Wire Fence	yes		784	A-32
+25	entity	290307	Single Concertina	yes		784	A-32
+25	entity	290308	Double Strand Concertina	yes		784	A-32
+25	entity	290309	Triple Strand Concertina	yes		784	A-32
+25	entity	290400	Mine Cluster	yes		784	A-32
+25	entity	290500	Trip Wire	yes		784	A-32
+25	entity	290600	Safe Lane or Gap	yes		784	A-32
+25	entity	290700	Ferry	yes		784	A-32
+25	entity	290800	Raft Site	yes		784	A-32
+25	entity	290900	Fortified Line	yes		784	A-32
+25	entity	291000	Fortified Position	yes		784	A-32
+25	entity	300000	Intelligence Lines	no	Currently there is no associated symbol. It is included for training or hierarchical explanation purposes.	784	A-32
+25	entity	300100	Intelligence Coordination Line (ICL)	yes		784	A-32
+25	entity	310000	Sustainment Areas	no	Currently there is no associated symbol. It is included for training or hierarchical explanation purposes.	784	A-32
+25	entity	310100	Detainee Holding Area	yes		784	A-32
+25	entity	310200	Enemy Prisoner of War Holding Area	yes		784	A-32
+25	entity	310300	Forward Arming and Refuelling Point (FARP)	yes		784	A-32
+25	entity	310400	Refugee Holding Area	yes		784	A-32
+25	entity	310500	Regimental Support Area	yes		784	A-32
+25	entity	310600	Brigade Support Area	yes		784	A-32
+25	entity	310700	Division Support Area	yes		784	A-32
+25	entity	310800	Corps Support Area	yes		784	A-32
+25	entity	320000	Sustainment Points	no	Currently there is no associated symbol. It is included for training or hierarchical explanation purposes.	785	A-32
+25	entity	320100	Ambulance Points	no	Currently there is no associated symbol. It is included for training or hierarchical explanation purposes.	785	A-32
+25	entity	320101	Ambulance Exchange Point	yes		785	A-32
+25	entity	320102	Ambulance Control Point	yes		785	A-32
+25	entity	320103	Ambulance Load Point	yes		785	A-32
+25	entity	320104	Ambulance Relay Point	yes		785	A-32
+25	entity	320200	Ammunition Supply Point	yes		785	A-32
+25	entity	320300	Ammunition Transfer and Holding Point	yes		785	A-32
+25	entity	320400	Cannibalization Point	yes		785	A-32
+25	entity	320500	Casualty Collection Point	yes		785	A-32
+25	entity	320600	Civilian Collection Point	yes		785	A-32
+25	entity	320700	Detainee Collection Point	yes		785	A-32
+25	entity	320800	Enemy Prisoner of War (EPW) Collection Point	yes		785	A-32
+25	entity	320900	Logistics Release Point (LRP)	yes		785	A-32
+25	entity	321000	Maintenance Collection Point (MCP)	yes		785	A-32
+25	entity	321100	Medical Evacuation Point (MEDEVAC) Pick-Up Point	yes		785	A-32
+25	entity	321200	Rearm, Refuel and Resupply Point (R3P)	yes		785	A-32
+25	entity	321300	Refuel on the Move (ROM) Point	yes		785	A-32
+25	entity	321400	Traffic Control Post (TCP)	yes		785	A-32
+25	entity	321500	Trailer Transfer Point (TTP)	yes		785	A-32
+25	entity	321600	Unit Maintenance Collection Point (UNCP)	yes		785	A-32
+25	entity	321700	General Supply Point	yes		785	A-32
+25	entity	321701	NATO Class I	yes		785	A-32
+25	entity	321702	NATO Class II	yes		786	A-32
+25	entity	321703	NATO Class III	yes		786	A-32
+25	entity	321704	NATO Class IV	yes		786	A-32
+25	entity	321705	NATO Class V	yes		786	A-32
+25	entity	321706	NATO Multiple Class	yes		786	A-32
+25	entity	321707	US Class I	yes		786	A-32
+25	entity	321708	US Class II	yes		786	A-32
+25	entity	321709	US Class III	yes		786	A-32
+25	entity	321710	US Class IV	yes		786	A-32
+25	entity	321711	US Class V	yes		786	A-32
+25	entity	321712	US Class VI	yes		786	A-32
+25	entity	321713	US Class VII	yes		786	A-32
+25	entity	321714	US Class VIII	yes		786	A-32
+25	entity	321715	US Class IX	yes		786	A-32
+25	entity	321716	US Class X	yes		786	A-32
+25	entity	321800	Medical Supply Point	yes		786	A-32
+25	entity	321900	Mortuary Collection Point	yes		786	A-32
+25	entity	330000	Sustainment Lines	no	Currently there is no associated symbol. It is included for training or hierarchical explanation purposes.	786	A-32
+25	entity	330100	Moving Convoy	yes		786	A-32
+25	entity	330200	Halted Convoy	yes		786	A-32
+25	entity	330300	Main Supply Route (MSR)	yes		786	A-32
+25	entity	330301	One Way Traffic	yes		786	A-32
+25	entity	330302	Two Way Traffic	yes		786	A-32
+25	entity	330303	Alternating Traffic	yes		786	A-32
+25	entity	330400	Alternate Supply Route (ASR)	yes		786	A-32
+25	entity	330401	One Way Traffic	yes		786	A-32
+25	entity	330402	Two Way Traffic	yes		786	A-32
+25	entity	330403	Alternating Traffic	yes		786	A-32
+25	entity	330500	Route	yes		786	A-32
+25	entity	330501	One Way Traffic	yes		786	A-32
+25	entity	330502	Alternating Traffic	yes		786	A-32
+25	entity	340000	Mission Tasks	no	Currently there is no associated symbol. It is included for training or hierarchical explanation purposes.	787	A-32
+25	entity	340100	Block	yes		787	A-32
+25	entity	340200	Breach	yes		787	A-32
+25	entity	340300	Bypass	yes		787	A-32
+25	entity	340400	Canalize	yes		787	A-32
+25	entity	340500	Clear	yes		787	A-32
+25	entity	340600	Counter-Attack	yes		787	A-32
+25	entity	340700	Counter-Attack by Fire	yes		787	A-32
+25	entity	340800	Delay	yes		787	A-32
+25	entity	340900	Destroy	yes		787	A-32
+25	entity	341000	Disrupt	yes		787	A-32
+25	entity	341100	Fix	yes		787	A-32
+25	entity	341200	Follow and Assume	yes		787	A-32
+25	entity	341300	Follow and Support	yes		787	A-32
+25	entity	341400	Interdict	yes		787	A-32
+25	entity	341500	Isolate	yes		787	A-32
+25	entity	341600	Neutralize	yes		787	A-32
+25	entity	341700	Occupy	yes		787	A-32
+25	entity	341800	Penetrate	yes		787	A-32
+25	entity	341900	Relieve in Place / Relief in Place (RIP)	yes		787	A-32
+25	entity	342000	Retire/Retirement	yes		787	A-32
+25	entity	342100	Secure	yes		787	A-32
+25	entity	342200	Security	no	Currently there is no associated symbol. It is included for training or hierarchical explanation purposes.	787	A-32
+25	entity	342201	Cover	yes		787	A-32
+25	entity	342202	Guard	yes		787	A-32
+25	entity	342203	Screen	yes		787	A-32
+25	entity	342300	Seize	yes		787	A-32
+25	entity	342400	Withdraw	yes		787	A-32
+25	entity	342500	Withdraw Under Pressure	yes		787	A-32
+25	entity	342600	Cordon and Knock	yes		788	A-32
+25	entity	342700	Cordon and Search	yes		788	A-32
+25	entity	342800	Suppress	yes		788	A-32
+25	entity	342900	Advance to Contact	yes		788	A-32
+25	entity	343000	Capture	yes		788	A-32
+25	entity	343100	Exploit/Exploitation	yes		788	A-32
+25	entity	343200	Control	yes		788	A-32
+25	entity	343300	Demonstration/ Demonstrate	yes		788	A-32
+25	entity	343400	Deny	yes		788	A-32
+25	entity	343500	Envelop	yes		788	A-32
+25	entity	343600	Escort	yes		788	A-32
+25	entity	343700	Exfiltrate	yes		788	A-32
+25	entity	343800	Infiltrate	yes		788	A-32
+25	entity	343900	Locate	yes		788	A-32
+25	entity	344000	Pursue	yes		788	A-32
+25	entity	344100	Forward Passage of Lines	yes		788	A-32
+25	entity	344200	Rearward Passage of Lines	yes		788	A-32
+25	entity	344300	Defeat	yes		788	A-32
+25	entity	344400	Disengage	yes		788	A-32
+25	entity	344500	Evacuate	yes		788	A-32
+25	entity	344600	Recover	yes		788	A-32
+25	entity	344700	Turn	yes		788	A-32
+25	entity	350000	Space Debris	no	Currently there is no associated symbol. It is included for training or hierarchical explanation purposes.	788	A-32
+25	entity	350100	Human Made Space Debris	no	Currently there is no associated symbol. It is included for training or hierarchical explanation purposes.	788	A-32
+25	entity	350101	Human Made Space Debris Small	yes		788	A-32
+25	entity	350102	Human Made Space Debris Medium	yes		788	A-32
+25	entity	350103	Human Made Space Debris Big	yes		789	A-32
+25	entity	350200	Natural Space Debris	no	Currently there is no associated symbol. It is included for training or hierarchical explanation purposes.	789	A-32
+25	entity	350201	Natural Space Debris Small	yes		789	A-32
+25	entity	350202	Natural Space Debris Medium	yes		789	A-32
+25	entity	350203	Natural Space Debris Big	yes		789	A-32
+25	entity	360000	Protection of Cultural Property	no	Currently there is no associated symbol. It is included for training or hierarchical explanation purposes.	789	A-32
+25	entity	360100	General	yes		789	A-32
+25	entity	360200	Special	yes		789	A-32
+25	entity	360300	Enhanced	yes		789	A-32
+25	entity	370000	Intelligence Areas	no	Currently there is no associated symbol. It is included for training or hierarchical explanation purposes.	789	A-32
+25	entity	370100	Human Terrain	yes		789	A-32
+25	entity	380000	Paths	no	Currently there is no associated symbol. It is included for training or hierarchical explanation purposes.	817	A-50
+25	entity	380100	Data Path Segment	yes		817	A-50
+25	entity	380200	Data Tunnel	yes		817	A-50
+25	entity	390000	Terrain	yes		817	A-50
+25	entity	390100	Network	no	Currently there is no associated symbol. It is included for training or hierarchical explanation purposes.	817	A-50
+25	entity	400000	Cyberspace Points	no	Currently there is no associated symbol. It is included for training or hierarchical explanation purposes.	817	A-50
+25	entity	400100	Password Query	yes		817	A-50
+25	m1	00	Unspecified	yes	For use with Limited Access Area, Restricted Terrain, and Severely Restricted Terrain only.	790	A-33
+25	m1	01	Standard Mobility/On-Road Mobility	yes	For use with Limited Access Area, Restricted Terrain, and Severely Restricted Terrain only.	790	A-33
+25	m1	02	High Mobility/Off-Road Mobility	yes	For use with Limited Access Area, Restricted Terrain, and Severely Restricted Terrain only.	790	A-33
+25	m1	03	Tracked	yes	For use with Limited Access Area, Restricted Terrain, and Severely Restricted Terrain only.	790	A-33
+25	m1	04	Tracked and Wheeled Combination	yes	For use with Limited Access Area, Restricted Terrain, and Severely Restricted Terrain only.	790	A-33
+25	m1	05	Towed	yes	For use with Limited Access Area, Restricted Terrain, and Severely Restricted Terrain only.	790	A-33
+25	m1	06	Railway	yes	For use with Limited Access Area, Restricted Terrain, and Severely Restricted Terrain only.	790	A-33
+25	m1	07	Over-Snow (Prime Mover)	yes	For use with Limited Access Area, Restricted Terrain, and Severely Restricted Terrain only.	790	A-33
+25	m1	08	Sled	yes	For use with Limited Access Area, Restricted Terrain, and Severely Restricted Terrain only.	790	A-33
+25	m1	09	Pack Animal	yes	For use with Limited Access Area, Restricted Terrain, and Severely Restricted Terrain only.	790	A-33
+25	m1	10	Barge	yes	For use with Limited Access Area, Restricted Terrain, and Severely Restricted Terrain only.	790	A-33
+25	m1	11	Amphibious	yes	For use with Limited Access Area, Restricted Terrain, and Severely Restricted Terrain only.	790	A-33
+25	m1	12	No Vehicles	yes	For use with Limited Access Area, Restricted Terrain, and Severely Restricted Terrain only.	790	A-33
+25	m1	13	Unspecified Mine	yes	Minefields & mined areas only.	790	A-33
+25	m1	14	Antipersonnel Mine	yes	Minefields & mined areas only.	790	A-33
+25	m1	15	Antipersonnel Mine with Directional Effects	yes	Minefields & mined areas only.	790	A-33
+25	m1	16	Antitank Mine	yes	Minefields & mined areas only.	790	A-33
+25	m1	17	Antitank Mine with Antihandling Device	yes	Minefields & mined areas only.	790	A-33
+25	m1	18	Wide Area Antitank Mine	yes	Minefields & mined areas only.	790	A-33
+25	m1	19	Mine Cluster	yes	Minefields & mined areas only.	790	A-33
+25	m1	20	Antipersonnel Mine and Antipersonnel Mine with Directional Effects	yes	Minefields & mined areas only.	790	A-33
+25	m1	21	Antipersonnel Mine and Antitank Mine	yes	Minefields & mined areas only.	790	A-33
+25	m1	22	Antipersonnel Mine and Antitank Mine with Antihandling Device	yes	Minefields & mined areas only.	790	A-33
+25	m1	23	Antipersonnel Mine and Wide Area Antitank Mine	yes	Minefields & mined areas only.	790	A-33
+25	m1	24	Antipersonnel Mine and Mine Cluster	yes	Minefields & mined areas only.	790	A-33
+25	m1	25	Antipersonnel Mine with Directional Effects and Antitank Mine	yes	Minefields & mined areas only.	790	A-33
+25	m1	26	Antipersonnel Mine with Directional Effects and Antitank Mine with Antihandling Device	yes	Minefields & mined areas only.	791	A-33
+25	m1	27	Antipersonnel Mine with Directional Effects and Wide Area Antitank Mine	yes	Minefields & mined areas only.	791	A-33
+25	m1	28	Antipersonnel Mine with Directional Effects and Mine Cluster	yes	Minefields & mined areas only.	791	A-33
+25	m1	29	Antitank Mine and Antitank Mine with Antihandling Device	yes	Minefields & mined areas only.	791	A-33
+25	m1	30	Antitank Mine and Wide Area Antitank Mine	yes	Minefields & mined areas only.	791	A-33
+25	m1	31	Antitank Mine and Mine Cluster	yes	Minefields & mined areas only.	791	A-33
+25	m1	32	Antitank Mine with Antihandling Device and Wide Area Antitank Mine	yes	Minefields & mined areas only.	791	A-33
+25	m1	33	Antitank Mine with Antihandling Device and Mine Cluster	yes	Minefields & mined areas only.	791	A-33
+25	m1	34	Wide Area Antitank Mine and Mine Cluster	yes	Minefields & mined areas only.	791	A-33
+25	m1	35	Antipersonnel Mine, Antipersonnel Mine with Directional Effects, and Antitank Mine	yes	Minefields & mined areas only.	791	A-33
+25	m1	36	Antipersonnel Mine, Antipersonnel Mine with Directional Effects, and Antitank Mine with Antihandling Device	yes	Minefields & mined areas only.	791	A-33
+25	m1	37	Antipersonnel Mine, Antipersonnel Mine with Directional Effects, and Wide Area Antitank Mine	yes	Minefields & mined areas only.	791	A-33
+25	m1	38	Antipersonnel Mine, Antipersonnel Mine with Directional Effects, and Mine Cluster	yes	Minefields & mined areas only.	791	A-33
+25	m1	39	Antipersonnel Mine, Antitank Mine, and Antitank Mine with Antihandling Device	yes	Minefields & mined areas only.	791	A-33
+25	m1	40	Antipersonnel Mine, Antitank Mine, and Wide Area Antitank Mine	yes	Minefields & mined areas only.	791	A-33
+25	m1	41	Antipersonnel Mine, Antitank Mine, and Mine Cluster	yes	Minefields & mined areas only.	791	A-33
+25	m1	42	Antipersonnel Mine, Antitank Mine with Antihandling Device, and Wide Area Antitank Mine	yes	Minefields & mined areas only.	791	A-33
+25	m1	43	Antipersonnel Mine, Antitank Mine with Antihandling Device, and Mine Cluster	yes	Minefields & mined areas only.	791	A-33
+25	m1	44	Antipersonnel Mine, Wide Area Antitank Mine, and Mine Cluster	yes	Minefields & mined areas only.	791	A-33
+25	m1	45	Antipersonnel Mine with Directional Effects, Antitank Mine, and Antitank Mine with Antihandling Device	yes	Minefields & mined areas only.	791	A-33
+25	m1	46	Antipersonnel Mine with Directional Effects, Antitank Mine, and Wide Area Antitank Mine	yes	Minefields & mined areas only.	791	A-33
+25	m1	47	Antipersonnel Mine with Directional Effects, Antitank Mine, and Mine Cluster	yes	Minefields & mined areas only.	791	A-33
+25	m1	48	Antipersonnel Mine with Directional Effects, Antitank Mine with Antihandling Device, and Wide Area Antitank Mine	yes	Minefields & mined areas only.	791	A-33
+25	m1	49	Antipersonnel Mine with Directional Effects, Antitank Mine with Antihandling Device, and Mine Cluster	yes	Minefields & mined areas only.	791	A-33
+25	m1	50	Antipersonnel Mine with Directional Effects, Wide Area Antitank Mine, and Mine Cluster	yes	Minefields & mined areas only.	792	A-33
+25	m1	51	Dismounted	yes	For use with Limited Access Area, Restricted Terrain, and Severely Restricted Terrain only.	792	A-33
+25	m2	00	Unspecified	yes	N/A	792	A-34
+25	m2	01	Urban	yes	Optional hatching colour - BLACK	792	A-34
+25	m2	02	Water	yes	Optional hatching colour - BLUE	792	A-34
+25	m2	03	Ground	yes	Optional hatching colour - BROWN	792	A-34
+25	m2	04	Vegetation	yes	Optional hatching colour - GREEN	792	A-34
+25	m2	05	Obstacles	yes	Optional hatching colour - GREEN	792	A-34
+27	entity	110000	Military	no	Currently there is no associated symbol. It is included for training or hierarchical explanation purposes.	793	A-35
+27	entity	110200	Activity/Task	no	Currently there is no associated symbol. It is included for training or hierarchical explanation purposes.	793	A-35
+27	entity	110201	Explosive Ordnance Disposal	yes		793	A-35
+27	entity	110202	Field Artillery Observer	yes		793	A-35
+27	entity	110203	Joint Fire Support	yes		793	A-35
+27	entity	110204	Liaison	yes		793	A-35
+27	entity	110205	Messenger	yes		793	A-35
+27	entity	110206	Military Police	yes		793	A-35
+27	entity	110207	Observer	yes		793	A-35
+27	entity	110208	Security	yes		793	A-35
+27	entity	110209	Sniper	yes		793	A-35
+27	entity	110210	Special Operation Forces (SOF)	yes		793	A-35
+27	entity	110211	Designated Marksman	yes		793	A-35
+27	entity	110212	Medic	yes		793	A-35
+27	entity	110213	Signaller	yes		793	A-35
+27	entity	110214	Reconnaissance	yes		793	A-35
+27	entity	110215	Infantry	yes		793	A-35
+27	entity	110216	Close Protection	yes		793	A-35
+27	entity	110217	Crowd and Riot Control	yes		793	A-35
+27	entity	110218	Special Weapons and Tactics (SWAT)	yes		793	A-35
+27	entity	110219	Demolition	yes		793	A-35
+27	entity	110220	Commander (CDR)	yes		793	A-35
+27	entity	110221	Second In Command (SIC)	yes		793	A-35
+27	entity	110300	Lethal Weapons	no	Currently there is no associated symbol. It is included for training or hierarchical explanation purposes.	794	A-35
+27	entity	110301	Rifle	yes		794	A-35
+27	entity	110302	Single Shot Rifle	yes		794	A-35
+27	entity	110303	Semiautomatic Rifle	yes		794	A-35
+27	entity	110304	Automatic Rifle	yes		794	A-35
+27	entity	110305	Machine Gun	yes		794	A-35
+27	entity	110306	Machine Gun - Light	yes		794	A-35
+27	entity	110307	Machine Gun - Medium	yes		794	A-35
+27	entity	110308	Machine Gun - Heavy	yes		794	A-35
+27	entity	110309	Grenade Launcher	yes		794	A-35
+27	entity	110310	Grenade Launcher - Light	yes		794	A-35
+27	entity	110311	Grenade Launcher - Medium	yes		794	A-35
+27	entity	110312	Grenade Launcher - Heavy	yes		794	A-35
+27	entity	110313	Flame Thrower	yes		794	A-35
+27	entity	110314	Mortar	yes		794	A-35
+27	entity	110315	Single Rocket Launcher	yes		794	A-35
+27	entity	110316	Antitank Rocket Launcher	yes		794	A-35
+27	entity	110400	Non-Lethal Weapons	no	Currently there is no associated symbol. It is included for training or hierarchical explanation purposes.	794	A-35
+27	entity	110401	Non-Lethal Weapon	yes		794	A-35
+27	entity	110402	Non-Lethal Grenade Launcher	yes		794	A-35
+27	entity	110403	Taser	yes		794	A-35
+27	entity	120000	Civilian	no	Currently there is no associated symbol. It is included for training or hierarchical explanation purposes.	794	A-35
+27	entity	120100	Activity/Task	no	Currently there is no associated symbol. It is included for training or hierarchical explanation purposes.	794	A-35
+27	entity	120101	Police	yes		795	A-35
+27	entity	120102	Non-Governmental Organization Member or Non-Governmental Organization (NGO)	yes		795	A-35
+27	entity	120103	Government Organization (GO)	yes		795	A-35
+27	m1	00	Unspecified	yes		796	A-36
+27	m1	11	Field Artillery Observer	yes		796	A-36
+27	m1	12	Joint Fire Support	yes		796	A-36
+27	m1	13	Liaison	yes		796	A-36
+27	m1	14	Messenger	yes		796	A-36
+27	m1	15	Military Police	yes		796	A-36
+27	m1	16	Observer	yes		796	A-36
+27	m1	17	Designated Marksman	yes		796	A-36
+27	m1	20	Signaller	yes		796	A-36
+27	m1	21	Reconnaissance	yes		796	A-36
+27	m1	22	Infantry	yes		796	A-36
+27	m1	23	Commander (CDR)	yes		796	A-36
+27	m1	24	Second In Command (SIC)	yes		796	A-36
+27	m1	25	Demolition	yes		796	A-36
+27	m1	26	Police	yes		796	A-36
+27	m1	46	Individual	yes		796	A-36
+27	m2	00	Unspecified	yes		797	A-37
+27	m2	03	Video Imagery (Combat Camera)	yes		797	A-37
+27	m2	04	Functional Staff Area J1	yes		797	A-37
+27	m2	05	Functional Staff Area J2	yes		797	A-37
+27	m2	06	Functional Staff Area J3	yes		797	A-37
+27	m2	07	Functional Staff Area J4	yes		797	A-37
+27	m2	08	Functional Staff Area J5	yes		797	A-37
+27	m2	09	Functional Staff Area J6	yes		797	A-37
+27	m2	10	Functional Staff Area J7	yes		797	A-37
+27	m2	11	Functional Staff Area J8	yes		797	A-37
+27	m2	12	Functional Staff Area J9	yes		797	A-37
+27	m2	13	Functional Staff Area J10	yes		797	A-37
+27	m2	14	Rank Code OF-1	yes		797	A-37
+27	m2	15	Rank Code OF-2	yes		797	A-37
+27	m2	16	Rank Code OF-3	yes		797	A-37
+27	m2	17	Rank Code OF-4	yes		797	A-37
+27	m2	18	Rank Code OF-5	yes		797	A-37
+27	m2	19	Rank Code OF-6	yes		797	A-37
+27	m2	20	Rank Code OF-7	yes		797	A-37
+27	m2	21	Rank Code OF-8	yes		797	A-37
+27	m2	22	Rank Code OF-9	yes		797	A-37
+27	m2	23	Rank Code OF-10	yes		797	A-37
+27	m2	24	Rank Code OF-D	yes		797	A-37
+27	m2	25	Rank Code OR-1	yes		797	A-37
+27	m2	26	Rank Code OR-2	yes		797	A-37
+27	m2	27	Rank Code OR-3	yes		797	A-37
+27	m2	28	Rank Code OR-4	yes		797	A-37
+27	m2	29	Rank Code OR-5	yes		797	A-37
+27	m2	30	Rank Code OR-6	yes		797	A-37
+27	m2	31	Rank Code OR-7	yes		797	A-37
+27	m2	32	Rank Code OR-8	yes		797	A-37
+27	m2	33	Rank Code OR-9	yes		797	A-37
+27	m2	34	Rank Code WO-1	yes		797	A-37
+27	m2	35	Rank Code WO-2	yes		797	A-37
+27	m2	36	Rank Code WO-3	yes		797	A-37
+27	m2	37	Rank Code WO-4	yes		797	A-37
+27	m2	38	Rank Code WO-5	yes		797	A-37
+30	entity	110000	Military	no	Currently there is no associated symbol. It is included for training or hierarchical explanation purposes.	798	A-38
+30	entity	120000	Military Combatant	yes		798	A-38
+30	entity	120100	Carrier	yes		798	A-38
+30	entity	120200	Surface Combatant, Line	yes		798	A-38
+30	entity	120201	Battleship	yes		798	A-38
+30	entity	120202	Cruiser	yes		798	A-38
+30	entity	120203	Destroyer	yes		798	A-38
+30	entity	120204	Frigate	yes		798	A-38
+30	entity	120205	Corvette	yes		798	A-38
+30	entity	120206	Littoral Combatant Ship	yes		798	A-38
+30	entity	120300	Amphibious Warfare Ship	yes		798	A-38
+30	entity	120301	Amphibious Force Flagship or Amphibious Command Ship	yes		798	A-38
+30	entity	120302	Amphibious Assault, Non-specified	yes		798	A-38
+30	entity	120303	Amphibious Assault Ship, General	yes		798	A-38
+30	entity	120304	Amphibious Assault Ship, Multipurpose	yes		798	A-38
+30	entity	120305	Amphibious Assault Ship, Helicopter	yes		798	A-38
+30	entity	120306	Amphibious Transport Dock	yes		798	A-38
+30	entity	120307	Landing Ship, General	yes		798	A-38
+30	entity	120308	Landing Craft	yes		798	A-38
+30	entity	120400	Mine Warfare Ship, General	yes		798	A-38
+30	entity	120401	Mine Layer, General	yes		798	A-38
+30	entity	120402	Mine Sweeper, General	yes		798	A-38
+30	entity	120403	Mine Sweeper, Drone	yes		798	A-38
+30	entity	120404	Mine Hunter, General	yes		798	A-38
+30	entity	120405	Mine Countermeasures Vessel, General	yes		798	A-38
+30	entity	120406	Mine Countermeasures, Support Ship	yes		799	A-38
+30	entity	120500	Patrol Boat General	yes		799	A-38
+30	entity	120501	Patrol Craft, Submarine Chaser/Escort, General	yes		799	A-38
+30	entity	120502	Patrol Ship, Gun Equipped General	yes		799	A-38
+30	entity	120600	Decoy	yes		799	A-38
+30	entity	120700	Unmanned Surface Water Vehicle (USV)	yes		799	A-38
+30	entity	120800	Spdboat	yes		799	A-38
+30	entity	120801	Rigid–Hull Inflatable Boat (RHIB)	yes		799	A-38
+30	entity	120900	Jet Ski	yes		799	A-38
+30	entity	121000	Navy Task Organization	yes		799	A-38
+30	entity	121001	Navy Task Element	yes		799	A-38
+30	entity	121002	Navy Task Force	yes		799	A-38
+30	entity	121003	Navy Task Group	yes		799	A-38
+30	entity	121004	Navy Task Unit	yes		799	A-38
+30	entity	121005	Convoy	yes		799	A-38
+30	entity	121100	Sea-Based X-Band (SBX) Radar	yes		799	A-38
+30	entity	130000	Military Non Combatant	no	Currently there is no associated symbol. It is included for training or hierarchical explanation purposes.	799	A-38
+30	entity	130100	Auxiliary Ship General	yes		799	A-38
+30	entity	130101	Ammunition Ship	yes		799	A-38
+30	entity	130102	Stores Ship (Naval)	yes		799	A-38
+30	entity	130103	Auxiliary Flag or Command Ship	yes		799	A-38
+30	entity	130104	Intelligence Collector	yes		799	A-38
+30	entity	130105	Oceanographic Research Ship (AGOR)	yes		799	A-38
+30	entity	130106	Survey Ship	yes		799	A-38
+30	entity	130107	Hospital Ship	yes		799	A-38
+30	entity	130108	Cargo Ship (Naval)	yes		799	A-38
+30	entity	130109	Combat Support Ship Fast (Naval)	yes		800	A-38
+30	entity	130110	Oiler, Replenishment (Naval)	yes		800	A-38
+30	entity	130111	Repair Ship	yes		800	A-38
+30	entity	130112	Submarine Tender	yes		800	A-38
+30	entity	130113	Tug, Ocean Going	yes		800	A-38
+30	entity	130200	Service Craft/Yard	yes		800	A-38
+30	entity	130201	Barge, not Self–Propelled	yes		800	A-38
+30	entity	130202	Barge, Self–Propelled	yes		800	A-38
+30	entity	130203	Tug, Harbour	yes		800	A-38
+30	entity	130204	Lighter, Torpedo Transport	yes		800	A-38
+30	entity	140000	Civilian	yes		800	A-38
+30	entity	140100	Merchant Ship, General	yes		800	A-38
+30	entity	140101	Merchant Ship, Dry Cargo, Break Bulk	yes		800	A-38
+30	entity	140102	Merchant Ship, Container	yes		800	A-38
+30	entity	140103	Merchant, Dredger	yes		800	A-38
+30	entity	140104	Merchant Ship, Roll-On, Roll-Off (RO/RO)	yes		800	A-38
+30	entity	140105	Merchant Ship, Car/Passenger Ferry	yes		800	A-38
+30	entity	140106	Merchant Ship, Heavy Lift	yes		800	A-38
+30	entity	140107	Hovercraft, General	yes		800	A-38
+30	entity	140108	Merchant Ship, Lash	yes		800	A-38
+30	entity	140109	Merchant Ship, Tanker	yes		800	A-38
+30	entity	140110	Merchant Ship, Passenger	yes		800	A-38
+30	entity	140111	Merchant Ship, Tug, Ocean Going	yes		800	A-38
+30	entity	140112	Tow	yes		800	A-38
+30	entity	140113	Transport Ship, Hazardous Material	yes		800	A-38
+30	entity	140114	Junk/Dhow - Dhow	yes		800	A-38
+30	entity	140115	Barge, not Self–Propelled	yes		800	A-38
+30	entity	140116	Hospital Ship	yes		800	A-38
+30	entity	140200	Fishing Vessel, General	yes		800	A-38
+30	entity	140201	Drifter	yes		800	A-38
+30	entity	140202	Trawler	yes		800	A-38
+30	entity	140203	Merchant, Dredger	yes		801	A-38
+30	entity	140300	Law Enforcement Vessel	yes		801	A-38
+30	entity	140400	Leisure Craft, Sailing	yes		801	A-38
+30	entity	140500	Leisure Craft, Motorized	yes		801	A-38
+30	entity	140501	Rigid–Hull Inflatable Boat (RHIB)	yes		801	A-38
+30	entity	140502	Spdboat	yes		801	A-38
+30	entity	140600	Jet Ski	yes		801	A-38
+30	entity	140700	Unmanned Surface Water Vehicle (USV)	yes		801	A-38
+30	entity	150000	Own Ship	yes		801	A-38
+30	entity	160000	Fused Track	yes		801	A-38
+30	entity	170000	Manual Track	yes		801	A-38
+30	m1	00	Unspecified	yes		802	A-39
+30	m1	01	Own Ship	yes		802	A-39
+30	m1	11	Remote Multi-Mission Vehicle	yes		802	A-39
+30	m1	17	Torpedo	yes		802	A-39
+30	m1	21	Ballistic Missile Defence, Long-Range Surveillance and Track (LRS&T)	yes		802	A-39
+30	m1	22	Sea-Base X-Band	yes		802	A-39
+30	m2	00	Unspecified	yes		802	A-40
+30	m2	01	Nuclear Powered	yes		802	A-40
+30	m2	05	Dock	yes		802	A-40
+30	m2	06	Logistics	yes		802	A-40
+30	m2	07	Tank	yes		802	A-40
+30	m2	08	Vehicle	yes		802	A-40
+30	m2	09	Fast	yes		802	A-40
+30	m2	10	Air–Cushioned (US)	yes		802	A-40
+30	m2	11	Air–Cushioned (NATO)	yes		802	A-40
+30	m2	12	Hydrofoil	yes		802	A-40
+35	entity	110000	Military	yes		803	A-41
+35	entity	110100	Submarine, General	yes		803	A-41
+35	entity	110101	Submarine, Surfaced	yes		803	A-41
+35	entity	110102	Submarine, Snorkelling	yes		803	A-41
+35	entity	110103	Submarine, Bottomed	yes		803	A-41
+35	entity	110200	Other Submersible	yes		803	A-41
+35	entity	110300	Nonsubmarine	yes		803	A-41
+35	entity	110400	Autonomous Underwater Vehicle (AUV)/Unmanned Underwater Vehicle (UUV)	yes		803	A-41
+35	entity	110500	Diver	yes		803	A-41
+35	entity	120000	Civilian	yes		803	A-41
+35	entity	120100	Submersible, General (Commercial)	yes		803	A-41
+35	entity	120200	Autonomous Underwater Vehicle (AUV)/ Unmanned Underwater Vehicle (UUV)	yes		803	A-41
+35	entity	120300	Diver	yes		803	A-41
+35	entity	130000	Weapon	yes		803	A-41
+35	entity	130100	Torpedo	yes		803	A-41
+35	entity	130200	Improvised Explosive Device (IED)	yes		803	A-41
+35	entity	130300	Decoy	yes		803	A-41
+35	entity	140000	Echo Tracker Classifier (ETC) / Possible Contact (POSCON)	yes		803	A-41
+35	entity	150000	Fused Track	yes		803	A-41
+35	entity	160000	Manual Track	yes		803	A-41
+35	m1	00	Unspecified	yes		804	A-42
+35	m1	02	Auxiliary	yes		804	A-42
+35	m1	13	Possible Submarine Low 1	yes	Used with SUBMARINE entity type only.	804	A-42
+35	m1	14	Possible Submarine Low 2	yes	Used with SUBMARINE entity type only.	804	A-42
+35	m1	15	Possible Submarine High 3	yes	Used with SUBMARINE entity type only.	804	A-42
+35	m1	16	Possible Submarine High 4	yes	Used with SUBMARINE entity type only.	804	A-42
+35	m1	17	Probable Submarine	yes	Used with SUBMARINE entity type only.	804	A-42
+35	m1	18	Certain Submarine	yes	Used with SUBMARINE entity type only.	804	A-42
+35	m1	19	Anti-torpedo Torpedo	yes	Used with SUBMARINE entity type only.	804	A-42
+35	m2	00	Unspecified	yes		804	A-43
+35	m2	01	Air Independent Propulsion	yes	Used with SUBMARINE entity type only.	804	A-43
+35	m2	02	Diesel Electric, General	yes	Used with SUBMARINE entity type only.	804	A-43
+35	m2	03	Diesel – Type 1	yes	Used with SUBMARINE entity type only.	804	A-43
+35	m2	04	Diesel – Type 2	yes	Used with SUBMARINE entity type only.	804	A-43
+35	m2	05	Diesel – Type 3	yes	Used with SUBMARINE entity type only.	804	A-43
+35	m2	06	Nuclear Powered, General	yes	Used with SUBMARINE entity type only.	804	A-43
+35	m2	07	Nuclear – Type 1	yes	Used with SUBMARINE entity type only.	804	A-43
+35	m2	08	Nuclear – Type 2	yes	Used with SUBMARINE entity type only.	804	A-43
+35	m2	09	Nuclear – Type 3	yes	Used with SUBMARINE entity type only.	804	A-43
+35	m2	10	Nuclear – Type 4	yes	Used with SUBMARINE entity type only.	804	A-43
+35	m2	11	Nuclear – Type 5	yes	Used with SUBMARINE entity type only.	804	A-43
+35	m2	12	Nuclear – Type 6	yes	Used with SUBMARINE entity type only.	804	A-43
+35	m2	13	Nuclear – Type 7	yes	Used with SUBMARINE entity type only.	804	A-43
+36	entity	110000	Sea Mine, General	yes		805	A-44
+36	entity	110100	Sea Mine, Bottom	yes		805	A-44
+36	entity	110200	Sea Mine, Moored	yes		805	A-44
+36	entity	110300	Sea Mine, Floating	yes		805	A-44
+36	entity	110400	Sea Mine, Rising	yes		805	A-44
+36	entity	110500	Sea Mine, Other Position	yes		805	A-44
+36	entity	110700	Small Object, Mine–Like	yes		805	A-44
+36	entity	110800	Exercise Mine, General	yes		805	A-44
+36	entity	110801	Exercise Mine, Bottom	yes		805	A-44
+36	entity	110802	Exercise Mine, Moored	yes		805	A-44
+36	entity	110803	Exercise Mine, Floating	yes		805	A-44
+36	entity	110804	Exercise Mine, Rising	yes		805	A-44
+36	entity	110900	Neutralized Mine, General	yes		805	A-44
+36	entity	110901	Neutralized Mine, Bottom	yes		805	A-44
+36	entity	110902	Neutralized Mine, Moored	yes		805	A-44
+36	entity	110903	Neutralized Mine, Floating	yes		805	A-44
+36	entity	110904	Neutralized Mine, Rising	yes		805	A-44
+36	entity	110905	Neutralized Mine, Other Position	yes		805	A-44
+36	entity	120000	Unexploded Ordnance	yes		805	A-44
+36	entity	130000	Sea Mine Decoy	yes		805	A-44
+36	entity	130100	Sea Mine Decoy, Bottom	yes		805	A-44
+36	entity	130200	Sea Mine Decoy, Moored	yes		805	A-44
+36	entity	140000	Mine–Like Contact (MILCO)	no	Currently there is no associated symbol. It is included for training or hierarchical explanation purposes.	805	A-44
+36	entity	140100	MILCO - General	yes		805	A-44
+36	entity	140101	MILCO - General, Confidence Level 1	yes		805	A-44
+36	entity	140102	MILCO - General, Confidence Level 2	yes		805	A-44
+36	entity	140103	MILCO - General, Confidence Level 3	yes		806	A-44
+36	entity	140104	MILCO - General, Confidence Level 4	yes		806	A-44
+36	entity	140105	MILCO - General, Confidence Level 5	yes		806	A-44
+36	entity	140200	MILCO - Bottom	yes		806	A-44
+36	entity	140201	MILCO - Bottom, Confidence Level 1	yes		806	A-44
+36	entity	140202	MILCO - Bottom, Confidence Level 2	yes		806	A-44
+36	entity	140203	MILCO - Bottom, Confidence Level 3	yes		806	A-44
+36	entity	140204	MILCO - Bottom, Confidence Level 4	yes		806	A-44
+36	entity	140205	MILCO - Bottom, Confidence Level 5	yes		806	A-44
+36	entity	140300	MILCO - Moored	yes		806	A-44
+36	entity	140301	MILCO - Moored, Confidence Level 1	yes		806	A-44
+36	entity	140302	MILCO - Moored, Confidence Level 2	yes		806	A-44
+36	entity	140303	MILCO - Moored, Confidence Level 3	yes		806	A-44
+36	entity	140304	MILCO - Moored, Confidence Level 4	yes		806	A-44
+36	entity	140305	MILCO - Moored, Confidence Level 5	yes		806	A-44
+36	entity	140400	MILCO - Floating	yes		806	A-44
+36	entity	140401	MILCO - Floating, Confidence Level 1	yes		806	A-44
+36	entity	140402	MILCO - Floating, Confidence Level 2	yes		807	A-44
+36	entity	140403	MILCO - Floating, Confidence Level 3	yes		807	A-44
+36	entity	140404	MILCO - Floating, Confidence Level 4	yes		807	A-44
+36	entity	140405	MILCO - Floating, Confidence Level 5	yes		807	A-44
+36	entity	150000	Mine–Like Echo (MILEC), General	yes		807	A-44
+36	entity	150100	Mine–Like Echo, Bottom	yes		807	A-44
+36	entity	150200	Mine–Like Echo, Moored	yes		807	A-44
+36	entity	150300	Mine–Like Echo, Floating	yes		807	A-44
+36	entity	160000	Negative Reacquisition , General	yes		807	A-44
+36	entity	160100	Negative Reacquisition, Bottom	yes		807	A-44
+36	entity	160200	Negative Reacquisition, Moored	yes		807	A-44
+36	entity	160300	Negative Reacquisition, Floating	yes		807	A-44
+36	entity	170000	Obstructor	yes		807	A-44
+36	entity	170100	Neutralized Obstructor	yes		807	A-44
+36	entity	180000	General Mine Anchor	yes		807	A-44
+36	entity	190000	Non-Mine Mine–Like Object (NMLO), General	yes		807	A-44
+36	entity	190100	Non-Mine Mine–Like Object, Bottom	yes		807	A-44
+36	entity	190200	Non-Mine Mine–Like Object, Moored	yes		807	A-44
+36	entity	190300	Non-Mine Mine–Like Object, Floating	yes		807	A-44
+36	entity	200000	Environment al Report Location	yes		808	A-44
+36	entity	210000	Dive Report Location	yes		808	A-44
+40	entity	110000	Incident	no	Currently there is no associated symbol. It is included for training or hierarchical explanation purposes.	809	A-45
+40	entity	110100	Criminal Activity Incident	no	Currently there is no associated symbol. It is included for training or hierarchical explanation purposes.	809	A-45
+40	entity	110101	Arrest/Apprehend/Detain	yes		809	A-45
+40	entity	110103	Attempted Criminal Activity	yes		809	A-45
+40	entity	110104	Drive-by Shooting	yes		809	A-45
+40	entity	110105	Drug Related	yes		809	A-45
+40	entity	110106	Extortion	yes		809	A-45
+40	entity	110107	Graffiti	yes		809	A-45
+40	entity	110108	Killing	yes		809	A-45
+40	entity	110109	Poisoning	yes		809	A-45
+40	entity	110110	Civil Rioting	yes		809	A-45
+40	entity	110111	Booby Trap	yes		809	A-45
+40	entity	110113	Black Marketing	yes		809	A-45
+40	entity	110114	Vandalism/Loot/Ransack/Plunder	yes		809	A-45
+40	entity	110116	Robbery	yes		809	A-45
+40	entity	110117	Theft	yes		809	A-45
+40	entity	110118	Burglary	yes		809	A-45
+40	entity	110119	Smuggling	yes		809	A-45
+40	entity	110121	Dead Body	yes		809	A-45
+40	entity	110122	Sabotage	yes		809	A-45
+40	entity	110200	Bomb/Bombing	yes		809	A-45
+40	entity	110201	Bomb Threat	yes		809	A-45
+40	entity	110300	IED	yes		809	A-45
+40	entity	110301	IED Explosion	yes		809	A-45
+40	entity	110302	Premature IED Explosion	yes		809	A-45
+40	entity	110303	IED Cache	yes		809	A-45
+40	entity	110304	IED Suicide Bomber	yes		809	A-45
+40	entity	110400	Shooting	no	Currently there is no associated symbol. It is included for training or hierarchical explanation purposes.	810	A-45
+40	entity	110401	Sniping	yes		810	A-45
+40	entity	110500	Drug Operation	yes		810	A-45
+40	entity	110501	Trafficking	yes		810	A-45
+40	entity	110600	Explosion	yes		810	A-45
+40	entity	110601	Grenade Explosion	yes		810	A-45
+40	entity	110602	Incendiary Explosion	yes		810	A-45
+40	entity	110603	Mine Explosion	yes		810	A-45
+40	entity	110604	Mortar Fire Explosion	yes		810	A-45
+40	entity	110605	Rocket Explosion	yes		810	A-45
+40	entity	110606	Bomb Explosion	yes		810	A-45
+40	entity	110700	House	yes		810	A-45
+40	entity	120000	Civil Disturbance	no	Currently there is no associated symbol. It is included for training or hierarchical explanation purposes.	810	A-45
+40	entity	120100	Demonstration	yes		810	A-45
+40	entity	130000	Operation	no	Currently there is no associated symbol. It is included for training or hierarchical explanation purposes.	810	A-45
+40	entity	130100	Patrol	yes		810	A-45
+40	entity	130200	Psychological Operation (PSYOP)	yes		810	A-45
+40	entity	130201	TV and Radio Propaganda	yes		810	A-45
+40	entity	130300	Foraging/Searching	yes		810	A-45
+40	entity	130400	Recruitment	no	Currently there is no associated symbol. It is included for training or hierarchical explanation purposes.	810	A-45
+40	entity	130401	Willing	yes		810	A-45
+40	entity	130402	Coerced/Impressed	yes		811	A-45
+40	entity	130500	Mine Laying	yes		811	A-45
+40	entity	130600	Spy	yes		811	A-45
+40	entity	130700	Warrant Served	yes		811	A-45
+40	entity	130800	Exfiltration	yes		811	A-45
+40	entity	130900	Infiltration	yes		811	A-45
+40	entity	131000	Organized Group or Group of Individuals	yes		811	A-45
+40	entity	131001	Polling Place/Election	yes		811	A-45
+40	entity	131100	Raid on House	yes		811	A-45
+40	entity	131200	Emergency Operation	no	Currently there is no associated symbol. It is included for training or hierarchical explanation purposes.	811	A-45
+40	entity	131202	Emergency Food Distribution	yes		811	A-45
+40	entity	131208	Emergency Water Distribution Centre	yes		811	A-45
+40	entity	131300	Emergency Medical Operation	yes		811	A-45
+40	entity	131305	Pharmacy	yes		811	A-45
+40	entity	131400	Fire Fighting	yes		811	A-45
+40	entity	131500	Law Enforcement Operation	no	Currently there is no associated symbol. It is included for training or hierarchical explanation purposes.	811	A-45
+40	entity	131501	Bureau of Alcohol, Tobacco, Firearms and Explosives (ATF) (Department of Justice)	yes		811	A-45
+40	entity	131504	Drug Enforcement Administration (DEA)	yes		811	A-45
+40	entity	131506	Federal Bureau of Investigation (FBI)	yes		811	A-45
+40	entity	131507	Police	yes		811	A-45
+40	entity	131509	United States Secret Service (USSS)	yes		811	A-45
+40	entity	131510	Transportation Security Administration (TSA)	yes		811	A-45
+40	entity	131511	Coast Guard	yes		811	A-45
+40	entity	131513	Internal Security Force	yes		811	A-45
+40	entity	150000	Hazardous Materials	no	Currently there is no associated symbol. It is included for training or hierarchical explanation purposes.	812	A-45
+40	entity	150100	Hazardous Materials Incident	no	Currently there is no associated symbol. It is included for training or hierarchical explanation purposes.	812	A-45
+40	entity	150115	Unexploded Ordnance	yes		812	A-45
+40	entity	160000	Transportation Incident	no	Currently there is no associated symbol. It is included for training or hierarchical explanation purposes.	812	A-45
+40	entity	160100	Air	yes		812	A-45
+40	entity	160200	Marine	yes		812	A-45
+40	entity	160300	Rail	yes		812	A-45
+40	entity	160400	Vehicle	yes		812	A-45
+40	entity	170000	Natural Event	no	Currently there is no associated symbol. It is included for training or hierarchical explanation purposes.	812	A-45
+40	entity	170100	Geologic	no	Currently there is no associated symbol. It is included for training or hierarchical explanation purposes.	812	A-45
+40	entity	170106	Volcanic Eruption	yes	.	812	A-45
+40	entity	170107	Volcanic Threat	yes		812	A-45
+40	entity	170108	Cave Entrance	yes		812	A-45
+40	entity	170200	Hydro-Meteorological	no	Currently there is no associated symbol. It is included for training or hierarchical explanation purposes.	813	A-45
+40	entity	170300	Infestation	yes		813	A-45
+40	entity	180000	Individual	yes		813	A-45
+40	entity	180100	Religious Leader	yes		813	A-45
+40	entity	180200	Speaker	yes		813	A-45
+40	entity	180300	Isolated Personnel	yes		813	A-45
+40	m1	00	Unspecified	yes		813	A-46
+40	m1	04	House–to–House	yes		813	A-46
+40	m1	06	Murder	yes		813	A-46
+40	m1	09	Written Psychological Operation (PSYOP)	yes		813	A-46
+40	m1	10	Pirate	yes		813	A-46
+40	m1	11	False	yes		813	A-46
+40	m1	12	Find	yes		813	A-46
+40	m1	13	Found and Cleared	yes		813	A-46
+40	m1	14	Hoax (Decoy)	yes		813	A-46
+40	m1	15	Attempted	yes		813	A-46
+40	m1	17	Incident	yes		813	A-46
+40	m1	18	Theft	yes		813	A-46
+40	m1	21	Eviction	yes		813	A-46
+40	m1	22	Raid	yes		813	A-46
+40	m1	23	Gang	yes		813	A-46
+40	m1	24	Meeting	yes		813	A-46
+40	m2	00	Unspecified	yes		814	A-47
+40	m2	03	Gang	yes		814	A-47
+40	m2	04	Meeting	yes		814	A-47
+60	entity	000000	Unspecified	yes		815	A-48
+60	entity	110000	Cyberspace Operation (Non specified)	yes		815	A-48
+60	entity	110100	Combat Mission Team	yes		815	A-48
+60	entity	110200	National Mission Team	yes		815	A-48
+60	entity	110300	Cyber Protection Team	yes		815	A-48
+60	entity	110600	Defensive Cyberspace	yes		815	A-48
+60	entity	110700	Offensive Cyberspace	yes		815	A-48
+60	entity	110800	Internet Service Provider	yes		815	A-48
+60	entity	110900	Security	yes		815	A-48
+60	entity	111000	Operations	yes		815	A-48
+60	entity	111100	Security Operations Centre	yes		815	A-48
+60	entity	120000	Threat Actor	yes		815	A-48
+60	entity	120100	Criminal	yes		815	A-48
+60	entity	120200	Insider	yes		815	A-48
+60	m1	00	Unspecified	yes		818	A-51
+60	m1	01	Defensive Cyberspace	yes		818	A-51
+60	m1	02	Offensive Cyberspace	yes		818	A-51
+60	m1	03	Social	yes		818	A-51
+60	m1	06	Radio Frequency	yes		818	A-51
+60	m1	08	Continuity of Operations	yes		818	A-51
+60	m1	09	Internet Service Provider	yes		818	A-51
+60	m1	10	Finance	yes		818	A-51
+60	m1	11	Out of Band	yes		818	A-51
+60	m1	12	Cloud	yes		818	A-51
+60	m1	13	Data	yes		818	A-51
+60	m2	00	Unspecified	yes		818	A-52
+60	m2	01	Secured	yes		818	A-52
+60	m2	02	Open	yes		818	A-52
+60	m2	03	Response Actions	yes		818	A-52
+60	m2	04	External Defence Measures	yes		818	A-52
+60	m2	05	Internal Defence Measures	yes		818	A-52
+60	m2	06	Advanced Persistent Threat	yes		818	A-52
+60	m2	07	Nation State	yes		818	A-52
+60	m2	08	Nation State Sponsored	yes		818	A-52
+60	m2	09	Breached/Forced Access	yes		818	A-52
+64	entity	130000	Agent	no	Currently there is no associated symbol. It is included for training or hierarchical explanation purposes.	816	A-49
+64	entity	130100	Firewall	yes		816	A-49
+64	entity	130200	Firmware	yes		816	A-49
+64	entity	140000	Application	yes		816	A-49
+64	entity	140100	Banking	yes		816	A-49
+64	entity	140300	Search Engine	yes		816	A-49
+64	entity	140400	Social Media	yes		816	A-49
+64	entity	140500	Database	yes		816	A-49
+64	entity	140600	Service	yes		816	A-49
+64	entity	150000	Threat	yes		816	A-49
+64	entity	150100	Malware	yes		816	A-49
+64	entity	150200	Phishing	yes		816	A-49
+64	entity	160000	Data	yes		816	A-49
+64	entity	160100	Digital Currency	yes		816	A-49
+64	entity	160200	Persona	yes		816	A-49
+64	entity	170000	Endpoint	yes		816	A-49
+64	entity	170100	Server	yes		816	A-49
+64	entity	170200	Workstation	yes		816	A-49
+64	entity	170300	Portable Electronic Device (PED)	yes		816	A-49
+64	entity	170301	Mobile/Smartphone	yes		816	A-49
+64	entity	170302	Tablet	yes		816	A-49
+64	entity	170303	Laptop	yes		816	A-49
+64	entity	170304	Health Monitor	yes		816	A-49
+64	entity	170305	Smartvest	yes		816	A-49
+64	entity	170306	Smartwatch	yes		816	A-49
+64	entity	170307	Wearable	yes		816	A-49
+64	entity	170400	Internet of Things Device	yes		816	A-49
+64	entity	170500	Printer	yes		816	A-49
+64	entity	170600	Router	yes		816	A-49
+64	entity	170700	Switch	yes		816	A-49
+64	entity	170800	Remote Operated Relay (ROR)	yes		816	A-49
+64	entity	180000	Network	yes		816	A-49
+common	common_m1	100	UAV/Drone Equipped/Drone	yes		819	A-53
+common	common_m1	101	Robotic	yes		819	A-53
+common	common_m1	102	Fixed Wing	yes		819	A-53
+common	common_m1	103	Rotary Wing	yes		819	A-53
+common	common_m1	104	Tilt Rotor	yes		819	A-53
+common	common_m1	105	VSTOL/VTOL Or Helicopter Equipped	yes		819	A-53
+common	common_m1	106	Attack or Attack/Strike	yes		819	A-53
+common	common_m1	107	Armoured	yes		819	A-53
+common	common_m1	108	Ballistic Missile/Ballistic Missile Defence Shooter	yes		819	A-53
+common	common_m1	109	Bridge/Bridging	yes		819	A-53
+common	common_m1	110	Cargo	yes		819	A-53
+common	common_m1	111	Utility	yes		819	A-53
+common	common_m1	112	Light	yes		819	A-53
+common	common_m1	113	Medium	yes		819	A-53
+common	common_m1	114	Heavy	yes		819	A-53
+common	common_m1	115	Cyberspace	yes		819	A-53
+common	common_m1	116	Command Post Node	yes		819	A-53
+common	common_m1	117	Joint Network Node	yes		819	A-53
+common	common_m1	118	Retransmission	yes		819	A-53
+common	common_m1	119	Brigade	yes		819	A-53
+common	common_m1	120	Close Protection	yes		819	A-53
+common	common_m1	121	Combat	yes		819	A-53
+common	common_m1	122	Command and Control	yes		819	A-53
+common	common_m1	123	Crowd and Riot Control	yes		819	A-53
+common	common_m1	124	Explosive Ordnance Disposal (EOD)	yes		819	A-53
+common	common_m1	125	Intelligence, Surveillance, Reconnaissance	yes		819	A-53
+common	common_m1	126	Maintenance	yes		819	A-53
+common	common_m1	127	Medevac/Medic/Medical	yes		819	A-53
+common	common_m1	128	Search And Rescue	yes		819	A-53
+common	common_m1	129	Security	yes		819	A-53
+common	common_m1	130	Sniper	yes		819	A-53
+common	common_m1	131	Special Operations Forces	yes		819	A-53
+common	common_m1	132	Special Weapons and Tactics (Swat)	yes		819	A-53
+common	common_m1	133	Guided Missile	yes		819	A-53
+common	common_m1	134	Other Guided Missile	yes		819	A-53
+common	common_m1	135	Petroleum/Petroleum Oil and Lubricants	yes		819	A-53
+common	common_m1	136	Water	yes		819	A-53
+common	common_m1	137	Weapon Or Weapons	yes		819	A-53
+common	common_m1	138	Chemical	yes		819	A-53
+common	common_m1	139	Biological	yes		819	A-53
+common	common_m1	140	Radiological	yes		819	A-53
+common	common_m1	141	Nuclear	yes		819	A-53
+common	common_m1	142	Decontamination	yes		819	A-53
+common	common_m1	143	Civilian	yes		819	A-53
+common	common_m1	144	Government Organization/Government Organization Member	yes		819	A-53
+common	common_m1	145	Accident	yes		819	A-53
+common	common_m1	146	Assassination	yes		820	A-53
+common	common_m1	147	Execution	yes		820	A-53
+common	common_m1	148	Kidnapping	yes		820	A-53
+common	common_m1	149	Piracy	yes		820	A-53
+common	common_m1	150	Rape	yes		820	A-53
+common	common_m1	151	Antisubmarine Warfare	yes		820	A-53
+common	common_m1	152	Escort	yes		820	A-53
+common	common_m1	153	Mine Countermeasures	yes		820	A-53
+common	common_m1	154	Mine Warfare	yes		820	A-53
+common	common_m1	156	Command	yes		820	A-53
+common	common_m1	157	Company	yes		820	A-53
+common	common_m1	158	Platoon/Detachment	yes		820	A-53
+common	common_m1	159	Regiment Group	yes		820	A-53
+common	common_m1	160	Section	yes		820	A-53
+common	common_m1	161	Squad	yes		820	A-53
+common	common_m1	162	Team/Crew	yes		820	A-53
+common	common_m1	163	Battalion	yes		820	A-53
+common	common_m1	164	Directed Energy	yes		820	A-53
+common	common_m1	165	Hijack/Hijacking/Hijacker	yes		820	A-53
+common	common_m1	166	Electromagnetic Warfare	yes		820	A-53
+common	common_m1	167	Foreign Fighters	yes		820	A-53
+common	common_m1	168	Laboratory	yes		820	A-53
+common	common_m1	169	Leader	yes		820	A-53
+common	common_m1	170	Non-Governmental Organization (NGO)	yes		820	A-53
+common	common_m1	171	Railway	yes		820	A-53
+common	common_m1	172	Religious	yes		820	A-53
+common	common_m1	173	Terrorist	yes		820	A-53
+common	common_m1	174	Clear	yes		820	A-53
+common	common_m1	175	Jamming	yes		820	A-53
+common	common_m1	176	Wired	yes		820	A-53
+common	common_m1	177	Wireless	yes		820	A-53
+common	common_m1	178	Low Altitude	yes		820	A-53
+common	common_m1	179	Medium Altitude	yes		820	A-53
+common	common_m1	180	CBRN	yes		820	A-53
+common	common_m1	181	HUMINT	yes		820	A-53
+common	common_m1	184	Division	yes		820	A-53
+common	common_m1	185	Theatre	yes		820	A-53
+common	common_m1	186	Army or Theatre Army	yes		820	A-53
+common	common_m1	187	Corps	yes		820	A-53
+common	common_m1	188	Personnel Recovery	yes		820	A-53
+common	common_m1	189	Antisurface Warfare	yes		820	A-53
+common	common_m1	190	Anti-Air Warfare	yes		820	A-53
+common	common_m1	191	Missile Defence	yes		820	A-53
+common	common_m1	192	Electromagnetic Attack	yes		820	A-53
+common	common_m1	193	Electromagnetic Surveillance	yes		820	A-53
+common	common_m2	100	Airborne	yes		821	A-54
+common	common_m2	101	Bicycle Equipped	yes		821	A-54
+common	common_m2	102	Railway	yes		821	A-54
+common	common_m2	103	Ski	yes		821	A-54
+common	common_m2	104	Tracked	yes		821	A-54
+common	common_m2	105	Standard Mobility/On-Road Mobility	yes		821	A-54
+common	common_m2	106	High Mobility/Off-Road Mobility	yes		821	A-54
+common	common_m2	107	Fixed Wing	yes		821	A-54
+common	common_m2	108	Rotary Wing	yes		821	A-54
+common	common_m2	109	Robotic	yes		821	A-54
+common	common_m2	110	Autonomous Control	yes		821	A-54
+common	common_m2	111	Remotely Piloted	yes		821	A-54
+common	common_m2	112	Expendable	yes		821	A-54
+common	common_m2	113	Mountain	yes		821	A-54
+common	common_m2	114	Long Range	yes		821	A-54
+common	common_m2	115	Medium Range	yes		821	A-54
+common	common_m2	116	Short Range	yes		821	A-54
+common	common_m2	117	Close Range	yes		821	A-54
+common	common_m2	118	Heavy	yes		821	A-54
+common	common_m2	119	Medium	yes		821	A-54
+common	common_m2	120	Light And Medium	yes		821	A-54
+common	common_m2	121	Light	yes		821	A-54
+common	common_m2	122	Cyberspace	yes		821	A-54
+common	common_m2	123	Security Force Assistance	yes		821	A-54
+common	common_m2	124	Medical Bed	yes		821	A-54
+common	common_m2	125	Multifunctional	yes		821	A-54
+common	common_m2	126	Foreign Fighters	yes		821	A-54
+common	common_m2	127	Laboratory	yes		821	A-54
+common	common_m2	128	Leader	yes		821	A-54
+common	common_m2	129	Over-Snow (Prime Mover)	yes		821	A-54
+common	common_m2	130	Religious	yes		821	A-54
+common	common_m2	131	Supply	yes		821	A-54
+common	common_m2	132	Terrorist	yes		821	A-54
+common	common_m2	133	Electromagnetic Warfare	yes		821	A-54
+common	common_m2	134	Jamming	yes		821	A-54

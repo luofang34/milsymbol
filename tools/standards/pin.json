@@ -1,0 +1,24 @@
+{
+  "standards": [
+    {
+      "id": "mil2525e1",
+      "title": "MIL-STD-2525E w/Change 1, Joint Military Symbology",
+      "date": "2025-03-02",
+      "sidc_version": "15",
+      "distribution": "A: Approved for public release, distribution is unlimited",
+      "source": "https://quicksearch.dla.mil/qsDocDetails.aspx?ident_number=114934",
+      "pages": 749,
+      "sha256": "ae94d25f87e068ea240477880660c5b0f7d0ef60ef4b4a61d8275885c4adbf00"
+    },
+    {
+      "id": "app6e2",
+      "title": "APP-06 Edition E Version 2, NATO Joint Military Symbology",
+      "date": "2025-10-16",
+      "sidc_version": "16",
+      "distribution": "NATO standardization document; reproduction must acknowledge NATO",
+      "source": "https://nso.nato.int/nso/",
+      "pages": 868,
+      "sha256": "5b8d7b7c6c88cd25625263f8e545fa3e2a3ddc7614dd9b7062a54d72289821e4"
+    }
+  ]
+}

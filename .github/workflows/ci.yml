@@ -141,7 +141,8 @@ jobs:
           test -f "$crate"
           size=$(stat -c %s "$crate")
           echo "$crate: $size bytes"
-          test "$size" -lt 1000000
+          # Include the native geometry converted from both pinned standards.
+          test "$size" -lt 4000000
           if tar -tzf "$crate" | grep -E '/tests/corpus([/.]|$)'; then
             echo "::error::differential corpus must stay in the repository"
             exit 1

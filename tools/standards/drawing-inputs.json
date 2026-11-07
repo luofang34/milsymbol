@@ -1,0 +1,187 @@
+{
+  "45 110102": {
+    "page": 624,
+    "erase": [
+      35,
+      30,
+      140,
+      80
+    ],
+    "field": "altitudeDepth",
+    "x": 100,
+    "y": 94,
+    "size": 29,
+    "weight": "bold",
+    "table": "M-II"
+  },
+  "45 110202": {
+    "page": 625,
+    "erase": [
+      35,
+      90,
+      140,
+      140
+    ],
+    "field": "altitudeDepth",
+    "x": 100,
+    "y": 129,
+    "size": 29,
+    "weight": "bold",
+    "table": "M-II"
+  },
+  "45 162200": {
+    "page": 660,
+    "erase": [
+      25,
+      55,
+      145,
+      115
+    ],
+    "field": "altitudeDepth",
+    "x": 100,
+    "y": 111,
+    "size": 25,
+    "table": "M-II"
+  },
+  "45 162300": {
+    "page": 660,
+    "erase": [
+      78,
+      58,
+      154,
+      106
+    ],
+    "field": "altitudeDepth",
+    "x": 118,
+    "y": 109,
+    "size": 25,
+    "table": "M-II"
+  },
+  "46 120101": {
+    "page": 680,
+    "erase": [
+      0,
+      0,
+      170,
+      170
+    ],
+    "field": "altitudeDepth",
+    "x": 100,
+    "y": 112,
+    "size": 45,
+    "subscript_decimal": true,
+    "table": "M-III"
+  },
+  "45 110100": {
+    "page": 624,
+    "field": "pressure",
+    "x": 100,
+    "y": 180,
+    "size": 30,
+    "table": "M-II"
+  },
+  "45 110200": {
+    "page": 624,
+    "field": "pressure",
+    "x": 100,
+    "y": 180,
+    "size": 30,
+    "table": "M-II"
+  },
+  "45 120100": {
+    "field": "altitudeDepth",
+    "x": 100,
+    "y": 170,
+    "size": 28
+  },
+  "45 120200": {
+    "field": "altitudeDepth",
+    "x": 100,
+    "y": 170,
+    "size": 28
+  },
+  "45 120300": {
+    "field": "altitudeDepth",
+    "x": 100,
+    "y": 170,
+    "size": 28
+  },
+  "45 120400": {
+    "field": "altitudeDepth",
+    "x": 100,
+    "y": 170,
+    "size": 28
+  },
+  "45 120500": {
+    "field": "altitudeDepth",
+    "x": 100,
+    "y": 170,
+    "size": 28
+  },
+  "45 130101": {
+    "field": "altitudeDepth",
+    "x": 100,
+    "y": 170,
+    "size": 28
+  },
+  "45 130102": {
+    "field": "altitudeDepth",
+    "x": 100,
+    "y": 170,
+    "size": 28
+  },
+  "45 130103": {
+    "field": "altitudeDepth",
+    "x": 100,
+    "y": 170,
+    "size": 28
+  },
+  "45 130201": {
+    "field": "altitudeDepth",
+    "x": 100,
+    "y": 170,
+    "size": 28
+  },
+  "45 130202": {
+    "field": "altitudeDepth",
+    "x": 100,
+    "y": 170,
+    "size": 28
+  },
+  "45 130203": {
+    "field": "altitudeDepth",
+    "x": 100,
+    "y": 170,
+    "size": 28
+  },
+  "45 130301": {
+    "field": "altitudeDepth",
+    "x": 100,
+    "y": 170,
+    "size": 28
+  },
+  "45 130302": {
+    "field": "altitudeDepth",
+    "x": 100,
+    "y": 170,
+    "size": 28
+  },
+  "45 130303": {
+    "field": "altitudeDepth",
+    "x": 100,
+    "y": 170,
+    "size": 28
+  },
+  "46 110401": {
+    "field": "altitudeDepth",
+    "x": 100,
+    "y": 113,
+    "size": 28
+  },
+  "46 110402": {
+    "field": "altitudeDepth",
+    "x": 100,
+    "y": 113,
+    "size": 28
+  }
+}

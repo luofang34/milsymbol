@@ -50,7 +50,10 @@ pub(super) fn context(s: &SymbolState<'_>, part_aff: Field<Affiliation>) -> Icon
         .position(|&a| Some(a) == part_aff.as_str())
         .unwrap_or(0);
     c.set(Var::Affiliation, u8::try_from(aff_index).unwrap_or(0));
-    let geom = md.base_geometry.unwrap_or("none");
+    let geom = crate::geometry::frame_name(md.dimension.known(), md.affiliation.known())
+        .filter(|_| s.config.mode == crate::RenderMode::Standards && md.number_sidc)
+        .or(md.base_geometry)
+        .unwrap_or("none");
     let geom_index = vars::GEOMETRIES
         .iter()
         .position(|&g| g == geom)

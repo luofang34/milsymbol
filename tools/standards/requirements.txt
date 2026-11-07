@@ -1,0 +1,5 @@
+PyMuPDF==2.1.0
+fonttools==4.68.0
+numpy==2.5.4
+Pillow==13.0.0
+potracer==0.0.4

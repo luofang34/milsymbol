@@ -71,3 +71,5 @@ pub fn letter_icons() -> impl Iterator<Item = &'static str> {
 pub fn icon_parts() -> impl Iterator<Item = &'static str> {
     tables::PARTS.iter().map(|(name, _)| *name)
 }
+
+pub mod standards;

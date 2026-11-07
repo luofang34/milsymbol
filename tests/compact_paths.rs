@@ -47,7 +47,9 @@ fn expected_data_url(svg: &str) -> String {
 
 #[test]
 fn every_builtin_icon_renders_identically_to_the_plain_path_build() {
-    let renderer = Renderer::default();
+    let renderer = Renderer::builder()
+        .mode(milsymbol::RenderMode::Milsymbol304)
+        .build();
     let ids = sidcs();
     assert!(ids.len() > 3000, "{}", ids.len());
     let mut digest = 0xcbf2_9ce4_8422_2325;

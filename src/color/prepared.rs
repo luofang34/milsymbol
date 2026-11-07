@@ -57,6 +57,8 @@ impl Preset {
 pub(crate) struct PreparedColors {
     pub base: Option<BaseModes>,
     light: Option<Preset>,
+    mil_light: Option<Preset>,
+    mil_medium: Option<Preset>,
     medium: Option<Preset>,
     dark: Option<Preset>,
 }
@@ -105,6 +107,14 @@ impl PreparedColors {
             })
         };
         PreparedColors {
+            mil_light: preset("Light", &DEFAULT_LIGHT).map(|preset| match preset {
+                Preset::Static(_) => Preset::Static(&STANDARDS_MIL_LIGHT),
+                custom => custom,
+            }),
+            mil_medium: preset("Medium", &DEFAULT_MEDIUM).map(|preset| match preset {
+                Preset::Static(_) => Preset::Static(&STANDARDS_MIL_MEDIUM),
+                custom => custom,
+            }),
             light: preset("Light", &DEFAULT_LIGHT),
             medium: preset("Medium", &DEFAULT_MEDIUM),
             dark: preset("Dark", &DEFAULT_DARK),
@@ -112,9 +122,11 @@ impl PreparedColors {
         }
     }
 
-    pub(crate) fn framed_filled(&self, name: &str) -> Option<SymbolColors> {
+    pub(crate) fn framed_filled(&self, name: &str, mil_standards: bool) -> Option<SymbolColors> {
         let p = match name {
+            "Light" if mil_standards => self.mil_light.as_ref()?,
             "Light" => self.light.as_ref()?,
+            "Medium" if mil_standards => self.mil_medium.as_ref()?,
             "Medium" => self.medium.as_ref()?,
             "Dark" => self.dark.as_ref()?,
             _ => return None,
@@ -150,8 +162,12 @@ const fn builtin_mode(target: &str) -> ColorMode {
 }
 
 const fn builtin_framed_filled(fill_name: &str) -> ColorSet {
+    framed_filled(builtin_mode(fill_name))
+}
+
+const fn framed_filled(fill_color: ColorMode) -> ColorSet {
     ColorSet {
-        fill_color: builtin_mode(fill_name),
+        fill_color,
         frame_color: builtin_mode("Black"),
         icon_color: builtin_mode("Black"),
         icon_fill_color: builtin_mode("OffWhite"),
@@ -162,5 +178,21 @@ const fn builtin_framed_filled(fill_name: &str) -> ColorSet {
 }
 
 static DEFAULT_LIGHT: ColorSet = builtin_framed_filled("Light");
+static STANDARDS_MIL_LIGHT: ColorSet = framed_filled(ColorMode::from_static(&[
+    Some("rgb(255,161,255)"),
+    Some("rgb(128,225,255)"),
+    Some("rgb(255,128,128)"),
+    Some("rgb(170,255,170)"),
+    Some("rgb(255,255,128)"),
+    Some("rgb(255, 229, 153)"),
+]));
+static STANDARDS_MIL_MEDIUM: ColorSet = framed_filled(ColorMode::from_static(&[
+    Some("rgb(128,0,128)"),
+    Some("rgb(0,168,220)"),
+    Some("rgb(255,48,49)"),
+    Some("rgb(0,226,0)"),
+    Some("rgb(255,255,0)"),
+    Some("rgb(255, 217, 107)"),
+]));
 static DEFAULT_MEDIUM: ColorSet = builtin_framed_filled("Medium");
 static DEFAULT_DARK: ColorSet = builtin_framed_filled("Dark");

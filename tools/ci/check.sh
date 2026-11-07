@@ -14,7 +14,7 @@ step cargo test --workspace --all-targets
 step cargo test -p milsymbol --all-targets --all-features
 step cargo test --no-default-features
 step cargo test -p milsymbol --no-default-features --features compact-paths
-step cargo test --release --test corpus --test drawing_svg
+step cargo test --release --test corpus --test drawing_svg --test standards_differential
 step cargo test --release --all-features --test corpus --test drawing_svg
 step cargo test --release -p milsymbol --features compact-paths --test allocations --test compact_paths
 step cargo test --doc

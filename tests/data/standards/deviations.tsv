@@ -1,0 +1,8 @@
+rule	document	page	reference	outputs
+frame_proportions	mil2525e1;app6e2	11;78	Figure 4;Table 1-14	metadata.baseGeometry;instructions;bbox;size;anchor;octagonAnchor
+frame_selection	mil2525e1;app6e2	140;723	A.5.5;A.14	metadata;instructions;bbox;size;anchor;octagonAnchor;colors;valid;validExtended
+identity_colors	mil2525e1;app6e2	52-53;80	Tables XV-XVI;Table 1-15	colors;metadata.suspect;instructions.**.fill;instructions.**.stroke;options.colorMode;options.frameColor;options.iconColor
+leadership	mil2525e1;app6e2	47;73	5.3.9 Figure 28;1.2.16	instructions;bbox;size;anchor;octagonAnchor
+restricted_contexts	mil2525e1;app6e2	59;714	Table A-II;Table A-3	metadata;instructions;bbox;size;anchor;octagonAnchor;colors;options.colorMode;options.frameColor;options.iconColor;valid;validExtended
+metoc_unframed	mil2525e1	616-696	Appendix M point drawing tables	metadata;instructions;bbox;size;anchor;octagonAnchor;colors
+edition_tables	mil2525e1;app6e2	55-141;711-825	Annex A code tables and each catalog entry's drawing_source	metadata;instructions;bbox;size;anchor;octagonAnchor;colors;valid;options.colorMode;options.frameColor;options.iconColor;valid;validExtended
