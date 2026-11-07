@@ -37,6 +37,12 @@ impl fmt::Display for ColorError {
 impl core::error::Error for ColorError {}
 
 impl Color {
+    /// CSS `"black"`, borrowed without allocating.
+    pub const BLACK: Self = Color::from_static("black");
+
+    /// CSS `"white"`, borrowed without allocating.
+    pub const WHITE: Self = Color::from_static("white");
+
     /// A colour from CSS text, as a `String` or a `&'static str` (a borrowed
     /// `&String` does not compile; pass `css.clone()`).
     pub fn new(css: impl Into<Str>) -> Result<Self, ColorError> {

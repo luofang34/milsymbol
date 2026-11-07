@@ -43,6 +43,21 @@ fn single(c: &mut Criterion) {
             buffer.len()
         })
     });
+    g.bench_function("compose_and_data_url_infantry", |b| {
+        b.iter(|| {
+            r.render(black_box("10031000001211000000"), SymbolOptions::default())
+                .map(|s| s.to_data_url())
+        })
+    });
+    g.bench_function("compose_and_write_data_url_reused_buffer_infantry", |b| {
+        b.iter(|| {
+            buffer.clear();
+            if let Ok(s) = r.render(black_box("10031000001211000000"), SymbolOptions::default()) {
+                s.write_data_url(&mut buffer);
+            }
+            buffer.len()
+        })
+    });
     g.bench_function("compose_and_drawing_infantry", |b| {
         b.iter(|| {
             r.render(black_box("10031000001211000000"), SymbolOptions::default())

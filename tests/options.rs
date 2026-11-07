@@ -40,6 +40,8 @@ fn text_values_are_set_and_read_by_field() {
 #[test]
 fn colors_reject_only_the_empty_string() {
     assert_eq!(Color::new(""), Err(ColorError::Empty));
+    assert_eq!(Color::BLACK.as_str(), "black");
+    assert_eq!(Color::WHITE.as_str(), "white");
     assert_eq!(Color::rgb(1, 2, 3).as_str(), "rgb(1,2,3)");
     // The text is kept as written.
     assert_eq!(
@@ -81,11 +83,12 @@ fn non_finite_numbers_are_typed_errors() -> TestResult {
     let r = Renderer::default();
     for bad in [f64::NAN, f64::INFINITY, f64::NEG_INFINITY] {
         type Setter = fn(milsymbol::SymbolBuilder<'_>, f64) -> milsymbol::SymbolBuilder<'_>;
-        let setters: [Setter; 4] = [
+        let setters: [Setter; 5] = [
             |b, v| b.size(v),
             |b, v| b.direction(v),
             |b, v| b.speed_leader(v),
             |b, v| b.stack(v),
+            |b, v| b.outline_width(v),
         ];
         for setter in setters {
             let err = setter(r.symbol(INFANTRY), bad).render();
@@ -118,6 +121,11 @@ fn builder_setters_equal_direct_options() -> TestResult {
         .direction(30.0)
         .speed_leader(40.0)
         .stack(2.0)
+        .fill(false)
+        .frame(true)
+        .icon(false)
+        .outline_width(3.0)
+        .outline_color(Color::WHITE)
         .text(TextField::UniqueDesignation, "A")
         .color_mode(ColorModeChoice::named("Dark"))
         .mono_color(Color::new("blue")?)
@@ -128,6 +136,11 @@ fn builder_setters_equal_direct_options() -> TestResult {
     o.direction = Some(30.0);
     o.speed_leader = Some(40.0);
     o.stack = Some(2.0);
+    o.style.fill = false;
+    o.style.frame = true;
+    o.style.icon = false;
+    o.style.outline_width = 3.0;
+    o.style.outline_color = Some(Color::WHITE.into());
     o.set_text(TextField::UniqueDesignation, "A");
     o.style.color_mode = ColorModeChoice::named("Dark");
     o.style.mono_color = Some(Color::new("blue")?);
@@ -136,6 +149,10 @@ fn builder_setters_equal_direct_options() -> TestResult {
     assert_eq!(built.to_svg(), direct.to_svg());
     let via_options = r.symbol(INFANTRY).options(o).render()?;
     assert_eq!(built.to_svg(), via_options.to_svg());
+    assert_ne!(
+        r.symbol(INFANTRY).frame(false).render()?.to_svg(),
+        r.symbol(INFANTRY).render()?.to_svg()
+    );
     Ok(())
 }
 
@@ -217,9 +234,21 @@ fn builder_calls_apply_in_order() -> TestResult {
 fn cached_builder_shares_symbols() -> TestResult {
     use milsymbol::cache::CachedRenderer;
     let cache = CachedRenderer::new(Renderer::default(), 8);
-    let a = cache.symbol(INFANTRY).size(40.0).render()?;
-    let b = cache.symbol(INFANTRY).size(40.0).render()?;
-    let c = cache.symbol(INFANTRY).size(41.0).render()?;
+    let a = cache
+        .symbol(INFANTRY)
+        .size(40.0)
+        .fill(false)
+        .outline_width(3.0)
+        .outline_color(Color::BLACK)
+        .render()?;
+    let b = cache
+        .symbol(INFANTRY)
+        .size(40.0)
+        .fill(false)
+        .outline_width(3.0)
+        .outline_color(Color::BLACK)
+        .render()?;
+    let c = cache.symbol(INFANTRY).size(40.0).render()?;
     assert!(std::sync::Arc::ptr_eq(&a, &b));
     assert!(!std::sync::Arc::ptr_eq(&a, &c));
     Ok(())

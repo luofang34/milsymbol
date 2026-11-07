@@ -7,8 +7,10 @@ use crate::ir::{Node, Num, Paint, Style, TextNode};
 use crate::js::write_number;
 use alloc::string::String;
 
+mod data_url;
 mod ids;
 pub(crate) mod sanitize;
+pub(crate) use data_url::render_data_url_into;
 use ids::ClipIds;
 use sanitize::{
     escape_attr, escape_text, sanitize_baseline, sanitize_color, sanitize_dash_array,

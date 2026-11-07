@@ -28,6 +28,23 @@ fn sidcs() -> Vec<String> {
     out
 }
 
+fn expected_data_url(svg: &str) -> String {
+    let mut out = String::from("data:image/svg+xml;utf8,");
+    for b in svg.bytes() {
+        if b.is_ascii_alphanumeric()
+            || matches!(
+                b,
+                b'-' | b'_' | b'.' | b'!' | b'~' | b'*' | b'\'' | b'(' | b')'
+            )
+        {
+            out.push(b as char);
+        } else {
+            out.push_str(&format!("%{b:02X}"));
+        }
+    }
+    out
+}
+
 #[test]
 fn every_builtin_icon_renders_identically_to_the_plain_path_build() {
     let renderer = Renderer::default();
@@ -35,12 +52,17 @@ fn every_builtin_icon_renders_identically_to_the_plain_path_build() {
     assert!(ids.len() > 3000, "{}", ids.len());
     let mut digest = 0xcbf2_9ce4_8422_2325;
     let mut paths = 0usize;
+    let mut url_buf = String::new();
     for id in &ids {
         let Ok(symbol) = renderer.render(id, SymbolOptions::default()) else {
             fnv1a(&mut digest, id.as_bytes());
             continue;
         };
-        fnv1a(&mut digest, symbol.to_svg().as_bytes());
+        let svg = symbol.to_svg();
+        url_buf.clear();
+        symbol.write_data_url(&mut url_buf);
+        assert_eq!(url_buf, expected_data_url(&svg), "{id}");
+        fnv1a(&mut digest, svg.as_bytes());
         fnv1a(
             &mut digest,
             compat::canonical_json_string(&symbol).as_bytes(),

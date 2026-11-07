@@ -68,6 +68,52 @@ pub struct Drawing {
     pub invalid_paths: usize,
 }
 
+impl Drawing {
+    /// Affine transform from symbol units ([`Drawing::view_box`]) to pixel
+    /// coordinates ([`Drawing::size`]), matching SVG's default
+    /// `preserveAspectRatio="xMidYMid meet"`.
+    ///
+    /// Compose this with [`DrawItem::transform`] (`viewport.then(item.transform)`)
+    /// to map an item's geometry directly to pixels; clip regions are already
+    /// in symbol units and map with `viewport` alone. Returns
+    /// [`Transform::IDENTITY`] if the view box is empty, or if the view box
+    /// or size is negative or non-finite. A size of zero gives scale 0, as
+    /// SVG does for an empty viewport.
+    ///
+    /// ```
+    /// use milsymbol::Renderer;
+    /// use milsymbol::ir::Point;
+    ///
+    /// let drawing = Renderer::default().symbol("10031000001211000000").size(50.0).render()?.drawing();
+    /// let vp = drawing.viewport_transform();
+    /// let top_left = vp.apply(Point { x: drawing.view_box.x, y: drawing.view_box.y });
+    /// assert!(top_left.x.abs() < 1e-9 && top_left.y.abs() < 1e-9);
+    /// # Ok::<(), milsymbol::RenderError>(())
+    /// ```
+    pub fn viewport_transform(&self) -> Transform {
+        let vb = &self.view_box;
+        if !(vb.width > 0.0 && vb.height > 0.0 && self.size.width >= 0.0 && self.size.height >= 0.0)
+        {
+            return Transform::IDENTITY;
+        }
+        let s = (self.size.width / vb.width).min(self.size.height / vb.height);
+        let e = (self.size.width - vb.width * s) / 2.0 - vb.x * s;
+        let f = (self.size.height - vb.height * s) / 2.0 - vb.y * s;
+        if s.is_finite() && e.is_finite() && f.is_finite() {
+            Transform {
+                a: s,
+                b: 0.0,
+                c: 0.0,
+                d: s,
+                e,
+                f,
+            }
+        } else {
+            Transform::IDENTITY
+        }
+    }
+}
+
 /// A rectangle in symbol units.
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Debug, Clone, Copy, PartialEq)]

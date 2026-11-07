@@ -185,6 +185,37 @@ macro_rules! option_setters {
             self.options.style.mono_color = Some(color);
             self
         }
+
+        /// Fills or leaves unfilled the symbol frame (`style.fill`).
+        pub fn fill(mut self, fill: bool) -> Self {
+            self.options.style.fill = fill;
+            self
+        }
+
+        /// Draws or hides the symbol frame (`style.frame`).
+        pub fn frame(mut self, frame: bool) -> Self {
+            self.options.style.frame = frame;
+            self
+        }
+
+        /// Draws or hides the symbol icon (`style.icon`).
+        pub fn icon(mut self, icon: bool) -> Self {
+            self.options.style.icon = icon;
+            self
+        }
+
+        /// Sets the outline width around the symbol (`0.0` disables it).
+        pub fn outline_width(mut self, width: f64) -> Self {
+            self.options.style.outline_width = width;
+            self
+        }
+
+        /// Sets the outline colour (a [`Color`]($crate::options::Color) or a
+        /// per-affiliation [`ColorMode`]($crate::color::ColorMode)).
+        pub fn outline_color(mut self, color: impl Into<$crate::options::ColorChoice>) -> Self {
+            self.options.style.outline_color = Some(color.into());
+            self
+        }
     };
 }
 

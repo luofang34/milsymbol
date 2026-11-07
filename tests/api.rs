@@ -227,6 +227,53 @@ fn write_svg_appends_the_same_document() -> TestResult {
     Ok(())
 }
 
+fn reference_data_url(svg: &str) -> String {
+    let mut out = String::from("data:image/svg+xml;utf8,");
+    for b in svg.bytes() {
+        if b.is_ascii_alphanumeric()
+            || matches!(
+                b,
+                b'-' | b'_' | b'.' | b'!' | b'~' | b'*' | b'\'' | b'(' | b')'
+            )
+        {
+            out.push(b as char);
+        } else {
+            out.push_str(&format!("%{b:02X}"));
+        }
+    }
+    out
+}
+
+#[test]
+fn data_url_matches_encode_uri_component_and_reuses_buffers() -> TestResult {
+    let renderer = Renderer::default();
+    // Covers clip paths (sea surface), scientific-notation `+`, entities,
+    // unescaped URI marks `!~*'()`, and 2/3/4-byte UTF-8 sequences.
+    let symbol = renderer
+        .symbol("10033000001202040000")
+        .direction(45.0)
+        .outline_width(3.0)
+        .text(
+            TextField::UniqueDesignation,
+            "A!~*'()<>\"&+#?/:;= é€😀 1e+21",
+        )
+        .render()?;
+    let expected = reference_data_url(&symbol.to_svg());
+    assert_eq!(symbol.to_data_url(), expected);
+
+    let mut buf = String::from("img=");
+    symbol.write_data_url(&mut buf);
+    assert_eq!(buf.strip_prefix("img="), Some(expected.as_str()));
+
+    let opts = milsymbol::SvgOptions::default().with_id_prefix("m1-");
+    let mut svg_prefixed = String::new();
+    symbol.write_svg_with(&mut svg_prefixed, &opts);
+    let mut url_prefixed = String::new();
+    symbol.write_data_url_with(&mut url_prefixed, &opts);
+    assert_eq!(url_prefixed, reference_data_url(&svg_prefixed));
+    Ok(())
+}
+
 #[test]
 fn every_catalog_symbol_has_parseable_paths() -> TestResult {
     let r = Renderer::default();
