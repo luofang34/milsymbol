@@ -18,8 +18,7 @@ install the bindings generator matching `tools/book-wasm/Cargo.toml`:
 
 ```sh
 rustup target add wasm32-unknown-unknown
-version=$(python3 -c 'import tomllib; print(tomllib.load(open("tools/book-wasm/Cargo.toml", "rb"))["dependencies"]["wasm-bindgen"].removeprefix("="))')
-cargo install --locked wasm-bindgen-cli --version "$version"
+tools/install-book-wasm-bindgen.sh
 tools/build-book.sh
 python3 -m http.server --bind 127.0.0.1 --directory target/book 8000
 ```

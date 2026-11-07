@@ -36,9 +36,11 @@ standard's warning triangle; it does not replace the infantry icon.
 
 ## An input drawn inside a weather graphic
 
-A tropopause-low symbol takes its height from `altitudeDepth`. The library
-performs no unit conversion: `320` is the value in the standard's chosen
-hundreds-of-feet or metres convention. An empty value omits the value instead
+A tropopause-low symbol takes its height from `altitudeDepth`. MIL-STD-2525E
+Change 1, Table M-II (printed pages 624–625), gives this height as three digits
+above mean sea level "in hundreds of feet (or meters)" and does not say which.
+The library draws the text as supplied and converts nothing, so `320` must
+already be in the unit the reader expects. An empty value omits the value instead
 of inserting an example number. `catalog::standards::Entry::input_field()`
 identifies the field used by other variable graphics.
 

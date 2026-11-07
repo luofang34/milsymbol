@@ -41,14 +41,44 @@ pub(crate) fn response(request: &str) -> Result<String, Error> {
     };
     let validity = symbol.sidc_validity();
     let options = crate::snippet::options(&request)?;
-    let sources:Value=entry.map(|e| json!({"name":e.name,"code":crate::catalog::source(e.source),
-        "drawing":e.drawing_source().map(crate::catalog::source),"input":e.input_field(),"scope":format!("{:?}",e.scope)})).unwrap_or(Value::Null);
-    Ok(json!({"sidc":symbol.sidc(),"fields":fields,"svg":symbol.to_svg(),"valid":validity.is_valid(),
-        "issues":validity.issues.iter().map(|i|format!("{i:?}")).collect::<Vec<_>>(),"metadata":symbol.metadata(),
-        "bbox":symbol.bounding_box(),"anchor":symbol.anchor(),"octagon_anchor":symbol.octagon_anchor(),"size":symbol.size(),
-        "source":sources,"options":symbol.options(),"standard":request.standard,"mode":request.mode,
-        "config":{"sidc":symbol.sidc(),"standard":request.standard,"mode":request.mode,"options":options},
-        "rust":crate::snippet::rust(&request,symbol.sidc())?}).to_string())
+    let (rust, rust_needs_serde) = crate::snippet::rust(&request, symbol.sidc())?;
+    let source: Value = entry
+        .map(|e| {
+            json!({
+                "name": e.name,
+                "code": crate::catalog::source(e.source),
+                "drawing": e.drawing_source().map(crate::catalog::source),
+                "input": e.input_field(),
+                "scope": format!("{:?}", e.scope),
+            })
+        })
+        .unwrap_or(Value::Null);
+    let issues: Vec<_> = validity.issues.iter().map(|i| format!("{i:?}")).collect();
+    Ok(json!({
+        "sidc": symbol.sidc(),
+        "fields": fields,
+        "svg": symbol.to_svg(),
+        "valid": validity.is_valid(),
+        "issues": issues,
+        "metadata": symbol.metadata(),
+        "bbox": symbol.bounding_box(),
+        "anchor": symbol.anchor(),
+        "octagon_anchor": symbol.octagon_anchor(),
+        "size": symbol.size(),
+        "source": source,
+        "options": symbol.options(),
+        "standard": request.standard,
+        "mode": request.mode,
+        "config": {
+            "sidc": symbol.sidc(),
+            "standard": request.standard,
+            "mode": request.mode,
+            "options": options,
+        },
+        "rust": rust,
+        "rust_needs_serde": rust_needs_serde,
+    })
+    .to_string())
 }
 
 #[cfg(test)]

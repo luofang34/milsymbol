@@ -147,6 +147,7 @@ function present(result) {
     const dt = document.createElement('dt'), dd = document.createElement('dd'); dt.textContent = key; dd.textContent = value; return [dt, dd];
   }));
   byId('rust').textContent = state.rust;
+  byId('rust-note').hidden = !state.rust_needs_serde;
   byId('metadata').textContent = JSON.stringify(state.metadata, null, 2);
   showPreview();
   setStatus('Rendered locally with the Rust library.');

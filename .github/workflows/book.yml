@@ -32,9 +32,7 @@ jobs:
         with:
           node-version: 26
       - name: Install WASM bindings generator
-        run: |
-          version=$(python3 -c 'import tomllib; print(tomllib.load(open("tools/book-wasm/Cargo.toml", "rb"))["dependencies"]["wasm-bindgen"].removeprefix("="))')
-          cargo install --locked wasm-bindgen-cli --version "$version"
+        run: tools/install-book-wasm-bindgen.sh
       - name: Install mdBook
         env:
           MDBOOK_VERSION: 0.5.4

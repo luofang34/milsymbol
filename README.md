@@ -61,14 +61,15 @@ This is figure 13 of MIL-STD-2525C, rendered by this crate.
 
 The [usage manual](https://luofang34.github.io/milsymbol/) covers installation, SIDCs, styling, text,
 output formats, map placement, drawing adapters, caching, extensions, and
-WASM/embedded use. Run `mdbook serve --open` for a local searchable book, or
-`tools/check-book.sh` to build it and test its Rust examples.
+WASM/embedded use, and includes a symbol lab running this library as WASM.
+Run `tools/build-book.sh` for a local build, or `tools/check-book.sh` to build
+it and test its Rust examples; `docs/manual/maintenance.md` lists the tools.
 
 ## Getting started
 
 ```toml
 [dependencies]
-milsymbol = { git = "https://github.com/luofang34/milsymbol" }
+milsymbol = "0.5"
 ```
 
 Requires Rust 1.85 or later. The minimum supported Rust version may be
