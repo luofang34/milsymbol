@@ -89,7 +89,7 @@ required-features = ["std"]
 workspace = true
 
 [workspace]
-members = [".", "xtask"]
+members = [".", "xtask", "tools/book-wasm"]
 
 [workspace.lints.rust]
 unsafe_code = "forbid"

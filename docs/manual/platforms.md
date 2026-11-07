@@ -25,7 +25,7 @@ JavaScript oracle. The default is `X64`, independent of the actual WASM host.
 
 ```toml
 [dependencies]
-milsymbol = { version = "0.4", default-features = false }
+milsymbol = { git = "https://github.com/luofang34/milsymbol", branch = "main", default-features = false }
 ```
 
 ```sh
@@ -49,7 +49,7 @@ apply to every embedded target.
 
 ```toml
 [dependencies]
-milsymbol = { version = "0.4", default-features = false, features = ["compact-paths"] }
+milsymbol = { git = "https://github.com/luofang34/milsymbol", branch = "main", default-features = false, features = ["compact-paths"] }
 ```
 
 `compact-paths` packs the built-in path text and decodes it while writing or

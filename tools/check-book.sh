@@ -4,7 +4,10 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 export CARGO_TARGET_DIR="$PWD/target/manual-tests"
-mdbook build
+CARGO_TARGET_DIR="$PWD/target/book-tests" tools/build-book.sh
 python3 tools/check-book-links.py
+node tools/book-wasm.test.mjs
+CARGO_TARGET_DIR="$PWD/target/book-tests" cargo test --locked -p milsymbol-book
+cargo clean -p milsymbol -p serde_json
 cargo test --locked -p milsymbol --features serde --test serde --no-run
 mdbook test -L "$CARGO_TARGET_DIR/debug/deps"

@@ -11,12 +11,15 @@ class Page(HTMLParser):
     def __init__(self, path):
         super().__init__()
         self.ids = set()
+        self.duplicate_ids = set()
         self.links = []
         self.feed(path.read_text())
 
     def handle_starttag(self, tag, attrs):
         attrs = dict(attrs)
         if "id" in attrs:
+            if attrs["id"] in self.ids:
+                self.duplicate_ids.add(attrs["id"])
             self.ids.add(attrs["id"])
         for key in ("href", "src"):
             if attrs.get(key):
@@ -33,6 +36,8 @@ def main():
         raise SystemExit("No generated HTML; run mdbook build first")
     errors = []
     for path, page in pages.items():
+        if page.duplicate_ids:
+            errors.append(f"{path.relative_to(root)}: duplicate IDs {sorted(page.duplicate_ids)}")
         for link in page.links:
             url = urlsplit(link)
             if url.scheme or url.netloc:
