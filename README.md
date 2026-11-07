@@ -58,7 +58,7 @@ This is figure 13 of MIL-STD-2525C, rendered by this crate.
 
 ## Usage manual
 
-The [usage manual](https://github.com/luofang34/milsymbol/blob/main/docs/SUMMARY.md) covers installation, SIDCs, styling, text,
+The [usage manual](https://luofang34.github.io/milsymbol/) covers installation, SIDCs, styling, text,
 output formats, map placement, drawing adapters, caching, extensions, and
 WASM/embedded use. Run `mdbook serve --open` for a local searchable book, or
 `tools/check-book.sh` to build it and test its Rust examples.

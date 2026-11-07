@@ -5,6 +5,11 @@ with configuration in
 `book.toml`. Images reuse the repository's `docs/images/` assets. Build output
 goes under the ignored `target/book/` directory.
 
+The [published manual](https://luofang34.github.io/milsymbol/) is hosted on
+GitHub Pages. The `Usage manual` workflow checks the book on pull requests and
+publishes a checked build on pushes to `main`. Its manual dispatch can republish
+`main`. The repository's Pages source must be **GitHub Actions**.
+
 Install [mdBook](https://rust-lang.github.io/mdBook/) using its installation
 instructions, then run from the repository root:
 
@@ -17,6 +22,8 @@ mdbook serve --open
 The static `target/book/index.html` is also usable locally.
 
 ## Check executable examples
+
+The checker requires Python 3.11 or newer.
 
 ```sh
 tools/check-book.sh

@@ -12,6 +12,7 @@ build-dir = "target/book"
 edition = "2024"
 
 [output.html]
+site-url = "/milsymbol/"
 git-repository-url = "https://github.com/luofang34/milsymbol"
 edit-url-template = "https://github.com/luofang34/milsymbol/edit/main/{path}"
 
