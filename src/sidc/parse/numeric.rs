@@ -96,8 +96,10 @@ impl NumericSidc {
             8,
             1,
         )?;
+        // APP-6(E) Version 2 Table A-8 defines leadership code 71, but not 72.
+        let amplifier = code.field(9, 2);
         check(
-            AMPLIFIERS.contains(&code.field(9, 2)),
+            AMPLIFIERS.contains(&amplifier) && !(v2 && amplifier == "72"),
             "echelon/mobility",
             9,
             2,

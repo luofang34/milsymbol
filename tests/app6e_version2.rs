@@ -165,3 +165,95 @@ fn a_symbol_can_choose_version_2() -> Result<(), Box<dyn std::error::Error>> {
     assert!(milsymbol::compat::canonical_json_string(&by_name).contains(r#""standard":"APP6E2""#));
     Ok(())
 }
+
+#[test]
+fn version_2_amplifiers_match_table_a8() {
+    let defined: Vec<_> = include_str!("data/app6e2_amplifiers.txt")
+        .lines()
+        .filter(|line| !line.starts_with('#'))
+        .filter_map(|line| line.split_once('\t').map(|(code, _)| code))
+        .collect();
+    assert_eq!(defined.len(), 29);
+    for value in 0..=255u16 {
+        let code = format!("{value:02X}");
+        let sidc = format!("16031000{code}1211000000");
+        assert_eq!(
+            Sidc::parse_for(&sidc, Standard::App6EVersion2).is_ok(),
+            defined.contains(&code.as_str()),
+            "amplifier {code} must follow APP-6(E) Version 2 Table A-8"
+        );
+    }
+}
+
+#[test]
+fn undefined_version_2_amplifier_is_rejected_by_every_validation_entry_point()
+-> Result<(), milsymbol::RenderError> {
+    let sidc = "16031000721211000000";
+    assert_eq!(field_error(sidc), Some(("echelon/mobility", 9)));
+    let renderer = v2();
+    assert!(matches!(
+        renderer.check_sidc(sidc),
+        Err(SidcCheckError::Malformed(_))
+    ));
+    assert!(matches!(
+        renderer.symbol(sidc).strict().render(),
+        Err(milsymbol::RenderError::MalformedSidc(_))
+    ));
+    assert_eq!(
+        renderer.symbol(sidc).render()?.sidc_validity().issues,
+        [ValidityIssue::MalformedSidc]
+    );
+    let overridden = Renderer::default()
+        .symbol(sidc)
+        .standard(Standard::App6EVersion2)
+        .strict()
+        .render();
+    assert!(matches!(
+        overridden,
+        Err(milsymbol::RenderError::MalformedSidc(_))
+    ));
+    assert!(Sidc::parse("14031000721211000000").is_ok());
+    assert!(Sidc::parse_for("14031000721211000000", Standard::App6EVersion2).is_ok());
+    #[cfg(feature = "std")]
+    {
+        let cache = milsymbol::cache::CachedRenderer::new(renderer, 4);
+        assert!(cache.symbol(sidc).strict().render().is_err());
+        assert!(cache.is_empty());
+    }
+    Ok(())
+}
+
+#[test]
+fn extensions_can_supply_icons_filtered_out_of_version_2() -> Result<(), milsymbol::RenderError> {
+    struct Replacement;
+    impl milsymbol::IconExtension for Replacement {
+        fn icon(
+            &self,
+            _: &milsymbol::IconPartContext<'_>,
+            key: milsymbol::IconKey<'_>,
+            _: &dyn milsymbol::PartLookup,
+        ) -> Option<milsymbol::ir::Node> {
+            matches!(
+                key,
+                milsymbol::IconKey::Entity {
+                    symbol_set: "40",
+                    entity: "131000"
+                }
+            )
+            .then(|| milsymbol::ir::Node::circle(100.0, 100.0, 20.0))
+        }
+    }
+    let renderer = Renderer::builder()
+        .standard(Standard::App6EVersion2)
+        .icons(Replacement)
+        .build();
+    let sidc = "16034000001310000000";
+    assert!(v2().check_sidc(sidc).is_err());
+    assert!(renderer.check_sidc(sidc).is_ok());
+    for visible in [true, false] {
+        let symbol = renderer.symbol(sidc).icon(visible).strict().render()?;
+        assert!(symbol.sidc_validity().is_valid());
+        assert_eq!(symbol.to_svg().contains("<circle"), visible);
+    }
+    Ok(())
+}

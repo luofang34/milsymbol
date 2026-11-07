@@ -61,6 +61,11 @@ V8 is distributed under the BSD-style license reproduced in LICENSE-BSD-V8.
 Other references
 -------------------------------------------------------------------------------
 
+The APP-6(E) Version 2 code lists and amplifier test fixture refer to NATO's
+APP-06 Edition E Version 2, NATO Joint Military Symbology. NATO is acknowledged
+as the source of those standard codes and descriptions. The source tables are
+cited in src/compose/icon/app6e2/ and tests/data/app6e2_amplifiers.txt.
+
 milsymbol-py (https://github.com/klundeen/milsymbol-py, MIT) was consulted only
 for the composition of its 109,216-symbol reference corpus. No code or data from
 milsymbol-py is included; this repository's corpus is generated independently
