@@ -4,11 +4,12 @@
 use super::{ABSENT, IconContext, Kids, Slot, TAff, TDash, TNode, TNum, TPaint, node_at};
 use crate::color::{ColorSet, SlotMode};
 use crate::generated::{pool, tables};
-use crate::ir::{self, Node, Num, Paint, Style};
+use crate::ir::{self, Node, Num, Paint, Str, Style};
+use crate::node_list::NodeAcc;
+use crate::options::Color;
 use crate::registry::{IconExtension, IconPartContext, PartLookup};
 use alloc::borrow::Cow;
 use alloc::boxed::Box;
-use alloc::string::String;
 use alloc::vec::Vec;
 
 /// Extensions consulted before the generated tables.
@@ -24,10 +25,10 @@ pub(crate) struct Resolver<'a> {
     pub colors: &'a ColorSet,
     /// Affiliation the icon parts were built for (after `|| "Friend"`).
     pub part_affiliation: Option<crate::domain::Affiliation>,
-    pub mono_color: &'a str,
-    pub icon_font_family: Option<&'a crate::ir::Str>,
-    pub dash_pending: &'a str,
-    pub dash_anticipated: &'a str,
+    pub mono_color: Option<&'a Color>,
+    pub icon_font_family: Option<&'a Str>,
+    pub dash_pending: &'a Str,
+    pub dash_anticipated: &'a Str,
     /// Mapping whose in-place part mutations apply (symbol set, or -1 for letter).
     pub mapping: i16,
     pub ctx: IconContext,
@@ -61,7 +62,9 @@ impl Resolver<'_> {
         match p {
             TPaint::None => Some(Paint::None),
             TPaint::Lit(s) => Some(Paint::Color(Cow::Borrowed(s))),
-            TPaint::Mono => Some(Paint::Color(Cow::Owned(String::from(self.mono_color)))),
+            TPaint::Mono => Some(Paint::Color(
+                self.mono_color.map_or(Cow::Borrowed(""), Color::to_str),
+            )),
             TPaint::Slot(slot, aff) => {
                 let mode = self.slot_mode(slot);
                 use crate::domain::Affiliation;
@@ -92,8 +95,8 @@ impl Resolver<'_> {
             stroke_width: t.stroke_width.map(num),
             stroke_dasharray: t.dash.map(|d| match d {
                 TDash::Lit(s) => Cow::Borrowed(s),
-                TDash::Pending => Cow::Owned(String::from(self.dash_pending)),
-                TDash::Anticipated => Cow::Owned(String::from(self.dash_anticipated)),
+                TDash::Pending => self.dash_pending.clone(),
+                TDash::Anticipated => self.dash_anticipated.clone(),
             }),
             line_cap: t.line_cap.map(Cow::Borrowed),
             non_scaling_stroke: t.non_scaling_stroke.map(|n| num(n).value()),
@@ -193,8 +196,24 @@ impl Resolver<'_> {
         })
     }
 
+    /// Built-in pool row for `part` when no user extensions are registered.
+    fn builtin_part_row(&self, part: u16) -> Option<u32> {
+        let (_, default_entry) = *tables::PARTS.get(usize::from(part))?;
+        let entry = tables::OVERRIDES
+            .iter()
+            .find(|&&(m, p, _)| m == self.mapping && p == part)
+            .map_or(default_entry, |&(_, _, e)| e);
+        match self.ctx.row(entry) {
+            ABSENT => None,
+            row => Some(row),
+        }
+    }
+
     /// Instantiates a part (honouring in-place mutations of the current mapping).
     fn part_by_index(&self, part: u16) -> Option<Node> {
+        if self.user.ctx.is_none() {
+            return Some(self.node(self.builtin_part_row(part)?));
+        }
         let index = usize::from(part);
         let builtin = tables::PARTS.get(index);
         let name = builtin.map(|&(n, _)| n).or_else(|| {
@@ -206,12 +225,7 @@ impl Resolver<'_> {
             return Some(user);
         }
         builtin?;
-        let entry = tables::OVERRIDES
-            .iter()
-            .find(|&&(m, p, _)| m == self.mapping && p == part)
-            .map(|&(_, _, e)| e)
-            .or_else(|| tables::PARTS.get(usize::from(part)).map(|&(_, e)| e))?;
-        self.value(entry)
+        Some(self.node(self.builtin_part_row(part)?))
     }
 
     /// Instantiates the value of `entry` in the current context.
@@ -219,6 +233,78 @@ impl Resolver<'_> {
         match self.ctx.row(entry) {
             ABSENT => None,
             row => Some(self.node(row)),
+        }
+    }
+
+    /// Instantiates `entry` directly into `dst`, peeling outer [`TNode::Ref`]s
+    /// and single-child [`TNode::Group`]s in place without allocating an
+    /// intermediate `Vec<Node>`. Caller must ensure `self.user.ctx.is_none()`.
+    pub(crate) fn value_unwrapped(
+        &self,
+        entry: u32,
+        defined_only: bool,
+        dst: &mut NodeAcc,
+    ) -> Result<bool, crate::error::RenderError> {
+        let mut row = self.ctx.row(entry);
+        if row == ABSENT {
+            return Ok(false);
+        }
+        while let Some(TNode::Ref(part)) = node_at(row) {
+            match self.builtin_part_row(part) {
+                Some(next) => row = next,
+                None => {
+                    if defined_only {
+                        return Ok(false);
+                    }
+                    dst.push(Node::Missing);
+                    return Ok(true);
+                }
+            }
+        }
+        if defined_only && matches!(node_at(row), None | Some(TNode::Missing)) {
+            return Ok(false);
+        }
+        loop {
+            let Some(t) = node_at(row) else {
+                dst.push(Node::Missing);
+                return Ok(true);
+            };
+            match t {
+                TNode::Ref(part) => match self.builtin_part_row(part) {
+                    Some(next) => row = next,
+                    None => {
+                        dst.push(Node::Missing);
+                        return Ok(true);
+                    }
+                },
+                TNode::Group(k) if k.len == 1 => match pool::KIDS.get(k.start as usize) {
+                    Some(&child) => row = u32::from(child),
+                    None => return Ok(true),
+                },
+                TNode::Group(k) => {
+                    let start = k.start as usize;
+                    let end = start.saturating_add(k.len as usize);
+                    for &i in pool::KIDS.get(start..end).unwrap_or(&[]) {
+                        dst.push(self.node(u32::from(i)));
+                    }
+                    return Ok(true);
+                }
+                TNode::Scalar(TNum::S(s)) => {
+                    if crate::js::utf16_len(s) == 1 {
+                        return Err(crate::error::RenderError::upstream(
+                            "single-character string instruction never terminates",
+                        ));
+                    }
+                    if !s.is_empty() {
+                        dst.push(Node::Scalar(Num::Text(Cow::Borrowed(s))));
+                    }
+                    return Ok(true);
+                }
+                _ => {
+                    dst.push(self.node(row));
+                    return Ok(true);
+                }
+            }
         }
     }
 

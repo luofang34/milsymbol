@@ -2,10 +2,11 @@
 //! the stack part.
 
 use super::{PartOutput, SymbolState};
+use crate::bbox::BBox;
 use crate::domain::Affiliation;
 use crate::geometry::GeomShape;
 use crate::ir::{CircleNode, Node, Num, Paint, PathData, PathNode, Style};
-use alloc::borrow::Cow;
+use crate::node_list::NodeAcc;
 use alloc::string::String;
 use alloc::vec::Vec;
 
@@ -83,17 +84,22 @@ fn shape_node(shape: GeomShape, style: Style) -> Node {
     }
 }
 
-/// Frame instructions drawn behind (`pre`) and in front (`post`).
-pub(super) type FrameNodes = (Vec<Node>, Vec<Node>);
-
-/// Frame instructions, or `None` when upstream draws no frame.
-pub(super) fn frame(s: &SymbolState<'_>) -> Result<Option<FrameNodes>, crate::RenderError> {
+/// Appends frame instructions into `post` (and optional outline into `pre_out`),
+/// returning `false` when upstream draws no frame. Always sets `bbox_out`.
+pub(super) fn frame_into(
+    s: &SymbolState<'_>,
+    pre_out: &mut Option<Node>,
+    post: &mut NodeAcc,
+    bbox_out: &mut BBox,
+) -> Result<bool, crate::RenderError> {
     let (md, st) = (s.metadata, &s.options.style);
     let Some(g) = md.geometry() else {
-        return Ok(None);
+        *bbox_out = BBox::default();
+        return Ok(false);
     };
+    *bbox_out = g.bbox();
     if !md.frame && st.icon {
-        return Ok(None);
+        return Ok(false);
     }
     let aff = s.aff();
     let frame_color = s.color_of(&s.colors.frame_color);
@@ -113,7 +119,6 @@ pub(super) fn frame(s: &SymbolState<'_>) -> Result<Option<FrameNodes>, crate::Re
         stroke_width: Some(Num::Number(stroke_width)),
         ..Style::default()
     };
-    let mut pre = Vec::new();
     if st.frame && st.outline_width > 0.0 {
         let outline = match g.shape {
             GeomShape::Path(d) if md.fill && st.mono_color.is_none() => {
@@ -126,12 +131,12 @@ pub(super) fn frame(s: &SymbolState<'_>) -> Result<Option<FrameNodes>, crate::Re
             }
             shape => shape_node(shape, geom_style.clone()),
         };
-        pre.push(s.outline_one(&outline)?);
+        *pre_out = Some(s.outline_one(&outline)?);
     }
     if (st.mono_color.is_some() || !st.fill) && !md.notpresent.is_empty() {
-        geom_style.stroke_dasharray = Some(Cow::Owned(md.notpresent.clone()));
+        geom_style.stroke_dasharray = Some(md.notpresent.clone());
     }
-    let mut post = alloc::vec![shape_node(g.shape, geom_style)];
+    post.push(shape_node(g.shape, geom_style));
     if md.space {
         post.push(decoration(&SPACE, aff, &frame_color));
     }
@@ -146,18 +151,35 @@ pub(super) fn frame(s: &SymbolState<'_>) -> Result<Option<FrameNodes>, crate::Re
             fill: Some(Paint::None),
             stroke: s.color_of(&s.colors.white),
             stroke_width: Some(Num::Number(st.stroke_width + 1.0)),
-            stroke_dasharray: Some(Cow::Owned(md.notpresent.clone())),
+            stroke_dasharray: Some(md.notpresent.clone()),
             ..Style::default()
         };
         post.push(shape_node(g.shape, dashed));
     }
-    Ok(Some((pre, post)))
+    Ok(true)
+}
+
+pub(super) fn render_direct(
+    s: &SymbolState<'_>,
+    acc: &mut NodeAcc,
+    bbox: &mut BBox,
+) -> Result<(), crate::RenderError> {
+    let mut pre = None;
+    let mut base = BBox::default();
+    if frame_into(s, &mut pre, acc, &mut base)? {
+        if let Some(o) = pre {
+            acc.prepend_one(o);
+        }
+        bbox.merge(base.into());
+    }
+    Ok(())
 }
 
 pub(super) fn draw(s: &SymbolState<'_>) -> Result<PartOutput, crate::RenderError> {
-    let bbox = s.metadata.geometry_bbox();
-    Ok(match frame(s)? {
-        Some((pre, post)) => PartOutput::new(pre, post, bbox),
-        None => PartOutput::new(Vec::new(), Vec::new(), bbox),
-    })
+    let mut pre = None;
+    let mut post = NodeAcc::default();
+    let mut bbox = BBox::default();
+    let _ = frame_into(s, &mut pre, &mut post, &mut bbox)?;
+    let pre_vec = pre.map_or_else(Vec::new, |o| alloc::vec![o]);
+    Ok(PartOutput::new(pre_vec, post.into_vec(), bbox))
 }

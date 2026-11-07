@@ -26,7 +26,7 @@ mod stack;
 mod status;
 mod textfields;
 
-pub(crate) use pipeline::{Composition, compose};
+pub(crate) use pipeline::compose;
 
 /// Read-only view of a symbol while its parts are drawn (upstream `this`).
 pub struct SymbolState<'a> {
@@ -187,38 +187,23 @@ impl BuiltinPart {
 
 impl SymbolPart for BuiltinPart {
     fn draw(&self, s: &SymbolState<'_>) -> Result<PartOutput, crate::PartError> {
-        self.render(s).map_err(Into::into)
+        Ok(match self {
+            BuiltinPart::Stack => stack::draw(s)?,
+            BuiltinPart::BaseGeometry => base_geometry::draw(s)?,
+            BuiltinPart::Icon => icon::draw(s)?,
+            BuiltinPart::Modifier => modifier::draw(s)?,
+            BuiltinPart::StatusModifier => status::draw(s)?,
+            BuiltinPart::Engagement => engagement::draw(s)?,
+            BuiltinPart::AffiliationDimension => affiliation::draw(s)?,
+            BuiltinPart::TextFields => textfields::draw(s)?,
+            BuiltinPart::DirectionArrow => direction::draw(s)?,
+            BuiltinPart::Octagon => PartOutput::new(
+                Vec::new(),
+                alloc::vec![pipeline::octagon_node()],
+                BBox::default(),
+            ),
+        })
     }
-}
-
-impl BuiltinPart {
-    pub(crate) fn render(&self, s: &SymbolState<'_>) -> Result<PartOutput, RenderError> {
-        match self {
-            BuiltinPart::Stack => stack::draw(s),
-            BuiltinPart::BaseGeometry => base_geometry::draw(s),
-            BuiltinPart::Icon => icon::draw(s),
-            BuiltinPart::Modifier => modifier::draw(s),
-            BuiltinPart::StatusModifier => status::draw(s),
-            BuiltinPart::Engagement => engagement::draw(s),
-            BuiltinPart::AffiliationDimension => affiliation::draw(s),
-            BuiltinPart::TextFields => textfields::draw(s),
-            BuiltinPart::DirectionArrow => direction::draw(s),
-            BuiltinPart::Octagon => Ok(octagon()),
-        }
-    }
-}
-
-fn octagon() -> PartOutput {
-    let mut n = crate::ir::PathNode {
-        d: crate::ir::PathData::new(
-            "m 120,60 0,80 m -40,-80 0,80 m -20,-20 80,0 m 0,-40 -80,0 M 100,50 135.35534,64.64466 150,100 135.35534,135.35534 100,150.00002 64.644661,135.35534 50,100 64.644661,64.64466 z",
-        ),
-        style: Style::default(),
-    };
-    n.style.fill = Some(Paint::None);
-    n.style.stroke = Some(Paint::color("rgb(0,0,255)"));
-    n.style.stroke_width = Some(Num::Number(1.0));
-    PartOutput::new(Vec::new(), alloc::vec![Node::Path(n)], BBox::default())
 }
 
 // ---------------------------------------------------------------------------

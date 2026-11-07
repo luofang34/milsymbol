@@ -2,7 +2,7 @@
 //! symbols it draws.
 
 use crate::builder::{SidcInput, SymbolBuilder};
-use crate::color::ColorMode;
+use crate::color::{ColorMode, PreparedColors};
 use crate::compose::{self, BuiltinPart, SymbolPart};
 use crate::config::{DashArrays, RendererConfig, Standard};
 use crate::error::RenderError;
@@ -44,6 +44,7 @@ pub struct Renderer {
 
 struct Inner {
     config: RendererConfig,
+    colors: PreparedColors,
     registry: Registry,
 }
 
@@ -152,9 +153,14 @@ impl Renderer {
     /// taken by value because composing adjusts them; the cache's
     /// `CachedRenderer::render` borrows them instead, since it builds its key
     /// from a borrow and a hit needs no copy.
-    pub fn render(&self, sidc: &str, mut options: SymbolOptions) -> Result<Symbol, RenderError> {
-        let c = compose::compose(sidc, &mut options, &self.inner.config, &self.inner.registry)?;
-        Ok(Symbol::from_composition(c, options))
+    pub fn render(&self, sidc: &str, options: SymbolOptions) -> Result<Symbol, RenderError> {
+        compose::compose(
+            sidc,
+            options,
+            &self.inner.config,
+            &self.inner.colors,
+            &self.inner.registry,
+        )
     }
 }
 
@@ -255,9 +261,11 @@ impl RendererBuilder {
 
     /// Finishes the renderer.
     pub fn build(self) -> Renderer {
+        let colors = PreparedColors::new(&self.config);
         Renderer {
             inner: Shared::new(Inner {
                 config: self.config,
+                colors,
                 registry: self.registry,
             }),
         }

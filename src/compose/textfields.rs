@@ -8,7 +8,6 @@ use crate::ir::{Node, Num, Paint, Str, TextNode};
 use crate::js;
 use crate::labels::{self, LabelField};
 use crate::options::field;
-use alloc::borrow::Cow;
 use alloc::string::String;
 use alloc::vec::Vec;
 
@@ -77,25 +76,33 @@ fn font_color(s: &SymbolState<'_>) -> Option<Paint> {
 
 pub(super) fn draw(s: &SymbolState<'_>) -> Result<PartOutput, RenderError> {
     let st = &s.options.style;
-    let ts = TextStyle {
-        color: font_color(s),
-        family: st.font_family.clone(),
-        size: st.info_size,
-    };
     let mut gbbox = BBox::default();
     let mut pre = Vec::new();
     let mut post = Vec::new();
     if let Some(label) = label_override(s) {
+        let ts = TextStyle {
+            color: font_color(s),
+            family: st.font_family.clone(),
+            size: st.info_size,
+        };
         post.push(Node::Group(label_texts(s, &ts, label, &mut gbbox)));
         if st.outline_width > 0.0 {
             pre.push(s.outline(&post)?);
         }
         return Ok(PartOutput::new(pre, post, gbbox));
     }
+    if !st.info_fields || s.options.text.is_empty() {
+        return Ok(PartOutput::new(pre, post, gbbox));
+    }
     let any_text = TRIGGER_FIELDS
         .iter()
         .any(|k| !s.options.text_named(k).is_empty());
-    if st.info_fields && any_text {
+    if any_text {
+        let ts = TextStyle {
+            color: font_color(s),
+            family: st.font_family.clone(),
+            size: st.info_size,
+        };
         layout::draw(s, &ts, &mut post, &mut gbbox);
         let width = match st.info_outline_width {
             Some(w) if w > 0.0 => Some(w),
@@ -116,27 +123,23 @@ pub(super) fn draw(s: &SymbolState<'_>) -> Result<PartOutput, RenderError> {
 /// Label override for this SIDC: extension entries first, then built-ins.
 fn label_override<'a>(s: &'a SymbolState<'_>) -> Option<&'a [LabelField]> {
     let md = s.metadata;
-    let (key, user) = if md.number_sidc {
+    if md.number_sidc {
         if !md.control_measure() {
             return None;
         }
-        (js::substr(&md.function_id, 0, 6), &s.registry.number_labels)
+        let key = js::substr(&md.function_id, 0, 6);
+        if let Some(v) = s.registry.number_labels.get(&*key) {
+            return Some(v.as_slice());
+        }
+        labels::builtin(true, &key)
     } else {
         let sidc = js::JsStr::new(s.sidc);
-        (
-            Cow::Owned(alloc::format!(
-                "{}-{}-{}",
-                sidc.substr(0, 1),
-                sidc.substr(2, 1),
-                sidc.substr(4, 6)
-            )),
-            &s.registry.letter_labels,
-        )
-    };
-    if let Some(v) = user.get(&*key) {
-        return Some(v.as_slice());
+        let key = crate::small_str::generic_letter_sidc(&sidc);
+        if let Some(v) = s.registry.letter_labels.get(&*key) {
+            return Some(v.as_slice());
+        }
+        labels::builtin(false, &key)
     }
-    labels::builtin(md.number_sidc, &key)
 }
 
 fn label_texts(

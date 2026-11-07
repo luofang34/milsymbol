@@ -5,8 +5,8 @@ use crate::domain::{Affiliation, Context, Dimension, Echelon, Mobility, Status};
 use crate::js::JsStr;
 use crate::metadata::Field;
 use crate::metadata::Metadata;
+use crate::small_str::SmallStr;
 use alloc::borrow::Cow;
-use alloc::string::String;
 
 fn char_or_dash<'a>(s: &JsStr<'a>, i: usize) -> Cow<'a, str> {
     let c = s.char_at(i);
@@ -64,7 +64,7 @@ pub(super) fn interpret(sidc: &str, md: &mut Metadata, input: &ParseInput<'_>) {
         m11: char_or_dash(&s, 10),
         m12: char_or_dash(&s, 11),
     };
-    md.function_id = String::from(&*c.fid);
+    md.function_id = SmallStr::from_str_slice(&c.fid);
     identity_and_dimension(&c, md, input);
     md.base_dimension = md.dimension;
     md.base_affiliation = md.affiliation;
@@ -103,10 +103,10 @@ fn identity_and_dimension(c: &Codes<'_>, md: &mut Metadata, input: &ParseInput<'
         md.installation = true;
     }
     if input.style_frame && c.status == "A" {
-        md.notpresent = String::from(input.dashes.anticipated);
+        md.notpresent = input.dashes.anticipated.clone();
     }
     if input.style_frame && matches!(a, "P" | "A" | "S" | "G" | "M") {
-        md.notpresent = String::from(input.dashes.pending);
+        md.notpresent = input.dashes.pending.clone();
     }
     let condition = match &*c.status {
         "C" => Some(Status::FullyCapable),

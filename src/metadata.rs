@@ -5,8 +5,9 @@ use crate::domain::{
     Affiliation, Context, Dimension, Echelon, Edition, Leadership, Mobility, Status,
 };
 use crate::geometry::{self, BaseGeometry};
+use crate::ir::Str;
+use crate::small_str::SmallStr;
 mod field;
-use alloc::string::String;
 pub(crate) use field::{Field, Name};
 
 /// Flags upstream only sets for some SIDCs; `None` means "not present".
@@ -29,9 +30,9 @@ pub(crate) struct OptionalFlags {
     /// Leadership indicator (dismounted individuals).
     pub leadership: Option<Leadership>,
     /// Sector 1 modifier code (`_modifier1`, numeric SIDCs).
-    pub modifier1: Option<String>,
+    pub modifier1: Option<Str>,
     /// Sector 2 modifier code (`_modifier2`, numeric SIDCs).
-    pub modifier2: Option<String>,
+    pub modifier2: Option<Str>,
 }
 
 /// Parsed and derived properties of a symbol.
@@ -68,7 +69,7 @@ pub(crate) struct Metadata {
     /// Frame is drawn.
     pub frame: bool,
     /// Icon part of the SIDC (entity code for numeric SIDCs).
-    pub function_id: String,
+    pub function_id: SmallStr<22>,
     /// Headquarters.
     pub headquarters: bool,
     /// Installation.
@@ -78,7 +79,7 @@ pub(crate) struct Metadata {
     /// Mobility, with absent and invalid codes kept distinct.
     pub mobility: Field<Mobility>,
     /// Dash array of the planned/pending frame, empty when present.
-    pub notpresent: String,
+    pub notpresent: Str,
     /// The SIDC is numeric.
     pub number_sidc: bool,
     /// Space symbol.
@@ -111,12 +112,12 @@ impl Metadata {
             fenint_dummy: false,
             fill,
             frame,
-            function_id: String::new(),
+            function_id: SmallStr::new(),
             headquarters: false,
             installation: false,
             joker: false,
             mobility: Field::Empty,
-            notpresent: String::new(),
+            notpresent: Str::Borrowed(""),
             number_sidc: false,
             space: false,
             std2525,

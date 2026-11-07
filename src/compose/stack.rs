@@ -1,7 +1,9 @@
 //! Stacked frames behind the symbol (upstream `stack-extension.js`).
 
 use super::{PartOutput, SymbolState};
+use crate::bbox::BBox;
 use crate::ir::Node;
+use crate::node_list::NodeAcc;
 use alloc::vec::Vec;
 
 /// Largest `stack` rendered. Upstream loops `for (i = stack; i >= 1; i--)`,
@@ -9,9 +11,12 @@ use alloc::vec::Vec;
 pub(crate) const MAX_STACK: f64 = 1000.0;
 
 pub(super) fn draw(s: &SymbolState<'_>) -> Result<PartOutput, crate::RenderError> {
-    let base = s.metadata.geometry_bbox();
     let Some(count) = s.options.stack else {
-        return Ok(PartOutput::new(Vec::new(), Vec::new(), base));
+        return Ok(PartOutput::new(
+            Vec::new(),
+            Vec::new(),
+            s.metadata.geometry_bbox(),
+        ));
     };
     if !count.is_finite() || count > MAX_STACK {
         return Err(crate::RenderError::InvalidOption {
@@ -19,9 +24,12 @@ pub(super) fn draw(s: &SymbolState<'_>) -> Result<PartOutput, crate::RenderError
             reason: "must be finite and at most 1000",
         });
     }
-    let Some((pre, post)) = super::base_geometry::frame(s)? else {
+    let (mut pre_one, mut post_acc, mut base) = (None, NodeAcc::default(), BBox::default());
+    if !super::base_geometry::frame_into(s, &mut pre_one, &mut post_acc, &mut base)? {
         return Ok(PartOutput::new(Vec::new(), Vec::new(), base));
-    };
+    }
+    let pre = pre_one.map_or_else(Vec::new, |o| alloc::vec![o]);
+    let post = post_acc.into_vec();
     let mut outlines = Vec::new();
     let mut frames = Vec::new();
     let mut i = count;

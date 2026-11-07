@@ -10,6 +10,10 @@ SVG output, draw instructions and metadata are unchanged.
   `outline_color`, and the constants `Color::BLACK` and `Color::WHITE`.
 - New `Drawing::viewport_transform`, from symbol units to pixels, and
   `examples/png.rs`, which rasterizes a symbol with `resvg`.
+- Default infantry composition keeps short SIDCs and instruction lists inline
+  and shares built-in colour sets. Rendering, cloning, and writing to a
+  sufficiently sized SVG or data-URL buffer require no heap allocations for
+  those symbols.
 
 ## 0.4.2 — 2026-10-08
 

@@ -4,9 +4,11 @@ use super::ParseInput;
 use crate::domain::{
     Affiliation, Context, Dimension, Echelon, Edition, Leadership, Mobility, Status,
 };
+use crate::ir::Str;
 use crate::js::{self, JsStr};
 use crate::metadata::Field;
 use crate::metadata::Metadata;
+use crate::small_str::SmallStr;
 use alloc::borrow::Cow;
 use alloc::string::String;
 
@@ -58,14 +60,9 @@ pub(super) fn interpret(sidc: &str, md: &mut Metadata, input: &ParseInput<'_>) {
 
     let function_id = s.substr(10, 10);
     let fid = JsStr::new(&function_id);
-    md.function_id = String::from(&*function_id);
-    let modifier = |sector: usize, code: usize| {
-        let mut m = String::from(non_empty_or(s.substr(sector, 1), "0"));
-        m.push_str(&non_empty_or(fid.substr(code, 2), "00"));
-        m
-    };
-    md.flags.modifier1 = Some(modifier(20, 6));
-    md.flags.modifier2 = Some(modifier(21, 8));
+    md.function_id = SmallStr::from_str_slice(&function_id);
+    md.flags.modifier1 = Some(modifier_code(&s, &fid, 20, 6));
+    md.flags.modifier2 = Some(modifier_code(&s, &fid, 21, 8));
 
     md.context = js::parse_int(&si1)
         .and_then(|i| usize::try_from(i).ok())
@@ -80,16 +77,16 @@ pub(super) fn interpret(sidc: &str, md: &mut Metadata, input: &ParseInput<'_>) {
     classify_symbol_set(&symbol_set, &fid, md, input);
 
     if status == "1" {
-        md.notpresent = String::from(input.dashes.anticipated);
+        md.notpresent = input.dashes.anticipated.clone();
     }
     if matches!(&*si2, "0" | "2" | "5") {
-        md.notpresent = String::from(input.dashes.pending);
+        md.notpresent = input.dashes.pending.clone();
     }
     let entity = fid.substr(0, 6);
     if (symbol_set == "30" && eq_num(&entity, 160000.0))
         || (symbol_set == "35" && (eq_num(&entity, 140000.0) || eq_num(&entity, 150000.0)))
     {
-        md.notpresent = String::from(input.dashes.pending);
+        md.notpresent = input.dashes.pending.clone();
     }
     if matches!(&*status, "2" | "3" | "4" | "5") {
         let i = js::parse_int(&status)
@@ -113,6 +110,19 @@ pub(super) fn interpret(sidc: &str, md: &mut Metadata, input: &ParseInput<'_>) {
     civilian(&symbol_set, &fid, md);
     frame_shape(&frameshape, md);
     amplifiers(&hq_tf_dummy, &echelon_mob, md);
+}
+
+fn modifier_code(s: &JsStr<'_>, fid: &JsStr<'_>, sector: usize, code: usize) -> Str {
+    let a = non_empty_or(s.substr(sector, 1), "0");
+    let b = non_empty_or(fid.substr(code, 2), "00");
+    if a == "0" && b == "00" {
+        Str::Borrowed("000")
+    } else {
+        let mut m = String::with_capacity(a.len() + b.len());
+        m.push_str(&a);
+        m.push_str(&b);
+        Str::Owned(m)
+    }
 }
 
 fn non_empty_or<'a>(s: Cow<'a, str>, fallback: &'a str) -> Cow<'a, str> {

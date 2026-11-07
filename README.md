@@ -52,8 +52,8 @@ This is figure 13 of MIL-STD-2525C, rendered by this crate.
   documentation).
 - No global state: a `Renderer` holds configuration and extensions, is
   `Send + Sync`, and renders deterministically.
-- About 450,000 symbols per second to SVG on one core
-  ([BENCHMARKS.md](BENCHMARKS.md)).
+- Measured single-symbol, cached, and bulk rendering performance and memory
+  usage ([BENCHMARKS.md](BENCHMARKS.md)).
 
 ## Getting started
 
