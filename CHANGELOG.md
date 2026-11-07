@@ -9,6 +9,8 @@
 - Versions 15/16 use mechanically extracted code tables and native drawing
   paths with source citations. Edition E accepts contexts 3–8, set 64 and
   hexadecimal code characters. Geographic multipoint graphics are excluded.
+- In standards mode, symbol sets 45–47 ignore `direction` and
+  `speed_leader`; neither standard defines those amplifiers for METOC symbols.
 - `catalog::standards` exposes names, scopes, citations and variable input
   fields for the pinned editions.
 - `NumericSidc::with_context` returns `Result` so contexts unavailable to an

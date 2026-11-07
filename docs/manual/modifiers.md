@@ -56,6 +56,11 @@ assert_ne!(arrow.to_svg(), leader.to_svg());
 # Ok::<(), milsymbol::RenderError>(())
 ```
 
+In standards mode, weather and oceanographic symbols (symbol sets 45–47) draw
+neither: MIL-STD-2525E Change 1 Table VI and APP-6(E) Version 2 Table 1-5 do not
+list those sets for the direction (Q) or speed leader (AJ) amplifiers. To show
+a weather feature's motion, rotate or animate the symbol on the map instead.
+
 Angles need not be restricted to one revolution, but must be finite. If exact
 upstream floating-point output matters, select the matching
 `ReferencePlatform`; [configuration](configuration.md) explains it.

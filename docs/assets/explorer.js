@@ -134,7 +134,9 @@ function present(result) {
   const md = state.metadata;
   const readable = value => value.replace(/([a-z])([A-Z])/g, '$1 $2');
   byId('explanation').textContent = state.valid
-    ? [md.context || 'Unspecified context', md.affiliation || 'Unspecified identity', md.dimension || 'Unspecified dimension'].map(readable).join(' · ')
+    ? (['45', '46', '47'].includes(state.fields?.symbol_set)
+      ? 'Weather symbol · standard identity does not apply'
+      : [md.context || 'Unspecified context', md.affiliation || 'Unspecified identity', md.dimension || 'Unspecified dimension'].map(readable).join(' · '))
     : state.issues.join('; ');
   if (state.source?.scope === 'Hierarchy') byId('explanation').textContent += ' · Hierarchy heading: no associated icon.';
   const source = state.source?.drawing || state.source?.code;
