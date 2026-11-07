@@ -1,6 +1,8 @@
 # Summary
 
 - [Introduction](introduction.md)
+- [Symbol lab](manual/explorer.md)
+- [Worked examples](manual/examples.md)
 - [Installation and first render](manual/getting-started.md)
 - [SIDCs and validation](manual/sidcs.md)
 - [Frames, modifiers, and movement](manual/modifiers.md)

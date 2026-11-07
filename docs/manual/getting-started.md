@@ -1,10 +1,10 @@
 # Installation and first render
 
-Add the published crate to a Rust project:
+The manual describes the repository API. Add the Git dependency to a Rust project:
 
 ```toml
 [dependencies]
-milsymbol = "0.4"
+milsymbol = { git = "https://github.com/luofang34/milsymbol", branch = "main" }
 ```
 
 The library requires Rust 1.85 or later. Development tools and dev-dependencies
@@ -79,7 +79,7 @@ independent and immutable.
 
 ```toml
 [dependencies]
-milsymbol = { version = "0.4", features = ["serde", "compact-paths"] }
+milsymbol = { git = "https://github.com/luofang34/milsymbol", branch = "main", features = ["serde", "compact-paths"] }
 ```
 
 For an allocator-backed embedded application, disable default features; see
