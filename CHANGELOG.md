@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.5.0 — Unreleased
+## 0.5.0 — 2026-11-07
 
 - `RenderMode::Standards` is the default. Numeric display uses the pinned
   MIL-STD-2525E Change 1 or APP-6(E) Version 2 rules; SIDC version digits
