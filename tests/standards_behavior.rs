@@ -127,3 +127,16 @@ fn explicit_compatibility_mode_keeps_upstream_frames_and_colors() -> TestResult 
     assert!(r.check_sidc("16031000001211000000").is_err());
     Ok(())
 }
+
+#[test]
+fn exercise_jokers_are_hostile_red_in_every_exercise_context() -> TestResult {
+    for version in 13..=16 {
+        for context in [1, 5, 6] {
+            let sidc = format!("{version}{context}51000001211000000");
+            let symbol = Renderer::default().symbol(sidc).render()?;
+            assert!(symbol.to_svg().contains("rgb(255,128,128)"));
+            assert!(!symbol.to_svg().contains("fill=\"rgb(255, 229, 153)\""));
+        }
+    }
+    Ok(())
+}

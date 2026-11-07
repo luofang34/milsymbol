@@ -55,7 +55,7 @@ pub(super) fn interpret(sidc: &str, md: &mut Metadata, input: &ParseInput<'_>) {
         md.flags.edition = Some(Edition::E);
     }
     let suspect = if input.standards {
-        md.std2525 && !matches!(&*si1, "1" | "4" | "7")
+        md.std2525 && !matches!(&*si1, "1" | "5" | "6")
     } else {
         eq_num(&version, 13.0)
     };
