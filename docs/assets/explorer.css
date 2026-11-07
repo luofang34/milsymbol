@@ -40,3 +40,4 @@
 @media (max-width: 680px) { .lab-layout { grid-template-columns: 1fr; }.lab-result { position: static; grid-row: 1; }.lab-preview { min-height: 210px; }.lab-sidc-row > div { flex-direction: column; }.lab-preview .lab-outer { height: 230px; } }
 .content:has(.symbol-lab) { overflow: visible; }
 .content main:has(.symbol-lab) { max-width: 1100px; }
+.content img[src*="book-"] { background: #f8fafc; border: 1px solid #d7dee7; border-radius: 8px; padding: 1rem; box-sizing: border-box; }
