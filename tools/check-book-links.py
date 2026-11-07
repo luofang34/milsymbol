@@ -3,6 +3,7 @@
 
 from html.parser import HTMLParser
 from pathlib import Path
+import tomllib
 from urllib.parse import unquote, urlsplit
 
 
@@ -23,7 +24,10 @@ class Page(HTMLParser):
 
 
 def main():
-    root = Path(__file__).resolve().parent.parent / "target/book"
+    repo = Path(__file__).resolve().parent.parent
+    config = tomllib.loads((repo / "book.toml").read_text())
+    site_path = urlsplit(config["output"]["html"].get("site-url", "/")).path
+    root = repo / "target/book"
     pages = {path.resolve(): Page(path) for path in root.rglob("*.html")}
     if not pages:
         raise SystemExit("No generated HTML; run mdbook build first")
@@ -34,7 +38,10 @@ def main():
             if url.scheme or url.netloc:
                 continue
             if url.path.startswith("/"):
-                target = (root / unquote(url.path).lstrip("/")).resolve()
+                if not url.path.startswith(site_path):
+                    errors.append(f"{path.relative_to(root)}: outside site path {link}")
+                    continue
+                target = (root / unquote(url.path.removeprefix(site_path))).resolve()
             else:
                 target = (path.parent / unquote(url.path)).resolve() if url.path else path
             if target.is_dir():
