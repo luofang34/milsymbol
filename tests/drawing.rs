@@ -94,6 +94,51 @@ fn view_box_and_size_are_the_svg_header() -> TestResult {
     assert!(svg.contains(&vb), "{vb} in {svg}");
     assert_eq!(d.size, symbol.size());
     assert_eq!(d.anchor, symbol.anchor());
+
+    let vp = d.viewport_transform();
+    assert!(close(
+        vp.apply(Point {
+            x: d.view_box.x,
+            y: d.view_box.y,
+        }),
+        Point { x: 0.0, y: 0.0 },
+    ));
+    assert!(close(
+        vp.apply(Point {
+            x: d.view_box.x + d.view_box.width,
+            y: d.view_box.y + d.view_box.height,
+        }),
+        Point {
+            x: d.size.width,
+            y: d.size.height,
+        },
+    ));
+
+    let mut wider = d.clone();
+    wider.size.width = d.size.width + 40.0;
+    let centered = wider.viewport_transform().apply(Point {
+        x: wider.view_box.x,
+        y: wider.view_box.y,
+    });
+    assert!(close(centered, Point { x: 20.0, y: 0.0 }));
+
+    let mut empty = d.clone();
+    empty.view_box.width = 0.0;
+    assert_eq!(empty.viewport_transform(), Transform::IDENTITY);
+    empty.view_box.width = f64::NAN;
+    assert_eq!(empty.viewport_transform(), Transform::IDENTITY);
+
+    let mut no_pixels = d.clone();
+    no_pixels.size.width = 0.0;
+    no_pixels.size.height = 0.0;
+    let vp = no_pixels.viewport_transform();
+    assert_eq!((vp.a, vp.d), (0.0, 0.0));
+
+    let mut invalid = d;
+    invalid.size.width = -1.0;
+    assert_eq!(invalid.viewport_transform(), Transform::IDENTITY);
+    invalid.size.width = f64::INFINITY;
+    assert_eq!(invalid.viewport_transform(), Transform::IDENTITY);
     Ok(())
 }
 

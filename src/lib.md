@@ -110,8 +110,11 @@ otherwise keep the font of their template, as milsymbol.js draws them, and the
 option's `font_family` alone only affects the information fields.
 
 A [`Symbol`] is immutable. [`Symbol::to_svg`] returns a document identical
-to milsymbol.js `asSVG()`; [`Symbol::write_svg`] appends to a reused buffer,
-and [`Symbol::write_svg_with`] takes [`SvgOptions`] (an id prefix for
+to milsymbol.js `asSVG()`, and [`Symbol::to_data_url`] returns a
+`data:image/svg+xml;utf8,…` URL identical to `toDataURL()`.
+[`Symbol::write_svg`] and [`Symbol::write_data_url`] append directly to a
+reused buffer without intermediate allocations, and [`Symbol::write_svg_with`]
+and [`Symbol::write_data_url_with`] take [`SvgOptions`] (an id prefix for
 inlining several symbols in one page).
 
 Rendering is deterministic: the same renderer configuration, SIDC and
@@ -238,7 +241,9 @@ assert!(lines > 0);
 
 Coordinates are symbol units: the frame's reference box spans 0–200 on both
 axes around (100, 100). [`drawing::Drawing::view_box`], [`Symbol::bounding_box`]
-and [`Symbol::size`] give the layout.
+and [`Symbol::size`] give the layout, and
+[`drawing::Drawing::viewport_transform`] maps symbol units to pixel
+coordinates (see `examples/png.rs` for PNG rasterization).
 
 [`Symbol::instructions`] is the tree exactly as milsymbol.js builds it
 ([`ir::Node`]: nested transforms, cascading styles, values that may be

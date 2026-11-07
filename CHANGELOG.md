@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.4.3 — Unreleased
+
+SVG output, draw instructions and metadata are unchanged.
+
+- New `Symbol::to_data_url`, `write_data_url` and `write_data_url_with`, the
+  `data:image/svg+xml;utf8,…` URL of milsymbol.js `toDataURL()`.
+- New builder setters `fill`, `frame`, `icon`, `outline_width` and
+  `outline_color`, and the constants `Color::BLACK` and `Color::WHITE`.
+- New `Drawing::viewport_transform`, from symbol units to pixels, and
+  `examples/png.rs`, which rasterizes a symbol with `resvg`.
+
 ## 0.4.2 — 2026-10-08
 
 Documentation only; the code and SVG output are unchanged.

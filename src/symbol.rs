@@ -178,6 +178,34 @@ impl Symbol {
         svg::render_into(&self.svg_frame(), &self.instructions, options, out);
     }
 
+    /// Renders the symbol as a `data:image/svg+xml;utf8,…` URL identical to
+    /// milsymbol.js `toDataURL()`.
+    ///
+    /// ```
+    /// use milsymbol::Renderer;
+    ///
+    /// let url = Renderer::default().symbol("10031000001211000000").render()?.to_data_url();
+    /// assert!(url.starts_with("data:image/svg+xml;utf8,%3Csvg"));
+    /// assert!(url.ends_with("%3C%2Fsvg%3E"));
+    /// # Ok::<(), milsymbol::RenderError>(())
+    /// ```
+    pub fn to_data_url(&self) -> String {
+        let mut out = String::with_capacity(1536);
+        self.write_data_url(&mut out);
+        out
+    }
+
+    /// Appends the `data:` URL of [`Symbol::to_data_url`] directly to `out`
+    /// without allocating an intermediate SVG string.
+    pub fn write_data_url(&self, out: &mut String) {
+        self.write_data_url_with(out, &svg::SvgOptions::default());
+    }
+
+    /// [`Symbol::write_data_url`] with output settings such as an id prefix.
+    pub fn write_data_url_with(&self, out: &mut String, options: &svg::SvgOptions) {
+        svg::render_data_url_into(&self.svg_frame(), &self.instructions, options, out);
+    }
+
     pub(crate) fn svg_frame(&self) -> SvgFrame {
         let st = &self.options.style;
         SvgFrame {

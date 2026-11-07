@@ -74,6 +74,7 @@ use milsymbol::Renderer;
 let renderer = Renderer::default();
 let symbol = renderer.symbol("130310001412110000000000000000").size(35.0).render()?;
 let svg: String = symbol.to_svg();
+let data_url: String = symbol.to_data_url(); // data:image/svg+xml;utf8,…
 # Ok::<(), milsymbol::RenderError>(())
 ```
 
@@ -114,9 +115,11 @@ assert!(Sidc::parse("10091000001211000000").is_err()); // identity 9 does not ex
 ## Options
 
 Options are typed values. The builder has setters for the common ones
-(`size`, `direction`, `speed_leader`, `stack`, `text`, `standard`,
-`color_mode`, `mono_color`) and `with` edits any other in place; a colour is
-an `options::Color` and `None` means "not set":
+(`size`, `direction`, `speed_leader`, `stack`, `font`, `text`, `standard`,
+`color_mode`, `mono_color`, `fill`, `frame`, `icon`, `outline_width`,
+`outline_color`) and `with` edits any other in place; a colour is an
+`options::Color` (`Color::BLACK`, `Color::WHITE`, `Color::rgb`, `Color::new`)
+and `None` means "not set":
 
 ```rust
 use milsymbol::{Renderer, options::{Color, ColorChoice, TextField}};
@@ -125,11 +128,12 @@ let symbol = Renderer::default()
     .symbol("10031000001211000000")
     .size(40.0)
     .direction(60.0)
+    .outline_width(5.0)
+    .outline_color(Color::WHITE)
+    .mono_color(Color::rgb(20, 60, 160))
     .text(TextField::HigherFormation, "2 BDE")
     .text(TextField::UniqueDesignation, "A/1-66")
     .with(|o| {
-        o.style.outline_width = 5.0;
-        o.style.mono_color = Color::rgb(20, 60, 160).into();
         o.style.info_color = Color::new("red").ok().map(ColorChoice::from);
     })
     .render()?;

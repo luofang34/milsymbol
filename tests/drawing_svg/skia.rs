@@ -38,16 +38,7 @@ pub(crate) fn transform(t: &Transform) -> tiny_skia::Transform {
 /// Symbol units to pixels: the SVG viewport mapping of `view_box` onto
 /// `size` (`preserveAspectRatio="xMidYMid meet"`, the SVG default).
 pub(crate) fn viewport(d: &Drawing) -> Transform {
-    let vb = &d.view_box;
-    let s = (d.size.width / vb.width).min(d.size.height / vb.height);
-    Transform {
-        a: s,
-        b: 0.0,
-        c: 0.0,
-        d: s,
-        e: (d.size.width - vb.width * s) / 2.0 - vb.x * s,
-        f: (d.size.height - vb.height * s) / 2.0 - vb.y * s,
-    }
+    d.viewport_transform()
 }
 
 /// svgtypes' arc conversion (kurbo in `f64`, tolerance 0.1, a line when
