@@ -6,3 +6,4 @@ leadership	mil2525e1;app6e2	47;73	5.3.9 Figure 28;1.2.16	instructions;bbox;size;
 restricted_contexts	mil2525e1;app6e2	59;714	Table A-II;Table A-3	metadata;instructions;bbox;size;anchor;octagonAnchor;colors;options.colorMode;options.frameColor;options.iconColor;valid;validExtended
 metoc_unframed	mil2525e1	616-696	Appendix M point drawing tables	metadata;instructions;bbox;size;anchor;octagonAnchor;colors
 edition_tables	mil2525e1;app6e2	55-141;711-825	Annex A code tables and each catalog entry's drawing_source	metadata;instructions;bbox;size;anchor;octagonAnchor;colors;valid;options.colorMode;options.frameColor;options.iconColor;valid;validExtended
+movement_amplifiers	mil2525e1;app6e2	25,28;37,46	Table VI Q and AJ;Table 1-5 Q and AJ	instructions;bbox;size;anchor;octagonAnchor

@@ -3,6 +3,7 @@
 
 use super::engagement::or_color;
 use super::{PartOutput, SymbolState};
+use crate::RenderMode;
 use crate::bbox::BBox;
 use crate::domain::Dimension;
 use crate::error::RenderError;
@@ -104,6 +105,15 @@ fn speed_leader(
         color,
         st.stroke_width,
     )
+}
+
+/// Whether the symbol takes a direction of movement (Q) or speed leader (AJ).
+/// Neither row lists a METOC symbol set: MIL-STD-2525E Change 1, Table VI
+/// (pp. 25, 28); APP-6(E) Version 2, Table 1-5 (pp. 37, 46).
+pub(super) fn applies(s: &SymbolState<'_>) -> bool {
+    s.config.mode != RenderMode::Standards
+        || !s.metadata.number_sidc
+        || !matches!(s.sidc.get(4..6), Some("45" | "46" | "47"))
 }
 
 pub(super) fn draw(s: &SymbolState<'_>) -> Result<PartOutput, RenderError> {

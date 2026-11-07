@@ -54,6 +54,12 @@ fn applies(rule: &str, sidc: &str, before: &Value, after: &Value) -> bool {
             edition_e && matches!(sidc.get(2..3), Some("3" | "4" | "5" | "6" | "7" | "8"))
         }
         "metoc_unframed" => matches!(set, "45" | "46" | "47"),
+        "movement_amplifiers" => {
+            matches!(set, "45" | "46" | "47")
+                && before
+                    .pointer("/options/direction")
+                    .is_some_and(|d| !d.is_null())
+        }
         "frame_selection" => sidc.get(22..23).is_some_and(|v| v != "0"),
         "leadership" => {
             md.get("leadership").is_some() || before.pointer("/metadata/leadership").is_some()

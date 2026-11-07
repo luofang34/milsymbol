@@ -311,7 +311,9 @@ impl BuiltinPart {
             }
             BuiltinPart::TextFields => super::textfields::draw(s)?,
             BuiltinPart::DirectionArrow
-                if s.options.direction.is_some() && s.options.style.info_fields =>
+                if s.options.direction.is_some()
+                    && s.options.style.info_fields
+                    && super::direction::applies(s) =>
             {
                 super::direction::draw(s)?
             }

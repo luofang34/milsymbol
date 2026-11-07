@@ -165,3 +165,62 @@ fn enhanced_protection_border_has_one_interior_without_annotation_holes() -> Tes
     );
     Ok(())
 }
+
+#[test]
+fn metoc_symbols_take_no_movement_amplifiers_in_standards_mode() -> TestResult {
+    let render = |sidc: &str, standard, mode, direction: Option<f64>, leader: Option<f64>| {
+        let mut symbol = Renderer::builder()
+            .standard(standard)
+            .mode(mode)
+            .build()
+            .symbol(sidc);
+        if let Some(degrees) = direction {
+            symbol = symbol.direction(degrees);
+        }
+        if let Some(length) = leader {
+            symbol = symbol.speed_leader(length);
+        }
+        symbol.render().map(|s| (s.to_svg(), s.anchor()))
+    };
+    for (sidc, standard) in [
+        ("15034500001101020000", Standard::Mil2525),
+        ("16034600001101000000", Standard::App6),
+        ("15034700001101000000", Standard::Mil2525),
+        ("10034500001101020000", Standard::Mil2525),
+    ] {
+        let plain = render(sidc, standard, RenderMode::Standards, None, None)?;
+        for leader in [None, Some(50.0)] {
+            let directed = render(sidc, standard, RenderMode::Standards, Some(45.0), leader)?;
+            assert_eq!(directed, plain, "{sidc} {leader:?}");
+        }
+    }
+    let sidc = "10034500001101020000";
+    assert_ne!(
+        render(
+            sidc,
+            Standard::Mil2525,
+            RenderMode::Milsymbol304,
+            Some(45.0),
+            None
+        )?,
+        render(
+            sidc,
+            Standard::Mil2525,
+            RenderMode::Milsymbol304,
+            None,
+            None
+        )?,
+    );
+    let land = "15031000001211000000";
+    assert_ne!(
+        render(
+            land,
+            Standard::Mil2525,
+            RenderMode::Standards,
+            Some(45.0),
+            None
+        )?,
+        render(land, Standard::Mil2525, RenderMode::Standards, None, None)?,
+    );
+    Ok(())
+}
