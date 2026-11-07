@@ -56,6 +56,13 @@ This is figure 13 of MIL-STD-2525C, rendered by this crate.
 - Measured single-symbol, cached, and bulk rendering performance and memory
   usage ([BENCHMARKS.md](BENCHMARKS.md)).
 
+## Usage manual
+
+The [usage manual](https://github.com/luofang34/milsymbol/blob/main/docs/SUMMARY.md) covers installation, SIDCs, styling, text,
+output formats, map placement, drawing adapters, caching, extensions, and
+WASM/embedded use. Run `mdbook serve --open` for a local searchable book, or
+`tools/check-book.sh` to build it and test its Rust examples.
+
 ## Getting started
 
 ```toml
@@ -220,8 +227,8 @@ let svg = app6.symbol("16031000161211020000").render()?.to_svg();
 
 | SIDC form | Standards |
 |---|---|
-| Numeric (20–30 digits) | MIL-STD-2525D, 2525E; APP-6D, APP-6E (version digits `10`–`12` → D, `13`–`14` → E); APP-6(E) Version 2 (`16`, with `Standard::App6EVersion2`) |
-| Letter (15 characters) | MIL-STD-2525B (incl. change 2), 2525C; APP-6B |
+| Numeric (20 or 30 digits) | MIL-STD-2525D, 2525E; APP-6D, APP-6E (version digits `10`–`12` → D, `13`–`14` → E); APP-6(E) Version 2 (`16`, with `Standard::App6EVersion2`) |
+| Letter (10–15 characters) | MIL-STD-2525B (incl. change 2), 2525C; APP-6B |
 
 MIL-STD-2525E Change 1 (version digits `15`) is not recognised, as in
 milsymbol.js 3.0.4; the crate documentation lists what that changes and what
