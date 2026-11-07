@@ -41,3 +41,5 @@
 .content:has(.symbol-lab) { overflow: visible; }
 .content main:has(.symbol-lab) { max-width: 1100px; }
 .content img[src*="book-"] { background: #f8fafc; border: 1px solid #d7dee7; border-radius: 8px; padding: 1rem; box-sizing: border-box; }
+body:has(.symbol-lab) .nav-wide-wrapper { display: none; }
+body:has(.symbol-lab) .content .nav-wrapper { display: block; }

@@ -13,8 +13,6 @@
   fields for the pinned editions.
 - `NumericSidc::with_context` returns `Result` so contexts unavailable to an
   edition cannot be constructed silently. Add `?` when updating numeric SIDCs.
-
-
 - New `Symbol::to_data_url`, `write_data_url` and `write_data_url_with`, the
   `data:image/svg+xml;utf8,…` URL of milsymbol.js `toDataURL()`.
 - New builder setters `fill`, `frame`, `icon`, `outline_width` and
@@ -25,6 +23,7 @@
   and shares built-in colour sets. Rendering, cloning, and writing to a
   sufficiently sized SVG or data-URL buffer require no heap allocations for
   those symbols.
+
 ## 0.4.2 — 2026-10-08
 
 Documentation only; the code and SVG output are unchanged.

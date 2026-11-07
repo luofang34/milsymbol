@@ -8,6 +8,7 @@ CARGO_TARGET_DIR="$PWD/target/book-tests" tools/build-book.sh
 python3 tools/check-book-links.py
 node tools/book-wasm.test.mjs
 CARGO_TARGET_DIR="$PWD/target/book-tests" cargo test --locked -p milsymbol-book
+# mdbook test -L takes every rlib in deps; leave one milsymbol/serde_json build for the doctests.
 cargo clean -p milsymbol -p serde_json
 cargo test --locked -p milsymbol --features serde --test serde --no-run
 mdbook test -L "$CARGO_TARGET_DIR/debug/deps"

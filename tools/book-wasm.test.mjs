@@ -12,6 +12,8 @@ const first = render({});
 assert.equal(first.valid, true);
 assert.match(first.svg, /^<svg\b/);
 assert.equal(render(first.config).svg, first.svg);
+assert.equal(first.rust_needs_serde, false);
+assert.ok(!first.rust.includes('serde_json'), first.rust);
 assert.throws(() => render({ sidc: 'invalid' }), /Invalid SIDC/);
 
 for (const version of [15, 16]) {

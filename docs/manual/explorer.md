@@ -46,7 +46,7 @@ The page runs locally in your browser; no input is sent to a server.
       <p id="lab-citation" class="lab-citation"></p>
       <dl id="lab-metrics" class="lab-metrics"></dl>
       <div class="lab-actions"><button type="button" data-copy="sidc">Copy SIDC</button><button type="button" data-copy="svg">Copy SVG</button><button type="button" data-copy="config">Copy configuration</button><button type="button" data-copy="rust">Copy Rust</button></div>
-      <details><summary>Native Rust call</summary><p class="lab-code-note">Requires <code>milsymbol</code> with its <code>serde</code> feature and <code>serde_json</code>.</p><pre><code id="lab-rust" class="language-rust"></code></pre></details>
+      <details><summary>Native Rust call</summary><p id="lab-rust-note" class="lab-code-note" hidden>These options have no builder setter, so this call requires <code>milsymbol</code> with its <code>serde</code> feature and <code>serde_json</code>.</p><pre><code id="lab-rust" class="language-rust"></code></pre></details>
       <details><summary>Interpreted metadata</summary><pre><code id="lab-metadata"></code></pre></details>
     </div>
   </div>
@@ -60,8 +60,9 @@ as a different edition. The selector excludes geographic lines and areas that
 require multiple control points. Hierarchy entries deliberately have no icon.
 
 For weather graphics, the input is the standard's numeric height, depth, or
-pressure field. No unit conversion is performed. Tropopause height uses the
-standard's chosen hundreds-of-feet or metres convention; pressure is in
+pressure field, drawn as supplied with no unit conversion. Tropopause height is
+three digits above mean sea level "in hundreds of feet (or meters)", which
+Table M-II of MIL-STD-2525E Change 1 leaves open; pressure is in
 hectopascals. The copied Rust call contains the exact input you supplied.
 
 See [worked examples](examples.md) for compiled Rust source and generated output,
