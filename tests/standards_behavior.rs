@@ -140,3 +140,28 @@ fn exercise_jokers_are_hostile_red_in_every_exercise_context() -> TestResult {
     }
     Ok(())
 }
+
+#[test]
+fn enhanced_protection_border_has_one_interior_without_annotation_holes() -> TestResult {
+    let svg = Renderer::builder()
+        .standard(Standard::App6)
+        .build()
+        .symbol("16032500003603000000")
+        .strict()
+        .render()?
+        .to_svg();
+    let document = roxmltree::Document::parse(&svg)?;
+    let border = document
+        .descendants()
+        .find(|node| node.has_tag_name("path") && node.attribute("fill") == Some("#ff0000"))
+        .ok_or("red enhanced-protection border")?;
+    assert_eq!(
+        border
+            .attribute("d")
+            .ok_or("border path")?
+            .matches('M')
+            .count(),
+        2
+    );
+    Ok(())
+}

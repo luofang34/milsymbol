@@ -5,35 +5,17 @@ from collections import deque
 from pathlib import Path
 
 import pymupdf as fitz
+from PIL import ImageFilter
 
 import drawing_paths as paths
 from drawing_config import ROOT, SOURCES, WORK
 
 
-def fill_letter_holes(mask):
-    """The enhanced-protection drawing uses the word RED to specify its border."""
-    height, width = mask.shape
-    seen = set()
-    result = mask.copy()
-    for y, x in zip(*paths.np.nonzero(~mask)):
-        if (y, x) in seen:
-            continue
-        queue = deque([(y, x)])
-        seen.add((y, x))
-        component = []
-        edge = False
-        while queue:
-            yy, xx = queue.popleft()
-            component.append((yy, xx))
-            edge |= yy in (0, height - 1) or xx in (0, width - 1)
-            for ny, nx in [(yy-1, xx), (yy+1, xx), (yy, xx-1), (yy, xx+1)]:
-                if 0 <= ny < height and 0 <= nx < width and not mask[ny, nx] and (ny, nx) not in seen:
-                    seen.add((ny, nx))
-                    queue.append((ny, nx))
-        if not edge and len(component) < 1000:
-            for yy, xx in component:
-                result[yy, xx] = True
-    return result
+def border_without_colour_labels(mask):
+    """Close the narrow white RED lettering without closing the shield interior."""
+    ink = paths.Image.fromarray(paths.np.where(mask, 255, 0).astype("uint8"))
+    closed = ink.filter(ImageFilter.MaxFilter(5)).filter(ImageFilter.MinFilter(5))
+    return largest_component(paths.np.array(closed) > 0)
 
 
 def image_graphic(image, spec):
@@ -45,7 +27,7 @@ def image_graphic(image, spec):
         layers = [(blue, "#0000ff")]
         if spec.get("red_border"):
             black = (paths.np.max(data, axis=2) < 110) & ~blue
-            layers.insert(0, (fill_letter_holes(largest_component(black)), "#ff0000"))
+            layers.insert(0, (border_without_colour_labels(black), "#ff0000"))
         return [(paths.image_paths(paths.Image.fromarray(paths.np.where(mask, 0, 255).astype("uint8"))), color)
                 for mask, color in layers]
     return paths.image_layers(image, "icon")
