@@ -111,8 +111,7 @@ pub(super) fn render_direct(
     if !has_any_modifier(md) {
         return Ok(());
     }
-    let needs_pre = s.options.style.outline_width > 0.0
-        || (md.flags.leadership.is_some() && md.affiliation.known() == Some(Affiliation::Friend));
+    let needs_pre = s.options.style.outline_width > 0.0 || md.flags.leadership.is_some();
     if !needs_pre {
         let mut unused_pre = NodeAcc::default();
         let before = acc.len();
@@ -174,7 +173,48 @@ fn build_modifiers(
         }
         amplifiers::mobility(s, &mut acc, &mut bbox)?;
     }
-    if md.flags.leadership.is_some() && md.affiliation.known() == Some(Affiliation::Friend) {
+    if md.flags.leadership.is_some() {
+        leadership(s, &mut acc, &bbox);
+    }
+    Ok(acc.gbbox)
+}
+
+fn leadership(s: &SymbolState<'_>, acc: &mut Acc<'_>, bbox: &BBox) {
+    if s.config.mode == crate::RenderMode::Standards && s.metadata.number_sidc {
+        // MIL 5.3.9/Figure 28 and APP-6 1.2.16 apply to all identities.
+        let affiliation = s.metadata.affiliation.as_str();
+        if let Some((_, points)) = crate::generated::standards::LEADERSHIP
+            .iter()
+            .find(|(name, _)| Some(*name) == affiliation)
+        {
+            let points =
+                points.map(|[x, y]| (bbox.x1 + x * bbox.width(), bbox.y1 + y * bbox.height()));
+            let [(x1, y1), (x2, y2), (x3, y3)] = points;
+            acc.pre.push(Node::Path(PathNode {
+                d: PathData::new(alloc::format!(
+                    "M{},{} L{},{} {},{}",
+                    n(x1),
+                    n(y1),
+                    n(x2),
+                    n(y2),
+                    n(x3),
+                    n(y3)
+                )),
+                style: acc.defaults(Style::default()),
+            }));
+            for (x, y) in points {
+                acc.gbbox.merge(
+                    BBox {
+                        x1: x,
+                        y1: y,
+                        x2: x,
+                        y2: y,
+                    }
+                    .into(),
+                );
+            }
+        }
+    } else if s.metadata.affiliation.known() == Some(Affiliation::Friend) {
         let style = acc.defaults(Style::default());
         acc.pre.push(Node::Path(PathNode {
             d: PathData::new("m 45,60 55,-25 55,25"),
@@ -185,7 +225,6 @@ fn build_modifiers(
             ..PartialBBox::default()
         });
     }
-    Ok(acc.gbbox)
 }
 
 fn installation(

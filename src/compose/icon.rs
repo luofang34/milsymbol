@@ -11,12 +11,9 @@ use crate::registry::{IconKey, IconPartContext};
 use crate::template::{self, Resolver, UserParts};
 use alloc::borrow::Cow;
 use alloc::vec::Vec;
-use app6e2::Kind;
-
-mod app6e2;
-
 mod context;
 mod letter;
+pub(crate) mod standards;
 
 const UNDEFINED_ICON: &str = "m 94.8206,78.1372 c -0.4542,6.8983 0.6532,14.323 5.3424,19.6985 4.509,5.6933 11.309,9.3573 14.98,15.7283 3.164,6.353 -0.09,14.245 -5.903,17.822 -7.268,4.817 -18.6219,2.785 -22.7328,-5.249 -1.5511,-2.796 -2.3828,-5.931 -2.8815,-9.071 -3.5048,0.416 -7.0093,0.835 -10.5142,1.252 0.8239,8.555 5.2263,17.287 13.2544,21.111 7.8232,3.736 17.1891,3.783 25.3291,1.052 8.846,-3.103 15.737,-11.958 15.171,-21.537 0.05,-6.951 -4.272,-12.85 -9.134,-17.403 -4.526,-4.6949 -11.048,-8.3862 -12.401,-15.2748 -1.215,-2.3639 -0.889,-8.129 -0.889,-8.129 z m -0.6253,-20.5177 0,11.6509 11.6527,0 0,-11.6509 z";
 
@@ -314,25 +311,26 @@ fn number_icon_into(
     mut dest: IconDest<'_>,
     gbbox: &mut BBox,
 ) -> Result<(), RenderError> {
+    if let Some(version) = standards::version(s, ss) {
+        return standards::draw(s, parts, ss, version, needs_outline, dest, *gbbox);
+    }
     let md = s.metadata;
     let fid = js::JsStr::new(&md.function_id);
     let (fid6, fid_hq) = (fid.substr(0, 6), fid.substr(4, 2));
-    let hq_part = (match &*fid_hq {
+    let hq_part = match &*fid_hq {
         "95" => Some("GR.IC.FF.HEADQUARTERS OR HEADQUARTERS ELEMENT"),
         "96" => Some("GR.IC.FF.DIVISION AND BELOW SUPPORT"),
         "97" => Some("GR.IC.FF.CORPS SUPPORT"),
         "98" => Some("GR.IC.FF.THEATRE SUPPORT"),
         _ => None,
-    })
-    .filter(|_| !md.app6e2);
+    };
     let (m1_code, m2_code) = (
         md.flags.modifier1.as_deref().unwrap_or(""),
         md.flags.modifier2.as_deref().unwrap_or(""),
     );
     let m1_key = sector_key(m1_code, fid.substr(6, 2));
     let m2_key = sector_key(m2_code, fid.substr(8, 2));
-    let builtin = !md.app6e2 || app6e2::draws(ss, Kind::Entity, &fid6);
-    let table = number_table(ss).filter(|_| builtin);
+    let table = number_table(ss);
     if let Some(b) = parts
         .user_bbox(IconKey::Entity {
             symbol_set: ss,
@@ -367,7 +365,7 @@ fn number_icon_into(
                 Some(e) => parts.resolver.value_unwrapped(e, true, acc)?,
                 None => false,
             };
-            if !wrote && builtin && js::string_to_number(&fid_hq) >= 95.0 {
+            if !wrote && js::string_to_number(&fid_hq) >= 95.0 {
                 if let Some(e) = find_entry(&(fid.substr(0, 4) + "00")) {
                     wrote = parts.resolver.value_unwrapped(e, true, acc)?;
                 }
@@ -405,9 +403,8 @@ fn number_icon_slow(
 ) -> Result<(Vec<Node>, bool), RenderError> {
     let mut post = Vec::new();
     let mut invalid = false;
-    let builtin = !s.metadata.app6e2 || app6e2::draws(ss, Kind::Entity, fid6);
-    let mut main = defined(number_entry(parts, ss, 0, fid6, builtin));
-    if main.is_none() && builtin && js::string_to_number(fid_hq) >= 95.0 {
+    let mut main = defined(number_entry(parts, ss, 0, fid6, true));
+    if main.is_none() && js::string_to_number(fid_hq) >= 95.0 {
         main = defined(number_entry(parts, ss, 0, &(fid.substr(0, 4) + "00"), true));
     }
     match main {
@@ -421,15 +418,9 @@ fn number_icon_slow(
     if let Some(name) = hq_part {
         post.push(parts.part(name).unwrap_or(Node::Missing));
     }
-    for (kind, code, key) in [(1, m1_code, m1_key), (2, m2_code, m2_key)] {
+    for (kind, key) in [(1, m1_key), (2, m2_key)] {
         let Some(key) = key else { continue };
-        let sector = if kind == 1 {
-            Kind::Modifier1
-        } else {
-            Kind::Modifier2
-        };
-        let builtin = !s.metadata.app6e2 || app6e2::draws(ss, sector, code);
-        match defined(number_entry(parts, ss, kind, &key, builtin)) {
+        match defined(number_entry(parts, ss, kind, &key, true)) {
             Some(n) => post.push(n),
             None => invalid = true,
         }

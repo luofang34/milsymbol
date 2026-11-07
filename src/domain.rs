@@ -42,6 +42,18 @@ pub enum Context {
     Exercise,
     /// Simulation.
     Simulation,
+    /// Restricted target in reality (edition E context 3).
+    RestrictedReality,
+    /// No-strike entity in reality (edition E context 4).
+    NoStrikeReality,
+    /// Restricted target in an exercise (edition E context 5).
+    RestrictedExercise,
+    /// No-strike entity in an exercise (edition E context 6).
+    NoStrikeExercise,
+    /// Restricted target in a simulation (edition E context 7).
+    RestrictedSimulation,
+    /// No-strike entity in a simulation (edition E context 8).
+    NoStrikeSimulation,
 }
 
 /// Operational status or condition.
@@ -310,6 +322,7 @@ impl Affiliation {
     }
 }
 
+mod context;
 mod metadata;
 
 /// Serializes a frame geometry as its bounding box `[x1, y1, x2, y2]`.

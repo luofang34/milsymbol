@@ -51,13 +51,15 @@ pub(super) fn interpret(sidc: &str, md: &mut Metadata, input: &ParseInput<'_>) {
     if matches!(&*version, "10" | "11" | "12") {
         md.flags.edition = Some(Edition::D);
     }
-    // APP-6(E) Version 2 keeps the edition E code tables (Annex A); which of
-    // their built-in icons it draws is decided with the icon.
-    md.app6e2 = input.app6e2 && version == "16";
-    if matches!(&*version, "13" | "14") || md.app6e2 {
+    if matches!(&*version, "13" | "14") || (input.standards && matches!(&*version, "15" | "16")) {
         md.flags.edition = Some(Edition::E);
     }
-    if eq_num(&version, 13.0) && eq_num(&si2, 5.0) {
+    let suspect = if input.standards {
+        md.std2525 && !matches!(&*si1, "1" | "4" | "7")
+    } else {
+        eq_num(&version, 13.0)
+    };
+    if suspect && eq_num(&si2, 5.0) {
         md.flags.suspect = Some(true);
     }
 
@@ -70,14 +72,22 @@ pub(super) fn interpret(sidc: &str, md: &mut Metadata, input: &ParseInput<'_>) {
     md.context = js::parse_int(&si1)
         .and_then(|i| usize::try_from(i).ok())
         .and_then(|i| {
-            [Context::Reality, Context::Exercise, Context::Simulation]
-                .get(i)
-                .copied()
+            if input.standards && md.flags.edition == Some(Edition::E) {
+                Context::from_digit(i)
+            } else {
+                [Context::Reality, Context::Exercise, Context::Simulation]
+                    .get(i)
+                    .copied()
+            }
         });
     md.affiliation = affiliation(&si2).into();
     md.dimension = dimension(&symbol_set);
 
     classify_symbol_set(&symbol_set, &fid, md, input);
+    if input.standards && md.flags.edition == Some(Edition::E) && symbol_set == "64" {
+        md.dimension = Field::Known(Dimension::Ground);
+        md.flags.cyberspace = Some(true);
+    }
 
     if status == "1" {
         md.notpresent = input.dashes.anticipated.clone();
@@ -91,8 +101,28 @@ pub(super) fn interpret(sidc: &str, md: &mut Metadata, input: &ParseInput<'_>) {
     {
         md.notpresent = input.dashes.pending.clone();
     }
-    if matches!(&*status, "2" | "3" | "4" | "5") {
-        let i = js::parse_int(&status)
+    condition(&status, md);
+
+    md.base_dimension = md.dimension;
+    md.base_affiliation = md.affiliation;
+    let identity_context = if input.standards
+        && md
+            .context
+            .is_some_and(|c| c.environment() == Context::Exercise)
+    {
+        "1"
+    } else {
+        &si1
+    };
+    identity(identity_context, &si2, &symbol_set, md);
+    civilian(&symbol_set, &fid, md);
+    display(&frameshape, &symbol_set, md, input);
+    amplifiers(&hq_tf_dummy, &echelon_mob, md);
+}
+
+fn condition(status: &str, md: &mut Metadata) {
+    if matches!(status, "2" | "3" | "4" | "5") {
+        let i = js::parse_int(status)
             .and_then(|i| usize::try_from(i).ok())
             .unwrap_or(0);
         md.condition = [
@@ -106,17 +136,29 @@ pub(super) fn interpret(sidc: &str, md: &mut Metadata, input: &ParseInput<'_>) {
         .get(i)
         .copied();
     }
+}
 
-    md.base_dimension = md.dimension;
-    md.base_affiliation = md.affiliation;
-    identity(&si1, &si2, &symbol_set, md);
-    civilian(&symbol_set, &fid, md);
+fn display(frameshape: &str, symbol_set: &str, md: &mut Metadata, input: &ParseInput<'_>) {
     // Digits 23–27 are reserved in APP-6(E) Version 2 (A.14, p. 723); the
     // frame follows from context, identity and symbol set alone.
-    if !md.app6e2 {
-        frame_shape(&frameshape, md);
+    if !input.standards || md.std2525 {
+        frame_shape(frameshape, md, input.standards);
+        if input.standards {
+            match frameshape {
+                "9" => md.flags.cyberspace = Some(true),
+                "A" => {
+                    md.dimension = Field::Known(Dimension::Sea);
+                    md.frame = input.style_frame;
+                }
+                _ => {}
+            }
+        }
     }
-    amplifiers(&hq_tf_dummy, &echelon_mob, md);
+    if input.standards && matches!(symbol_set, "45" | "46" | "47") {
+        md.frame = false;
+        md.fill = false;
+        md.flags.control_measure = Some(true);
+    }
 }
 
 fn modifier_code(s: &JsStr<'_>, fid: &JsStr<'_>, sector: usize, code: usize) -> Str {
@@ -206,8 +248,8 @@ fn civilian(ss: &str, fid: &JsStr, md: &mut Metadata) {
     }
 }
 
-fn frame_shape(frameshape: &str, md: &mut Metadata) {
-    if frameshape != "0" && md.flags.edition == Some(Edition::E) {
+fn frame_shape(frameshape: &str, md: &mut Metadata, standards: bool) {
+    if frameshape != "0" && (standards || md.flags.edition == Some(Edition::E)) {
         md.civilian = false;
         md.flags.cyberspace = Some(false);
         md.installation = false;

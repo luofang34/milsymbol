@@ -247,29 +247,21 @@ impl Sidc {
         Sidc::parse_for(s, crate::Standard::Mil2525)
     }
 
-    /// Parses and validates `s` under the rules of `standard`.
-    /// [`Standard::App6EVersion2`](crate::Standard::App6EVersion2) also
-    /// accepts version `16` SIDCs (APP-6(E) Version 2), whose fields may hold
-    /// hexadecimal digits and whose digits 23–27 are reserved. Every other
-    /// SIDC parses as with [`Sidc::parse`].
-    ///
-    /// ```
-    /// use milsymbol::Standard;
-    /// use milsymbol::sidc::Sidc;
-    ///
-    /// let sidc = "1603100000121100A000"; // sector 1 modifier A0
-    /// assert!(Sidc::parse(sidc).is_err());
-    /// let Sidc::Numeric(n) = Sidc::parse_for(sidc, Standard::App6EVersion2)? else {
-    ///     return Ok(());
-    /// };
-    /// assert_eq!(n.version(), 16);
-    /// assert_eq!(n.modifier_codes().0.as_str(), "0A0");
-    /// # Ok::<(), milsymbol::sidc::SidcError>(())
-    /// ```
+    /// Parses a SIDC for the selected display standard. Code meanings follow
+    /// the version digits; APP-6 reserves frame override positions 23–27.
     pub fn parse_for(s: &str, standard: crate::Standard) -> Result<Sidc, SidcError> {
+        Self::parse_with_mode(s, standard, crate::RenderMode::Standards)
+    }
+
+    /// Validates using the selected rendering mode.
+    pub fn parse_with_mode(
+        s: &str,
+        standard: crate::Standard,
+        mode: crate::RenderMode,
+    ) -> Result<Sidc, SidcError> {
         let first = s.chars().find(|&c| c != ' ').ok_or(SidcError::Empty)?;
         if first.is_ascii_digit() {
-            NumericSidc::parse(s, standard == crate::Standard::App6EVersion2).map(Sidc::Numeric)
+            NumericSidc::parse(s, standard, mode).map(Sidc::Numeric)
         } else {
             LetterSidc::parse(s).map(Sidc::Letter)
         }
@@ -375,7 +367,7 @@ impl Sidc {
     /// ```
     pub fn with_context(&self, context: Context) -> Result<Sidc, SidcModifyError> {
         match self {
-            Sidc::Numeric(n) => Ok(Sidc::Numeric(n.with_context(context))),
+            Sidc::Numeric(n) => n.with_context(context).map(Sidc::Numeric),
             Sidc::Letter(l) => l.with_context(context).map(Sidc::Letter),
         }
     }

@@ -243,12 +243,20 @@ fn non_bmp_sidcs_render_like_upstream_with_lossy_metadata() -> TestResult {
     ];
     assert_eq!(expected.lines().count(), sidcs.len());
     for (sidc, want) in sidcs.iter().zip(expected.lines()) {
-        let s = Renderer::default().symbol(sidc).render()?;
+        let s = Renderer::builder()
+            .mode(milsymbol::RenderMode::Milsymbol304)
+            .build()
+            .symbol(sidc)
+            .render()?;
         assert_eq!(s.to_svg(), want, "{sidc}");
     }
     // Upstream splits the surrogate pair into its halves; Rust strings
     // cannot hold one, so each half reads as U+FFFD (UPSTREAM.md).
-    let s = Renderer::default().symbol(&sidcs[0]).render()?;
+    let s = Renderer::builder()
+        .mode(milsymbol::RenderMode::Milsymbol304)
+        .build()
+        .symbol(&sidcs[0])
+        .render()?;
     let js = milsymbol::compat::js_metadata(&s);
     assert_eq!(js.flags.modifier1, Some("\u{FFFD}00"));
     assert_eq!(js.flags.modifier2, Some("\u{FFFD}00"));

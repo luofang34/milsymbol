@@ -10,42 +10,44 @@ direction, option, configuration, invalid-input, and generated cases. Exact SVG
 and semantic comparisons provide evidence for that coverage; they do not prove
 every later revision of every military standard is implemented.
 
-## Choose a standard deliberately
+## Code edition, display standard, and compatibility
 
-| Mode | Intended interpretation |
+| Setting | Meaning |
 |---|---|
-| `Standard::Mil2525` | Default upstream MIL-STD-2525 behaviour |
-| `Standard::App6` | Upstream APP-6 behaviour |
-| `Standard::App6EVersion2` | Opt-in, partial interpretation of version `16` numeric SIDCs |
+| `RenderMode::Standards` | Default; pinned standards supply current numeric display rules |
+| `RenderMode::Milsymbol304` | Exact upstream SVG and semantic behavior |
+| `Standard::Mil2525` | MIL-STD-2525E Change 1 display |
+| `Standard::App6` / `App6EVersion2` | APP-6(E) Version 2 display |
 
-The baseline numeric parser accepts versions `10`–`12` as edition D and
-`13`–`14` as edition E, in 20- or 30-character form. Legacy letter forms cover
-upstream's MIL-STD-2525B/C and APP-6B behaviour. Choosing `App6` does not imply
-that all later APP-6 revisions are implemented.
-
-`Sidc::parse_for(code, Standard::App6EVersion2)` enables the supported version
-`16` syntax. Rendering/checking must use the same mode. Version 2 codes that were
-removed or reassigned are filtered so the library does not silently draw their
-earlier meanings. Newly defined icons are not automatically available. Restricted
-target/no-strike contexts `3`–`8` and symbol set `64` remain unsupported. Version
-`15` is not added by the version 2 mode. This is partial support, not a complete
-APP-6(E) Version 2 conformance claim.
+SIDC version digits select code meanings independently: `10`–`12` use upstream
+edition D tables, `13`–`14` use its edition E tables, `15` uses MIL-STD-2525E
+Change 1, and `16` uses APP-6(E) Version 2. Letter SIDCs retain upstream's
+MIL-STD-2525B/C and APP-6B meanings. In standards mode all edition E versions
+accept contexts `3`–`8`, symbol set `64`, and uppercase hexadecimal codes.
 
 ```rust
 # extern crate milsymbol;
-use milsymbol::{Renderer, Standard, sidc::Sidc};
+use milsymbol::{Renderer, RenderMode, Standard, sidc::Sidc};
 
 let code = "16031000001211000000";
-assert!(Sidc::parse(code).is_err());
-assert!(Sidc::parse_for(code, Standard::App6EVersion2).is_ok());
-let renderer = Renderer::builder().standard(Standard::App6EVersion2).build();
+assert!(Sidc::parse(code).is_ok());
+let renderer = Renderer::builder().standard(Standard::App6).build();
 assert!(renderer.symbol(code).strict().render().is_ok());
+let upstream = Renderer::builder().mode(RenderMode::Milsymbol304).build();
+assert!(upstream.check_sidc(code).is_err());
 ```
 
-The default lenient renderer can draw some malformed or later-version strings
-using upstream fallback behaviour. Use strict validation when revision correctness
-is a requirement. A standard-specific fixture or snapshot with passing tests can
-record unsupported cases; always inspect its verdict, not just the test exit code.
+`catalog::standards` supplies names, source pages, scopes and variable graphic
+inputs. Hierarchy headings have no graphic. Single-point symbols are supported;
+geographic lines and areas needing multiple control points are explicitly
+classified as multipoint and are not rendered. APP-6's US-only sets delegate
+to the pinned MIL code tables. Strict validation distinguishes unavailable
+content from malformed syntax; lenient rendering draws the understood frame
+and an unknown marker for unavailable icon content.
+
+The checked-in standards deviation table links each changed output category
+to a source rule. It is applied by the differential tests; it does not relax
+the byte-for-byte oracle checks in compatibility mode.
 
 ## Common problems
 

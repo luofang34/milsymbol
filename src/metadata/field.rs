@@ -113,6 +113,12 @@ impl Name for Context {
             Self::Reality => "Reality",
             Self::Exercise => "Exercise",
             Self::Simulation => "Simulation",
+            Self::RestrictedReality => "RestrictedReality",
+            Self::NoStrikeReality => "NoStrikeReality",
+            Self::RestrictedExercise => "RestrictedExercise",
+            Self::NoStrikeExercise => "NoStrikeExercise",
+            Self::RestrictedSimulation => "RestrictedSimulation",
+            Self::NoStrikeSimulation => "NoStrikeSimulation",
         }
     }
 }

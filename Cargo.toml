@@ -1,6 +1,6 @@
 [package]
 name = "milsymbol"
-version = "0.4.2"
+version = "0.5.0"
 authors = ["Fang Luo"]
 edition = "2024"
 rust-version = "1.85"
@@ -24,6 +24,7 @@ include = [
     "!/tests/drawing_svg.rs",
     "!/tests/drawing_svg/**",
     "!/tests/standards.rs",
+    "!/tests/standards_differential.rs",
     "/tests/data/*.txt",
     "/examples/*.rs",
     "/benches/*.rs",

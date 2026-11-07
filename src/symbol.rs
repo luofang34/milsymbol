@@ -27,6 +27,7 @@ pub struct Size {
 /// A composed symbol: draw instructions plus layout and metadata.
 #[derive(Debug, Clone)]
 pub struct Symbol {
+    pub(crate) rules: (crate::Standard, crate::RenderMode),
     pub(crate) sidc: SmallStr<30>,
     pub(crate) options: SymbolOptions,
     pub(crate) metadata: Metadata,

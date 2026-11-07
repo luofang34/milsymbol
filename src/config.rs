@@ -6,6 +6,18 @@ use crate::ir::Str;
 use alloc::collections::BTreeMap;
 use alloc::string::String;
 
+/// Source of rendering rules and symbol content.
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+#[non_exhaustive]
+pub enum RenderMode {
+    /// Decode each SIDC edition and draw with the pinned current standard.
+    #[default]
+    Standards,
+    /// Reproduce milsymbol.js 3.0.4, including its interpretation of invalid inputs.
+    Milsymbol304,
+}
+
 /// The symbology standard used when a symbol does not override it.
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
@@ -16,9 +28,8 @@ pub enum Standard {
     Mil2525,
     /// NATO APP-6.
     App6,
-    /// NATO APP-6, with version `16` SIDCs read and drawn as APP-6(E)
-    /// Version 2 defines them. milsymbol.js has no such mode; other SIDCs
-    /// draw exactly as with [`Standard::App6`].
+    /// NATO APP-6(E) Version 2 display rules, equivalent to [`Standard::App6`]
+    /// in standards mode. SIDC version digits select the code meanings.
     App6EVersion2,
 }
 
@@ -89,6 +100,8 @@ impl Default for DashArrays {
 #[derive(Debug, Clone, PartialEq)]
 #[non_exhaustive]
 pub struct RendererConfig {
+    /// Standards conformance or exact upstream compatibility.
+    pub mode: RenderMode,
     /// Default standard (upstream `ms.setStandard`).
     pub standard: Standard,
     /// Dash arrays (upstream `ms.setDashArrays`).
@@ -108,6 +121,7 @@ impl Default for RendererConfig {
             .map(|(name, values)| (String::from(*name), ColorMode::from_static(values)))
             .collect();
         RendererConfig {
+            mode: RenderMode::Standards,
             standard: Standard::Mil2525,
             dash_arrays: DashArrays::default(),
             hq_staff_length: 100.0,

@@ -75,7 +75,16 @@ pub(crate) fn options(case: &Value) -> Result<SymbolOptions, String> {
 
 /// Renderer configured for a case, reproducing V8 on `platform`.
 pub(crate) fn renderer(case: &Value, platform: ReferencePlatform) -> Renderer {
+    renderer_mode(case, platform, milsymbol::RenderMode::Milsymbol304)
+}
+
+pub(crate) fn renderer_mode(
+    case: &Value,
+    platform: ReferencePlatform,
+    mode: milsymbol::RenderMode,
+) -> Renderer {
     let mut config = RendererConfig::default();
+    config.mode = mode;
     config.reference_platform = platform;
     if let Some(cfg) = case.get("cfg") {
         if let Some(s) = cfg.get("standard").and_then(Value::as_str) {

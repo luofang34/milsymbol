@@ -75,22 +75,13 @@ pub(super) fn sidc_issues(s: &Symbol) -> Vec<ValidityIssue> {
         (f.amplifier, ValidityIssue::UnknownAmplifier),
         (f.instruction, ValidityIssue::MissingInstruction),
         (
-            crate::sidc::Sidc::parse_for(&s.sidc, sidc_rules(s)).is_err(),
+            crate::sidc::Sidc::parse_with_mode(&s.sidc, s.rules.0, s.rules.1).is_err(),
             ValidityIssue::MalformedSidc,
         ),
     ]
     .into_iter()
     .filter_map(|(present, issue)| present.then_some(issue))
     .collect()
-}
-
-/// The rules `s`'s SIDC was read by; only version `16` SIDCs differ.
-fn sidc_rules(s: &Symbol) -> crate::Standard {
-    if s.metadata.app6e2 {
-        crate::Standard::App6EVersion2
-    } else {
-        crate::Standard::Mil2525
-    }
 }
 
 /// The issues of milsymbol.js `isValid()`, in declaration order.

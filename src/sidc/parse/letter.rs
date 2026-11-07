@@ -228,7 +228,7 @@ impl LetterSidc {
         let exercise = match context {
             Context::Reality => false,
             Context::Exercise => true,
-            Context::Simulation => return Err(SidcModifyError::UnsupportedContext { context }),
+            _ => return Err(SidcModifyError::UnsupportedContext { context }),
         };
         let identity = match (self.standard_identity(), exercise) {
             (StandardIdentity::Suspect, true) => StandardIdentity::Joker,

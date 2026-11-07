@@ -44,21 +44,26 @@ impl core::fmt::Display for ModifierCode {
 pub struct NumericSidc(Code<30>);
 
 impl NumericSidc {
-    /// `app6e2` also accepts version `16` SIDCs as APP-6(E) Version 2
-    /// defines them.
-    pub(super) fn parse(s: &str, app6e2: bool) -> Result<Self, SidcError> {
+    pub(super) fn parse(
+        s: &str,
+        standard: crate::Standard,
+        mode: crate::RenderMode,
+    ) -> Result<Self, SidcError> {
         let code = Code::<30>::collect(s, |c| c)?;
         let len = usize::from(code.len);
         if len != 20 && len != 30 {
             return Err(SidcError::Length { len });
         }
-        let v2 = app6e2 && code.field(1, 2) == "16";
+        let standards = mode == crate::RenderMode::Standards;
+        let edition_e = matches!(code.field(1, 2), "13" | "14" | "15" | "16");
+        let modern = standards && matches!(code.field(1, 2), "15" | "16");
+        let hex = standards && edition_e;
         for (i, c) in code.as_str().chars().enumerate() {
-            // Version 2 allows hexadecimal digits in every position (A.2,
-            // p. 711); the fields below still take only their own codes.
+            // Edition E uses hexadecimal characters; header fields below
+            // still accept only the values assigned to that field.
             let ok = c.is_ascii_digit()
-                || (v2 && matches!(c, 'A'..='F'))
-                || (!v2 && i == 22 && c == 'A');
+                || (hex && matches!(c, 'A'..='F'))
+                || (!hex && i == 22 && c == 'A');
             if !ok {
                 return Err(invalid("character", i + 1, code.field(i + 1, 1)));
             }
@@ -71,20 +76,23 @@ impl NumericSidc {
             }
         };
         check(
-            v2 || matches!(code.field(1, 2), "10" | "11" | "12" | "13" | "14"),
+            modern || matches!(code.field(1, 2), "10" | "11" | "12" | "13" | "14"),
             "version",
             1,
             2,
         )?;
-        // Version 2 also has the restricted-target and no-strike contexts
-        // `3`–`8`, which this crate does not draw.
-        check(matches!(code.at(3), '0'..='2'), "context", 3, 1)?;
+        check(
+            matches!(code.at(3), '0'..='2') || (hex && matches!(code.at(3), '3'..='8')),
+            "context",
+            3,
+            1,
+        )?;
         check(matches!(code.at(4), '0'..='6'), "standard identity", 4, 1)?;
-        // Version 2 has no symbol sets `12` and `39` (Table A-4, p. 715).
-        // Its symbol set `64` has no icons in this crate.
+        // Neither pinned edition assigns symbol sets 12 and 39.
         let ss = code.field(5, 2);
         check(
-            SYMBOL_SETS.contains(&ss) && !(v2 && matches!(ss, "12" | "39")),
+            (SYMBOL_SETS.contains(&ss) || (hex && ss == "64"))
+                && !(modern && matches!(ss, "12" | "39")),
             "symbol set",
             5,
             2,
@@ -99,39 +107,46 @@ impl NumericSidc {
         // APP-6(E) Version 2 Table A-8 defines leadership code 71, but not 72.
         let amplifier = code.field(9, 2);
         check(
-            AMPLIFIERS.contains(&amplifier) && !(v2 && amplifier == "72"),
+            AMPLIFIERS.contains(&amplifier) && !(modern && amplifier == "72"),
             "echelon/mobility",
             9,
             2,
         )?;
         // Reserved in Version 2 (A.14, p. 723).
         check(
-            !v2 || matches!(code.field(23, 5), "" | "00000"),
+            !(standards && standard != crate::Standard::Mil2525)
+                || matches!(code.field(23, 5), "" | "00000"),
             "reserved",
             23,
             5,
         )?;
+        if standards && standard == crate::Standard::Mil2525 {
+            check(
+                matches!(code.at(23), '\0' | '0'..='9' | 'A'),
+                "frame shape",
+                23,
+                1,
+            )?;
+            check(matches!(code.field(24, 4), "" | "0000"), "reserved", 24, 4)?;
+        }
         Ok(NumericSidc(code))
     }
 
-    /// Version (`10`–`12`: 2525D/APP-6D, `13`–`14`: 2525E/APP-6E, `16`:
-    /// APP-6(E) Version 2, see [`Sidc::parse_for`](super::Sidc::parse_for)).
+    /// Version: `10`–`12` edition D, `13` MIL-STD-2525E, `14` APP-6(E)(1),
+    /// `15` MIL-STD-2525E Change 1, `16` APP-6(E)(2).
     pub fn version(&self) -> u8 {
         self.0.field(1, 2).parse().unwrap_or(0)
     }
 
     /// Context.
     pub fn context(&self) -> Context {
-        match self.0.at(3) {
-            '1' => Context::Exercise,
-            '2' => Context::Simulation,
-            _ => Context::Reality,
-        }
+        Context::from_digit(self.0.at(3).to_digit(10).unwrap_or(0) as usize)
+            .unwrap_or(Context::Reality)
     }
 
     /// Standard identity (joker and faker in exercise context).
     pub fn standard_identity(&self) -> StandardIdentity {
-        let exercise = self.context() == Context::Exercise;
+        let exercise = self.context().environment() == Context::Exercise;
         match self.0.at(4) {
             '0' => StandardIdentity::Pending,
             '1' => StandardIdentity::Unknown,
@@ -212,6 +227,18 @@ impl NumericSidc {
     /// `000000` means "no icon" and counts as present).
     pub fn has_builtin_icon(&self) -> bool {
         let e = self.entity();
+        let version = self.version();
+        if matches!(version, 15 | 16) || (version >= 13 && self.symbol_set() == "64") {
+            use catalog::standards::{CodeKind, Scope, entry};
+            let version = if self.symbol_set() == "64" {
+                16
+            } else {
+                version
+            };
+            return e == "000000"
+                || entry(version, self.symbol_set(), CodeKind::Entity, e)
+                    .is_some_and(|e| e.scope != Scope::Multipoint);
+        }
         let head = e.get(..4).unwrap_or("");
         let headquarters_variant = e.get(4..).is_some_and(|t| t >= "95");
         e == "000000"
@@ -242,17 +269,16 @@ impl NumericSidc {
         NumericSidc(self.0.with_char(7, digit))
     }
 
-    /// The same SIDC in another context (reality, exercise or simulation).
+    /// The same SIDC in another context. Restricted and no-strike contexts
+    /// require an edition E version.
     /// The identity digit is kept, so Suspect and Hostile become Joker and
     /// Faker in an exercise and back.
-    #[must_use]
-    pub fn with_context(&self, context: Context) -> Self {
-        let digit = match context {
-            Context::Reality => '0',
-            Context::Exercise => '1',
-            Context::Simulation => '2',
-        };
-        NumericSidc(self.0.with_char(3, digit))
+    pub fn with_context(&self, context: Context) -> Result<Self, SidcModifyError> {
+        if self.version() < 13 && (context.restricted() || context.no_strike()) {
+            return Err(SidcModifyError::UnsupportedContext { context });
+        }
+        let digit = context.digit();
+        Ok(NumericSidc(self.0.with_char(3, digit)))
     }
 
     /// The same SIDC with another standard identity; fails when the SIDC's
@@ -262,7 +288,7 @@ impl NumericSidc {
         identity: StandardIdentity,
     ) -> Result<Self, SidcModifyError> {
         let context = self.context();
-        let exercise = context == Context::Exercise;
+        let exercise = context.environment() == Context::Exercise;
         let digit = match (identity, exercise) {
             (StandardIdentity::Pending, _) => '0',
             (StandardIdentity::Unknown, _) => '1',

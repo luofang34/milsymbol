@@ -13,6 +13,7 @@ use alloc::vec::Vec;
 
 mod fields;
 mod layout;
+mod standards;
 
 /// Fields whose presence enables the information fields (upstream
 /// `textFields`); `country` and the engagement fields do not.
@@ -75,6 +76,9 @@ fn font_color(s: &SymbolState<'_>) -> Option<Paint> {
 }
 
 pub(super) fn draw(s: &SymbolState<'_>) -> Result<PartOutput, RenderError> {
+    if let Some(output) = standards::draw(s)? {
+        return Ok(output);
+    }
     let st = &s.options.style;
     let mut gbbox = BBox::default();
     let mut pre = Vec::new();

@@ -192,7 +192,10 @@ impl IconExtension for InfantryCircle {
 #[test]
 fn extension_parts_replace_builtin_parts_like_upstream() -> TestResult {
     let expected = include_str!("data/override_oracle.txt");
-    let r = Renderer::builder().icons(InfantryCircle).build();
+    let r = Renderer::builder()
+        .mode(milsymbol::RenderMode::Milsymbol304)
+        .icons(InfantryCircle)
+        .build();
     let sidcs = [
         "10031000001211000000",
         "SFGPUCI-----",

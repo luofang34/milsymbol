@@ -1,0 +1,52 @@
+[
+  {
+    "document": "mil2525e1",
+    "symbol_set": "common",
+    "kind": "common_m1",
+    "code": "183",
+    "drawing_code": "182",
+    "page": 169,
+    "name": "Military",
+    "reason": "Table A-IX assigns Military 183; Table B-I p. 152 repeats Reserve's value 182 on the Military drawing."
+  },
+  {
+    "document": "mil2525e1",
+    "symbol_set": "common",
+    "kind": "common_m2",
+    "code": "136",
+    "drawing_code": "135",
+    "page": 173,
+    "name": "Military",
+    "reason": "Table A-X assigns Military 136; Table B-II p. 156 repeats Reserve's value 135 on the Military drawing."
+  },
+  {
+    "document": "app6e2",
+    "symbol_set": "20",
+    "kind": "entity",
+    "code": "110903",
+    "drawing_code": "111903",
+    "page": 0,
+    "name": "CIVILIAN",
+    "reason": "Table A-29 places Civilian under 110900; Table 3-16 uses 111903 for the named drawing."
+  },
+  {
+    "document": "app6e2",
+    "symbol_set": "20",
+    "kind": "entity",
+    "code": "110904",
+    "drawing_code": "111904",
+    "page": 0,
+    "name": "MILITARY",
+    "reason": "Table A-29 places Military under 110900; Table 3-16 uses 111904 for the named drawing."
+  },
+  {
+    "document": "mil2525e1",
+    "symbol_set": "06",
+    "kind": "m1",
+    "code": "04",
+    "drawing_code": "04",
+    "page": 187,
+    "name": "Hypersonic",
+    "reason": "Table C-VII (p. 170) defines space missile modifiers; its Hypersonic row prints Symbol Set 02 rather than 06."
+  }
+]

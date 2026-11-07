@@ -47,6 +47,15 @@ pub(super) fn draw(s: &SymbolState<'_>) -> Result<PartOutput, RenderError> {
         } else {
             10.0
         };
+        let spacing = if md.context.is_some_and(|c| c.restricted() || c.no_strike()) {
+            if matches!(aff, Some(Affiliation::Unknown | Affiliation::Hostile)) {
+                8.0
+            } else {
+                28.0
+            }
+        } else {
+            spacing
+        };
         let x = base.x2 + spacing;
         let mut side = |text: &'static str, y: f64| {
             let mut n = letter(s, text, x, y, 35.0, "start", &frame_color);
@@ -55,7 +64,7 @@ pub(super) fn draw(s: &SymbolState<'_>) -> Result<PartOutput, RenderError> {
             }
             post.push(n);
         };
-        match md.context {
+        match md.context.map(Context::environment) {
             Some(Context::Exercise) => {
                 if !(md.joker || md.faker) {
                     side("X", 50.0);
@@ -84,9 +93,41 @@ pub(super) fn draw(s: &SymbolState<'_>) -> Result<PartOutput, RenderError> {
             _ => {}
         }
     }
+    target_constraint(s, &mut post, &mut bbox);
     let mut pre = Vec::new();
     if s.options.style.outline_width > 0.0 {
         pre.push(s.outline(&post)?);
     }
     Ok(PartOutput::new(pre, post, bbox))
+}
+
+fn target_constraint(s: &SymbolState<'_>, post: &mut Vec<Node>, bbox: &mut PartialBBox) {
+    let Some(context) = s.metadata.context else {
+        return;
+    };
+    if !(context.restricted() || context.no_strike()) {
+        return;
+    }
+    let base = s.metadata.geometry_bbox();
+    let x = match s.aff() {
+        Some(Affiliation::Hostile | Affiliation::Unknown) => base.x2 - 22.0,
+        _ => base.x2,
+    };
+    let y = base.y1;
+    post.push(super::translate(
+        x,
+        y,
+        super::icon::standards::context(s, context.restricted()),
+    ));
+    let mut complete = bbox.complete();
+    complete.merge(
+        BBox {
+            x1: x - 23.0,
+            y1: y - 21.0,
+            x2: x + 23.0,
+            y2: y + 21.0,
+        }
+        .into(),
+    );
+    *bbox = complete.into();
 }

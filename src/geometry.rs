@@ -3,6 +3,9 @@
 use crate::BBox;
 use crate::generated::misc;
 
+mod standards;
+pub(crate) use standards::frame_name as standards_frame_name;
+
 /// Shape of a base frame.
 #[derive(Debug, Clone, Copy, PartialEq)]
 #[non_exhaustive]
@@ -42,6 +45,7 @@ impl BaseGeometry {
 pub fn by_name(name: &str) -> Option<&'static BaseGeometry> {
     misc::GEOMETRIES
         .iter()
+        .chain(standards::GEOMETRIES.iter())
         .find(|(n, _)| *n == name)
         .map(|(_, g)| g)
 }

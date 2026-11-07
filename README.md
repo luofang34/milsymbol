@@ -6,11 +6,12 @@
 
 Military unit symbols per **MIL-STD-2525** and **STANAG APP-6**, in native Rust.
 
-This is a port of [milsymbol.js](https://github.com/spatialillusions/milsymbol)
-3.0.4 by Måns Beckman. It produces the same SVG as milsymbol.js, byte for byte,
-verified on 295,753 symbol/option combinations, and also exposes each symbol as
-typed drawing instructions for non-SVG renderers. An opt-in standard reads
-APP-6(E) Version 2 SIDCs, which milsymbol.js does not know.
+The default renderer uses the pinned MIL-STD-2525E Change 1 and APP-6(E)
+Version 2 standards. Code meanings follow the SIDC version; the renderer's
+`Standard` selects display rules. `RenderMode::Milsymbol304` reproduces
+[milsymbol.js 3.0.4](https://github.com/spatialillusions/milsymbol) by Måns
+Beckman, with exact SVG and semantic checks against its oracle corpus.
+Symbols are also exposed as typed drawing instructions for native renderers.
 
 ![Figure 13](https://github.com/luofang34/milsymbol/raw/main/docs/images/figure13.svg)
 
@@ -67,7 +68,7 @@ WASM/embedded use. Run `mdbook serve --open` for a local searchable book, or
 
 ```toml
 [dependencies]
-milsymbol = "0.4"
+milsymbol = { git = "https://github.com/luofang34/milsymbol" }
 ```
 
 Requires Rust 1.85 or later. The minimum supported Rust version may be
@@ -203,12 +204,10 @@ for an SVG consumer.
 |:-:|:-:|:-:|
 | ![](https://github.com/luofang34/milsymbol/raw/main/docs/images/app6e2-infantry.svg) | ![](https://github.com/luofang34/milsymbol/raw/main/docs/images/app6e2-armour.svg) | ![](https://github.com/luofang34/milsymbol/raw/main/docs/images/app6e2-uas.svg) |
 
-These are APP-6(E) Version 2 SIDCs (version digits `16`), drawn with
-`Standard::App6EVersion2`. milsymbol.js 3.0.4 has no such mode: under the
-default standards, version `16` is not recognised and some of its codes keep
-an earlier meaning. With it, a version `16` SIDC draws only the codes Annex A
-of Version 2 lists, with the meaning it gives them, and shows any other code
-as unknown; every other SIDC draws exactly as with `Standard::App6`.
+These are APP-6(E) Version 2 SIDCs (version `16`). `Standard::App6` and
+`Standard::App6EVersion2` select its display rules; the SIDC version selects
+the code table independently. `catalog::standards` provides names and source
+citations for the pinned editions' entities and modifiers.
 
 ```rust
 use milsymbol::{Renderer, Standard};
@@ -227,12 +226,13 @@ let svg = app6.symbol("16031000161211020000").render()?.to_svg();
 
 | SIDC form | Standards |
 |---|---|
-| Numeric (20 or 30 digits) | MIL-STD-2525D, 2525E; APP-6D, APP-6E (version digits `10`–`12` → D, `13`–`14` → E); APP-6(E) Version 2 (`16`, with `Standard::App6EVersion2`) |
+| Numeric (20 or 30 digits) | MIL-STD-2525D/E, 2525E Change 1 (`15`); APP-6D/E, APP-6(E) Version 2 (`16`) |
 | Letter (10–15 characters) | MIL-STD-2525B (incl. change 2), 2525C; APP-6B |
 
-MIL-STD-2525E Change 1 (version digits `15`) is not recognised, as in
-milsymbol.js 3.0.4; the crate documentation lists what that changes and what
-the APP-6(E) Version 2 mode covers.
+Edition E accepts restricted/no-strike contexts, hexadecimal codes and
+cyberspace non-unit symbols. Single-point graphics are supported; geographic
+lines and areas requiring multiple control points are excluded explicitly.
+See [UPSTREAM.md](UPSTREAM.md) for source pins and reproducible conversion.
 
 ## Drawing
 

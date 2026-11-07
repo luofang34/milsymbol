@@ -39,7 +39,7 @@ mod template;
 pub use bbox::{BBox, PartialBBox};
 pub use builder::{Backend, RequestBuilder, SidcInput, SymbolBuilder};
 pub use compose::{BuiltinPart, PartOutput, SymbolPart, SymbolState};
-pub use config::{DashArrays, ReferencePlatform, RendererConfig, Standard};
+pub use config::{DashArrays, ReferencePlatform, RenderMode, RendererConfig, Standard};
 pub use domain::Metadata;
 pub use error::{PartError, RenderError};
 pub use registry::{IconExtension, IconKey, IconPartContext, PartLookup};

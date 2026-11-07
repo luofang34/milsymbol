@@ -1,15 +1,10 @@
-//! Conformance with the pinned standards (`tools/standards/pin.json`):
-//! MIL-STD-2525E Change 1 (SIDC version `15`) and APP-6(E) Version 2 (`16`).
-//!
-//! Every row of the tables extracted by `tools/standards` gets a status, and
-//! the statuses must equal `tests/data/standards/conformance.tsv`. A fix or a
-//! regression is therefore a reviewed change to that file: copy the file this
-//! test writes after checking the difference it prints.
+//! Every row of the pinned code tables is classified and exercised.
 
+use milsymbol::catalog::standards::{self, CodeKind, Scope};
+use milsymbol::options::SymbolOptions;
 use milsymbol::sidc::SidcCheckError;
 use milsymbol::{Renderer, Standard};
 use std::collections::BTreeMap;
-use std::fmt::Write as _;
 use std::path::PathBuf;
 
 type TestResult = Result<(), Box<dyn std::error::Error>>;
@@ -54,16 +49,6 @@ fn cell<'a>(row: &BTreeMap<&str, &'a str>, column: &str) -> Result<&'a str, Stri
     row.get(column)
         .copied()
         .ok_or_else(|| format!("no column {column}"))
-}
-
-/// What the renderer makes of a SIDC, as one word.
-fn verdict(renderer: &Renderer, sidc: &str) -> &'static str {
-    match renderer.check_sidc(sidc) {
-        Ok(_) => "ok",
-        Err(SidcCheckError::Malformed(_)) => "malformed",
-        Err(SidcCheckError::Unsupported { .. }) => "unrecognised",
-        Err(_) => "render-error",
-    }
 }
 
 /// A 30-digit SIDC: version, context `0`, identity friend, the given set,
@@ -149,28 +134,74 @@ fn code_sidc(version: &str, set: &str, kind: &str, code: &str) -> Option<String>
     (sidc.len() == 30).then_some(sidc)
 }
 
-fn check_codes(out: &mut String, std: &str, version: &str, renderer: &Renderer) -> TestResult {
+fn check_codes(std: &str, version: &str, renderer: &Renderer) -> TestResult {
     let text = read(&format!("{std}/codes.tsv"))?;
+    let scope_text = read("scope.tsv")?;
+    let scopes = rows(&scope_text)?;
     for row in rows(&text)? {
         let (set, kind, code) = (
             cell(&row, "symbol_set")?,
             cell(&row, "kind")?,
             cell(&row, "code")?,
         );
-        // Until the version is recognised, the status of the same code under
-        // the last APP-6(E) edition upstream knows (`14`) shows whether the
-        // existing tables have an entry for it at all.
-        let status = match (
-            code_sidc(version, set, kind, code),
-            code_sidc("14", set, kind, code),
-        ) {
-            (Some(sidc), Some(old)) => match verdict(renderer, &sidc) {
-                "ok" => String::from("ok"),
-                now => format!("{now}; as 14: {}", verdict(renderer, &old)),
-            },
-            _ => String::from("not-a-code"),
+        let scope = scopes
+            .iter()
+            .find(|r| {
+                r.get("document") == Some(&std)
+                    && r.get("symbol_set") == Some(&set)
+                    && r.get("kind") == Some(&kind)
+                    && r.get("code") == Some(&code)
+            })
+            .ok_or("unclassified code table row")?;
+        let (catalog_kind, catalog_code) = match kind {
+            "entity" => (CodeKind::Entity, code.to_owned()),
+            "m1" => (CodeKind::Modifier1, format!("0{code}")),
+            "m2" => (CodeKind::Modifier2, format!("0{code}")),
+            "common_m1" => (CodeKind::Modifier1, code.to_owned()),
+            "common_m2" => (CodeKind::Modifier2, code.to_owned()),
+            _ => return Err(format!("unhandled code kind {kind}").into()),
         };
-        writeln!(out, "{std}\tcode\t{set} {kind} {code}\t{status}")?;
+        let entry = standards::entry(version.parse()?, set, catalog_kind, &catalog_code)
+            .ok_or_else(|| format!("missing catalog entry {std} {set} {kind} {code}"))?;
+        let sidc = code_sidc(version, set, kind, code).ok_or("invalid fixture code")?;
+        if cell(scope, "scope")? == "multipoint" {
+            assert_eq!(entry.scope, Scope::Multipoint);
+            assert!(
+                !cell(scope, "drawing_page")?.is_empty(),
+                "multipoint needs a source"
+            );
+            assert!(
+                matches!(
+                    renderer.check_sidc(&sidc),
+                    Err(SidcCheckError::Unsupported { .. })
+                ),
+                "{sidc}"
+            );
+            continue;
+        }
+        let checked = renderer.check_sidc(&sidc);
+        assert!(checked.is_ok(), "{std} {set} {kind} {code}: {checked:?}");
+        if entry.scope == Scope::Point {
+            let mut options = SymbolOptions::default();
+            if let Some(field) = entry.input_field() {
+                options.set_text(field, "123");
+            }
+            let symbol = renderer.symbol(sidc.as_str()).options(options).render()?;
+            let blank = code_sidc(
+                version,
+                if set == "common" { "10" } else { set },
+                "entity",
+                "000000",
+            )
+            .ok_or("invalid blank code")?;
+            let empty = renderer.symbol(blank.as_str()).render()?;
+            assert_eq!(symbol.drawing().invalid_paths, 0, "{sidc}");
+            assert_ne!(
+                symbol.instructions(),
+                empty.instructions(),
+                "empty point graphic: {std} {set} {kind} {code}"
+            );
+        }
     }
     Ok(())
 }
@@ -194,15 +225,39 @@ fn header_sidc(version: &str, field: &str, code: &str) -> Option<String> {
     (sidc.len() == 30).then_some(sidc)
 }
 
-fn check_headers(out: &mut String, std: &str, version: &str, renderer: &Renderer) -> TestResult {
+fn check_headers(std: &str, version: &str, renderer: &Renderer) -> TestResult {
     let text = read(&format!("{std}/headers.tsv"))?;
     for row in rows(&text)? {
         let (field, code) = (cell(&row, "field")?, cell(&row, "code")?);
-        let status = match header_sidc(version, field, code) {
-            Some(sidc) => verdict(renderer, &sidc),
-            None => "not-checked",
-        };
-        writeln!(out, "{std}\theader\t{field} {code}\t{status}")?;
+        if let Some(sidc) = header_sidc(version, field, code) {
+            let result = renderer.check_sidc(&sidc);
+            assert!(result.is_ok(), "{std} {field} {code}: {result:?}");
+        } else if field == "version" {
+            let (first, last) = code.split_once('-').ok_or("version range")?;
+            for value in u8::from_str_radix(first, 16)?..=u8::from_str_radix(last, 16)? {
+                let version = format!("{value:02X}");
+                let sidc = Fields::new(&version).sidc();
+                assert!(
+                    matches!(
+                        renderer.check_sidc(&sidc),
+                        Err(SidcCheckError::Malformed(_))
+                    ),
+                    "reserved version {version}"
+                );
+            }
+        } else {
+            assert_eq!(
+                field, "amplifying_descriptor_group",
+                "unhandled header {field}"
+            );
+            assert!(
+                rows(&text)?
+                    .iter()
+                    .any(|r| r.get("field") == Some(&"amplifying_descriptor")
+                        && r.get("code").is_some_and(|c| c.starts_with(code))),
+                "empty amplifier group {code}"
+            );
+        }
     }
     Ok(())
 }
@@ -233,79 +288,40 @@ fn frame_sidc(version: &str, dimension: &str, group: &str) -> Option<String> {
 
 /// Frame proportions, measured on the frame-only symbol in the octagon's
 /// units (`L` = 100).
-fn check_frames(out: &mut String, renderers: &BTreeMap<&str, (&str, Renderer)>) -> TestResult {
+#[test]
+fn frame_dimensions_follow_display_standard_for_every_numeric_edition() -> TestResult {
     let text = read("frames.tsv")?;
     for row in rows(&text)? {
         let std = cell(&row, "standard")?;
+        let standard = STANDARDS
+            .iter()
+            .find(|s| s.0 == std)
+            .ok_or("unknown standard")?
+            .2;
+        let renderer = Renderer::builder().standard(standard).build();
         let (dimension, group) = (cell(&row, "dimension")?, cell(&row, "identity_group")?);
-        let (version, renderer) = renderers.get(std).ok_or("unknown standard")?;
-        let sidc = frame_sidc(version, dimension, group).ok_or("unknown frame")?;
-        let bbox = renderer.symbol(sidc.as_str()).render()?.bounding_box();
-        let (w, h) = ((bbox.x2 - bbox.x1) / 100.0, (bbox.y2 - bbox.y1) / 100.0);
-        let want_w: f64 = cell(&row, "width_l")?.parse()?;
-        let want_h: f64 = cell(&row, "height_l")?.parse()?;
-        let status =
-            if (w - want_w).abs() <= FRAME_TOLERANCE && (h - want_h).abs() <= FRAME_TOLERANCE {
-                String::from("ok")
-            } else {
-                format!("measured {w:.3}x{h:.3}")
-            };
-        writeln!(
-            out,
-            "{std}\tframe\t{dimension} {group} {want_w}x{want_h}\t{status}"
-        )?;
+        for version in ["10", "11", "12", "13", "14", "15", "16"] {
+            let sidc = frame_sidc(version, dimension, group).ok_or("unknown frame")?;
+            let bbox = renderer.symbol(sidc.as_str()).render()?.bounding_box();
+            let (w, h) = (bbox.width() / 100.0, bbox.height() / 100.0);
+            let want_w: f64 = cell(&row, "width_l")?.parse()?;
+            let want_h: f64 = cell(&row, "height_l")?.parse()?;
+            assert!(
+                (w - want_w).abs() <= FRAME_TOLERANCE && (h - want_h).abs() <= FRAME_TOLERANCE,
+                "{std} version {version} {dimension} {group}: {w}x{h}, expected {want_w}x{want_h}"
+            );
+        }
     }
     Ok(())
 }
 
-/// The lines of `expected` and `actual` that differ, as a short report.
-fn difference(expected: &str, actual: &str) -> String {
-    let old: std::collections::BTreeSet<&str> = expected.lines().collect();
-    let new: std::collections::BTreeSet<&str> = actual.lines().collect();
-    let mut report = String::new();
-    for line in old.difference(&new).take(20) {
-        report.push_str("\n- ");
-        report.push_str(line);
-    }
-    for line in new.difference(&old).take(20) {
-        report.push_str("\n+ ");
-        report.push_str(line);
-    }
-    report
-}
-
 #[test]
-fn statuses_match_the_reviewed_conformance_table() -> TestResult {
-    let mut renderers = BTreeMap::new();
-    let mut out = String::from("standard\tsection\titem\tstatus\n");
+fn every_in_scope_code_and_header_renders() -> TestResult {
     for (std, version, standard) in STANDARDS {
         let renderer = Renderer::builder().standard(standard).build();
-        check_headers(&mut out, std, version, &renderer)?;
-        check_codes(&mut out, std, version, &renderer)?;
-        renderers.insert(std, (version, renderer));
+        check_headers(std, version, &renderer)?;
+        check_codes(std, version, &renderer)?;
     }
-    check_frames(&mut out, &renderers)?;
-
-    let mut totals: BTreeMap<(&str, &str), usize> = BTreeMap::new();
-    for line in out.lines().skip(1) {
-        let mut cells = line.split('\t');
-        let std = cells.next().unwrap_or_default();
-        let status = cells.nth(2).unwrap_or_default();
-        *totals
-            .entry((std, if status == "ok" { "ok" } else { "open" }))
-            .or_default() += 1;
-    }
-
-    let actual_path = PathBuf::from(env!("CARGO_TARGET_TMPDIR")).join("conformance.tsv");
-    std::fs::write(&actual_path, &out)?;
-    let expected = read("conformance.tsv").unwrap_or_default();
-    assert!(
-        expected == out,
-        "conformance changed ({totals:?}); review and copy {} to {}:{}",
-        actual_path.display(),
-        data_dir().join("conformance.tsv").display(),
-        difference(&expected, &out)
-    );
     Ok(())
 }
 

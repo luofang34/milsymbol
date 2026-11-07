@@ -33,7 +33,7 @@ pub(crate) fn metadata(
     }
     let normalized = sidc::normalize(sidc_in);
     let input = ParseInput {
-        app6e2: standard == Standard::App6EVersion2,
+        standards: config.mode == crate::RenderMode::Standards,
         style_frame: st.frame,
         alternate_medal: st.alternate_medal,
         dashes: Dashes {
@@ -42,7 +42,11 @@ pub(crate) fn metadata(
         },
     };
     let sidc = sidc::interpret(normalized, &mut md, &input);
-    let name = crate::geometry::frame_name(md.dimension.known(), md.affiliation.known());
+    let name = if input.standards && md.number_sidc {
+        crate::geometry::standards_frame_name(&md)
+    } else {
+        crate::geometry::frame_name(md.dimension.known(), md.affiliation.known())
+    };
     md.base_geometry = name;
     if !st.frame && !st.icon {
         md.base_geometry = Some("PositionMarker");
@@ -80,16 +84,18 @@ pub(crate) fn colors(
         && md.fill;
     if unmodified {
         if let ColorModeChoice::Named(name) = &st.color_mode {
-            if let Some(preset) = prepared.framed_filled(name) {
+            if let Some(preset) =
+                prepared.framed_filled(name, standards_colors(md, config) && md.std2525)
+            {
                 return Ok(preset);
             }
         }
     }
-    let fill_mode = match &st.color_mode {
+    let mut fill_mode = match &st.color_mode {
         ColorModeChoice::Custom(m) => m.clone(),
         ColorModeChoice::Named(name) => named_mode(config, name)?,
     };
-    let (frame_mode, icon_mode, black, white, off_white, none) = match &prepared.base {
+    let (mut frame_mode, icon_mode, black, white, off_white, none) = match &prepared.base {
         Some(b) => (
             b.frame_mode.clone(),
             b.icon_mode.clone(),
@@ -107,6 +113,7 @@ pub(crate) fn colors(
             named_mode(config, "None")?,
         ),
     };
+    standard_palette(md, config, st, &mut fill_mode, &mut frame_mode);
     let inputs = ColorInputs {
         fill_mode,
         frame_override,
@@ -139,6 +146,48 @@ pub(crate) fn colors(
         *m = mutated.icon_color;
     }
     Ok(SymbolColors::Owned(Box::new(colors)))
+}
+
+fn standard_palette(
+    md: &Metadata,
+    config: &RendererConfig,
+    st: &crate::options::Style,
+    fill: &mut ColorMode,
+    frame: &mut ColorMode,
+) {
+    if !standards_colors(md, config) {
+        return;
+    }
+    let builtin_fill = match &st.color_mode {
+        ColorModeChoice::Named(name) => crate::generated::misc::COLOR_MODES
+            .iter()
+            .find(|(key, _)| key == name)
+            .is_some_and(|(_, values)| *fill == ColorMode::from_static(values)),
+        ColorModeChoice::Custom(_) => false,
+    };
+    if md.std2525 && builtin_fill {
+        match &st.color_mode {
+            ColorModeChoice::Named(name)
+                if name == "Light" && fill.friend == Some(Paint::color("rgb(128,224,255)")) =>
+            {
+                fill.friend = Some(Paint::color("rgb(128,225,255)"));
+            }
+            ColorModeChoice::Named(name)
+                if name == "Medium" && fill.neutral == Some(Paint::color("rgb(0,226,110)")) =>
+            {
+                fill.neutral = Some(Paint::color("rgb(0,226,0)"));
+            }
+            _ => {}
+        }
+    }
+    if frame.suspect == Some(Paint::color("rbg(255, 188, 1)")) {
+        frame.suspect = Some(Paint::color("rgb(255, 188, 1)"));
+    }
+}
+
+fn standards_colors(md: &Metadata, config: &RendererConfig) -> bool {
+    // MIL Tables XV/XVI (pp. 52–53), APP-6 Table 1-15 (p. 80).
+    md.number_sidc && config.mode == crate::RenderMode::Standards
 }
 
 /// A JavaScript value produced by unwrapping single-element arrays.
@@ -253,10 +302,9 @@ impl BuiltinPart {
             BuiltinPart::Engagement if !s.options.text.is_empty() => super::engagement::draw(s)?,
             BuiltinPart::AffiliationDimension
                 if s.metadata.dimension_unknown
-                    || matches!(
-                        s.metadata.context,
-                        Some(crate::domain::Context::Exercise | crate::domain::Context::Simulation)
-                    )
+                    || s.metadata
+                        .context
+                        .is_some_and(|c| c != crate::domain::Context::Reality)
                     || s.options.style.outline_width > 0.0 =>
             {
                 super::affiliation::draw(s)?
@@ -345,6 +393,10 @@ pub(crate) fn compose(
     let l = layout(bbox, &md, &options, config);
     let instructions = acc.finish();
     Ok(Symbol {
+        rules: (
+            options.style.standard.unwrap_or(config.standard),
+            config.mode,
+        ),
         sidc,
         options,
         metadata: md,

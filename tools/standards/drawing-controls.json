@@ -1,0 +1,74 @@
+{
+  "app6e2 25 entity 170800": {
+    "page": 461,
+    "table": "8-11",
+    "column": "example",
+    "anchor": "center"
+  },
+  "app6e2 25 entity 212902": {
+    "page": 490,
+    "table": "8-12",
+    "column": "example",
+    "anchor": "center"
+  },
+  "app6e2 25 entity 344300": {
+    "page": 670,
+    "table": "8-A-1",
+    "column": "example",
+    "anchor": "center"
+  },
+  "app6e2 25 entity 360100": {
+    "page": 625,
+    "table": "8-23",
+    "column": "template",
+    "crop": [
+      0,
+      0,
+      135,
+      183
+    ],
+    "anchor": "bottom"
+  },
+  "app6e2 25 entity 360200": {
+    "page": 625,
+    "table": "8-23",
+    "column": "template",
+    "crop": [
+      0,
+      0,
+      172,
+      164
+    ],
+    "anchor": "bottom"
+  },
+  "app6e2 25 entity 360300": {
+    "page": 625,
+    "table": "8-23",
+    "column": "template",
+    "crop": [
+      0,
+      0,
+      153,
+      197
+    ],
+    "anchor": "bottom",
+    "red_border": true
+  },
+  "app6e2 25 entity 400100": {
+    "page": 422,
+    "table": "8-4",
+    "column": "example",
+    "anchor": "bottom"
+  },
+  "mil2525e1 25 entity 344300": {
+    "page": 610,
+    "table": "L-XXI",
+    "rect": [
+      370,
+      449,
+      530,
+      553
+    ],
+    "anchor": "center"
+  }
+}
