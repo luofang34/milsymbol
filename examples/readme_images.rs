@@ -8,6 +8,7 @@
 #[path = "../tests/gallery_list.rs"]
 mod gallery_list;
 
+use milsymbol::Standard;
 use std::path::PathBuf;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -35,6 +36,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 fn print_cases() -> Result<(), Box<dyn std::error::Error>> {
     use gallery_list::Value;
     for item in gallery_list::ITEMS {
+        // milsymbol.js has no APP-6(E) Version 2 rules to compare with.
+        if item.standard == Standard::App6EVersion2 {
+            continue;
+        }
         let mut opts = serde_json::Map::new();
         for (k, v) in item.options {
             let v = match *v {
@@ -47,7 +52,7 @@ fn print_cases() -> Result<(), Box<dyn std::error::Error>> {
         let mut case = serde_json::Map::new();
         case.insert("sidc".into(), serde_json::json!(item.sidc));
         case.insert("options".into(), serde_json::Value::Object(opts));
-        if item.app6 {
+        if item.standard == Standard::App6 {
             case.insert("cfg".into(), serde_json::json!({ "standard": "APP6" }));
         }
         println!("{}", serde_json::Value::Object(case));

@@ -174,3 +174,52 @@ fn corpus_drawings_match_svg_element_counts() -> Result<(), Box<dyn std::error::
     assert!(checked > 10_000 / STRIDE, "{checked}");
     Ok(())
 }
+
+/// `Standard::App6EVersion2` changes only version `16` SIDCs: every other
+/// case of the corpus draws as with `Standard::App6`, and fails the same way.
+#[test]
+fn corpus_draws_as_app6_under_app6e_version2() -> Result<(), Box<dyn std::error::Error>> {
+    use milsymbol::{Renderer, Standard};
+    let mut checked = 0usize;
+    for suite in [
+        "invalid",
+        "config",
+        "options",
+        "fuzz",
+        "modifiers",
+        "base",
+        "direction",
+        "layout",
+    ] {
+        let path = format!(
+            "{}/tests/corpus/{suite}.jsonl.gz",
+            env!("CARGO_MANIFEST_DIR")
+        );
+        let reader = BufReader::new(GzDecoder::new(std::fs::File::open(path)?));
+        for line in reader.lines().step_by(STRIDE) {
+            let case: Value = serde_json::from_str(&line?)?;
+            let sidc = case.get("sidc").and_then(Value::as_str).unwrap_or_default();
+            let Ok(options) = support::options(&case) else {
+                continue;
+            };
+            if sidc.replace(' ', "").starts_with("16") {
+                continue;
+            }
+            let mut config = support::renderer(&case, milsymbol::ReferencePlatform::X64)
+                .config()
+                .clone();
+            let mut draw = |standard| {
+                config.standard = standard;
+                Renderer::new(config.clone())
+                    .render(sidc, options.clone())
+                    .map(|s| (s.to_svg(), milsymbol::compat::canonical_json_string(&s)))
+                    .map_err(|e| e.to_string())
+            };
+            let app6 = draw(Standard::App6);
+            assert_eq!(app6, draw(Standard::App6EVersion2), "{suite} {sidc}");
+            checked += 1;
+        }
+    }
+    assert!(checked > 290_000 / STRIDE, "{checked}");
+    Ok(())
+}
