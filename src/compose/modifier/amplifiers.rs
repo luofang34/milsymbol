@@ -109,7 +109,11 @@ fn echelon_spec(name: Option<Level>) -> Option<(Echelon, Top)> {
     })
 }
 
-pub(super) fn echelon(s: &SymbolState<'_>, acc: &mut Acc, bbox: &BBox) -> Result<(), RenderError> {
+pub(super) fn echelon(
+    s: &SymbolState<'_>,
+    acc: &mut Acc<'_>,
+    bbox: &BBox,
+) -> Result<(), RenderError> {
     let Some((shape, top)) = echelon_spec(s.metadata.echelon.known()) else {
         return Ok(());
     };
@@ -319,7 +323,7 @@ fn mobility_spec(name: Mobility) -> Option<MobilitySpec> {
 
 pub(super) fn mobility(
     s: &SymbolState<'_>,
-    acc: &mut Acc,
+    acc: &mut Acc<'_>,
     bbox: &mut BBox,
 ) -> Result<(), RenderError> {
     let md = s.metadata;

@@ -19,11 +19,45 @@ use std::hint::black_box;
 static ALLOC: dhat::Alloc = dhat::Alloc;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
+    infantry_render_svg_and_data_url_do_not_allocate()?;
     prepared_observers_and_reused_json_buffer_do_not_allocate()?;
     unused_label_definitions_do_not_add_allocations()?;
     direction_rendering_stays_within_allocation_budgets()?;
     cloning_does_not_allocate_per_path()?;
     drawing_allocations_stay_within_budget()?;
+    Ok(())
+}
+
+fn infantry_render_svg_and_data_url_do_not_allocate() -> Result<(), Box<dyn std::error::Error>> {
+    let renderer = Renderer::default();
+    let warm_num = renderer.render("10031000001211000000", SymbolOptions::default())?;
+    let warm_let = renderer.render("SFGPUCI-----", SymbolOptions::default())?;
+    let mut svg = String::with_capacity(warm_num.to_svg().len().max(warm_let.to_svg().len()));
+    let mut url = String::with_capacity(
+        warm_num
+            .to_data_url()
+            .len()
+            .max(warm_let.to_data_url().len()),
+    );
+
+    let profiler = dhat::Profiler::builder().testing().build();
+    for sidc in ["10031000001211000000", "SFGPUCI-----"] {
+        let symbol = black_box(&renderer).render(black_box(sidc), SymbolOptions::default())?;
+        svg.clear();
+        symbol.write_svg(&mut svg);
+        url.clear();
+        symbol.write_data_url(&mut url);
+        let cloned = black_box(&symbol).clone();
+        black_box((symbol.metadata(), cloned.sidc()));
+    }
+    let stats = dhat::HeapStats::get();
+    drop(profiler);
+    assert_eq!(
+        stats.total_blocks, 0,
+        "end-to-end render + write_svg + write_data_url + clone allocated {} blocks ({} B)",
+        stats.total_blocks, stats.total_bytes
+    );
+    assert_eq!(stats.total_bytes, 0);
     Ok(())
 }
 
@@ -35,7 +69,11 @@ fn prepared_observers_and_reused_json_buffer_do_not_allocate()
         .text(TextField::UniqueDesignation, "A\u{1}\n\"\\😀")
         .render()?;
     let expected = compat::canonical_json_string(&symbol);
+    let expected_svg = symbol.to_svg();
+    let expected_data_url = symbol.to_data_url();
     let mut buffer = String::with_capacity(expected.len());
+    let mut svg_buffer = String::with_capacity(expected_svg.len());
+    let mut data_url_buffer = String::with_capacity(expected_data_url.len());
     let colors =
         milsymbol::color::ColorMode::new("pink", "blue", "red", "green", "yellow", "orange");
     #[cfg(feature = "std")]
@@ -55,6 +93,12 @@ fn prepared_observers_and_reused_json_buffer_do_not_allocate()
         buffer.clear();
         compat::write_canonical_json(black_box(&symbol), &mut buffer);
         mark("canonical json");
+        svg_buffer.clear();
+        black_box(&symbol).write_svg(&mut svg_buffer);
+        mark("reused svg");
+        data_url_buffer.clear();
+        black_box(&symbol).write_data_url(&mut data_url_buffer);
+        mark("reused data url");
         black_box(symbol.metadata());
         mark("metadata");
         black_box(milsymbol::compat::js_metadata(&symbol));
@@ -76,6 +120,8 @@ fn prepared_observers_and_reused_json_buffer_do_not_allocate()
         "cumulative allocations after each operation: {marks:?}"
     );
     assert_eq!(buffer, expected);
+    assert_eq!(svg_buffer, expected_svg);
+    assert_eq!(data_url_buffer, expected_data_url);
     Ok(())
 }
 

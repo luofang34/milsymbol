@@ -209,6 +209,15 @@ pub(crate) fn is_js_whitespace(c: char) -> bool {
 
 /// JavaScript `ToNumber` applied to a string.
 pub(crate) fn string_to_number(s: &str) -> f64 {
+    let raw = s.as_bytes();
+    // 1..=9 ASCII digits (every numeric SIDC field) fit in u32 and are exact in f64.
+    if !raw.is_empty() && raw.len() <= 9 && raw.iter().all(u8::is_ascii_digit) {
+        let mut acc = 0u32;
+        for &b in raw {
+            acc = acc * 10 + u32::from(b - b'0');
+        }
+        return f64::from(acc);
+    }
     let t = s.trim_matches(is_js_whitespace);
     if t.is_empty() {
         return 0.0;

@@ -5,6 +5,9 @@ use crate::ir::Paint;
 use alloc::borrow::Cow;
 use alloc::string::String;
 
+mod prepared;
+pub(crate) use prepared::{PreparedColors, SymbolColors};
+
 /// Keys of a colour mode, in upstream order.
 pub const COLOR_KEYS: [&str; 6] = [
     "Civilian", "Friend", "Hostile", "Neutral", "Unknown", "Suspect",
@@ -81,10 +84,13 @@ impl ColorMode {
         }
     }
 
-    pub(crate) fn from_static(values: &[Option<&'static str>; 6]) -> Self {
-        let p = |v: Option<&'static str>| {
-            Some(v.map_or(Paint::None, |s| Paint::Color(Cow::Borrowed(s))))
-        };
+    pub(crate) const fn from_static(values: &[Option<&'static str>; 6]) -> Self {
+        const fn p(v: Option<&'static str>) -> Option<Paint> {
+            Some(match v {
+                Some(s) => Paint::Color(Cow::Borrowed(s)),
+                None => Paint::None,
+            })
+        }
         let [c, f, h, n, u, s] = *values;
         ColorMode {
             civilian: p(c),

@@ -356,16 +356,10 @@ new `String` on every call. Writers should call
 [`ir::PathData::write_source`], which never allocates. `source().to_owned()`
 is a `Cow` again; use `.into_owned()` for a `String`.
 
-Measured on one machine against the build without the feature: the
-thumbv7em-none-eabihf firmware image (composing and writing one symbol) loses
-196,584 bytes of `.rodata` and gains 1,680 bytes of `.text` (net 194,904
-bytes, 18%), and a raw `wasm32` module shrinks by 187,766 bytes (16%). The
-saving is for storage that is not compressed: path text is already
-repetitive, so a gzipped wasm module shrinks by only 5%. Composing a single
-symbol and writing its SVG takes about 1% to 6% longer, and composing and
-writing all 1,431 numeric icons about 21% longer; building the drawing view
-of already composed symbols is about 19% faster, and composing alone, cloning,
-the cache and the zero-allocation observers are unaffected.
+The feature trades static path storage for decoding work. Its effect depends on
+the linked target, compiler settings, output compression and workload. Compare
+both feature builds using the rendering benchmarks and measure the final linked
+artifact; compressed downloads can benefit less than uncompressed firmware.
 
 # Compatibility
 

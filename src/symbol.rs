@@ -1,11 +1,12 @@
 //! A rendered symbol.
 
 use crate::bbox::BBox;
-use crate::color::ColorSet;
-use crate::compose::Composition;
+use crate::color::{ColorSet, SymbolColors};
 use crate::ir::{Node, Point};
 use crate::metadata::Metadata;
+use crate::node_list::NodeList;
 use crate::options::SymbolOptions;
+use crate::small_str::SmallStr;
 use crate::svg::{self, SvgFrame};
 use alloc::string::String;
 use alloc::vec::Vec;
@@ -26,11 +27,11 @@ pub struct Size {
 /// A composed symbol: draw instructions plus layout and metadata.
 #[derive(Debug, Clone)]
 pub struct Symbol {
-    pub(crate) sidc: String,
+    pub(crate) sidc: SmallStr<30>,
     pub(crate) options: SymbolOptions,
     pub(crate) metadata: Metadata,
-    pub(crate) colors: ColorSet,
-    pub(crate) instructions: Vec<Node>,
+    pub(crate) colors: SymbolColors,
+    pub(crate) instructions: NodeList,
     pub(crate) bbox: BBox,
     pub(crate) base_width: f64,
     pub(crate) base_height: f64,
@@ -42,27 +43,6 @@ pub struct Symbol {
 }
 
 impl Symbol {
-    pub(crate) fn from_composition(c: Composition, options: SymbolOptions) -> Self {
-        Symbol {
-            sidc: c.sidc,
-            options,
-            metadata: c.metadata,
-            colors: c.colors,
-            instructions: c.instructions,
-            bbox: c.bbox,
-            base_width: c.base_width,
-            base_height: c.base_height,
-            size: Size {
-                width: c.width,
-                height: c.height,
-            },
-            anchor: c.anchor,
-            octagon_anchor: c.octagon_anchor,
-            valid_icon: c.valid_icon,
-            icon_known: c.icon_known,
-        }
-    }
-
     /// The SIDC as interpreted (spaces removed, `*` → `-`, letter codes upper-cased).
     pub fn sidc(&self) -> &str {
         &self.sidc

@@ -7,22 +7,23 @@ use crate::domain::Affiliation;
 use crate::error::RenderError;
 use crate::ir::{Node, Num, Paint, PathData, PathNode, Style};
 use crate::js::{self, number_to_string as n};
+use crate::node_list::NodeAcc;
 use alloc::string::String;
 use alloc::vec::Vec;
 
 mod amplifiers;
 
 /// Output under construction; upstream's `drawArray1`/`drawArray2`/`gbbox`.
-pub(super) struct Acc {
-    pub pre: Vec<Node>,
-    pub post: Vec<Node>,
+pub(super) struct Acc<'a> {
+    pub pre: &'a mut NodeAcc,
+    pub post: &'a mut NodeAcc,
     pub gbbox: BBox,
     /// Modifier colour (`style.frameColor[aff]` or `colors.iconColor[aff]`).
     pub color: Option<Paint>,
     pub stroke_width: f64,
 }
 
-impl Acc {
+impl Acc<'_> {
     /// Upstream's final pass: `fill = false`, `stroke = color`,
     /// `strokewidth = style.strokeWidth` where absent.
     pub(super) fn defaults(&self, extra: Style) -> Style {
@@ -91,12 +92,59 @@ fn modifier_color(s: &SymbolState<'_>) -> Option<Paint> {
     }
 }
 
+fn has_any_modifier(md: &crate::metadata::Metadata) -> bool {
+    md.headquarters
+        || md.task_force
+        || md.installation
+        || md.flags.feint_dummy == Some(true)
+        || md.echelon.known().is_some()
+        || md.mobility.known().is_some()
+        || md.flags.leadership.is_some()
+}
+
+pub(super) fn render_direct(
+    s: &SymbolState<'_>,
+    acc: &mut NodeAcc,
+    bbox: &mut BBox,
+) -> Result<(), RenderError> {
+    let md = s.metadata;
+    if !has_any_modifier(md) {
+        return Ok(());
+    }
+    let needs_pre = s.options.style.outline_width > 0.0
+        || (md.flags.leadership.is_some() && md.affiliation.known() == Some(Affiliation::Friend));
+    if !needs_pre {
+        let mut unused_pre = NodeAcc::default();
+        let before = acc.len();
+        let gbbox = build_modifiers(s, &mut unused_pre, acc)?;
+        if acc.len() > before {
+            bbox.merge(gbbox.into());
+        }
+        return Ok(());
+    }
+    let out = draw(s)?;
+    super::pipeline::merge_vecs(out.pre, out.post, out.bbox, acc, bbox)
+}
+
 pub(super) fn draw(s: &SymbolState<'_>) -> Result<PartOutput, RenderError> {
+    if !has_any_modifier(s.metadata) {
+        return Ok(PartOutput::new(Vec::new(), Vec::new(), BBox::default()));
+    }
+    let (mut pre, mut post) = (NodeAcc::default(), NodeAcc::default());
+    let gbbox = build_modifiers(s, &mut pre, &mut post)?;
+    Ok(PartOutput::new(pre.into_vec(), post.into_vec(), gbbox))
+}
+
+fn build_modifiers(
+    s: &SymbolState<'_>,
+    pre: &mut NodeAcc,
+    post: &mut NodeAcc,
+) -> Result<BBox, RenderError> {
     let (md, st) = (s.metadata, &s.options.style);
     let mut bbox = md.geometry_bbox();
     let mut acc = Acc {
-        pre: Vec::new(),
-        post: Vec::new(),
+        pre,
+        post,
         gbbox: BBox::default(),
         color: modifier_color(s),
         stroke_width: st.stroke_width,
@@ -137,12 +185,12 @@ pub(super) fn draw(s: &SymbolState<'_>) -> Result<PartOutput, RenderError> {
             ..PartialBBox::default()
         });
     }
-    Ok(PartOutput::new(acc.pre, acc.post, acc.gbbox))
+    Ok(acc.gbbox)
 }
 
 fn installation(
     s: &SymbolState<'_>,
-    acc: &mut Acc,
+    acc: &mut Acc<'_>,
     bbox: &BBox,
     dim_aff: &str,
 ) -> Result<(), RenderError> {
@@ -186,7 +234,7 @@ fn installation(
 
 fn headquarters(
     s: &SymbolState<'_>,
-    acc: &mut Acc,
+    acc: &mut Acc<'_>,
     bbox: &BBox,
     dim_aff: &str,
     hq_len: f64,
@@ -219,7 +267,7 @@ fn headquarters(
     Ok(())
 }
 
-fn task_force(s: &SymbolState<'_>, acc: &mut Acc, bbox: &BBox) -> Result<(), RenderError> {
+fn task_force(s: &SymbolState<'_>, acc: &mut Acc<'_>, bbox: &BBox) -> Result<(), RenderError> {
     let md = s.metadata;
     let width = match md.echelon.known() {
         Some(crate::domain::Echelon::CorpsMef) => 110.0,
@@ -247,7 +295,7 @@ fn task_force(s: &SymbolState<'_>, acc: &mut Acc, bbox: &BBox) -> Result<(), Ren
     Ok(())
 }
 
-fn feint_dummy(s: &SymbolState<'_>, acc: &mut Acc, bbox: &BBox) -> Result<(), RenderError> {
+fn feint_dummy(s: &SymbolState<'_>, acc: &mut Acc<'_>, bbox: &BBox) -> Result<(), RenderError> {
     let top = bbox.y1 - 0.0 - bbox.width() / 2.0;
     let d = alloc::format!(
         "M100,{} L{},{} M100,{} L{},{}",
