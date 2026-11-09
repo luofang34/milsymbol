@@ -1,6 +1,14 @@
-Native Rust port of [milsymbol.js](https://github.com/spatialillusions/milsymbol)
-3.0.4: military symbols per MIL-STD-2525 (B/C/D/E) and APP-6 (B/D/E), as SVG
-or as a typed drawing tree for any other renderer.
+Military symbols per MIL-STD-2525 (B/C/D/E) and APP-6 (B/D/E) in native
+Rust, as SVG or as typed drawing data for any other renderer. A port of
+[milsymbol.js](https://github.com/spatialillusions/milsymbol) 3.0.4 that
+follows the current published standards by default.
+
+This page is the API reference. The
+[usage manual](https://luofang34.github.io/milsymbol/) covers application
+workflows (map placement, styling, drawing adapters, WASM and embedded
+targets) and has an interactive symbol lab; the
+[README](https://github.com/luofang34/milsymbol#readme) has a picture
+gallery.
 
 ```
 use milsymbol::{Renderer, options::TextField};
@@ -15,6 +23,23 @@ assert!(svg.starts_with("<svg"));
 assert!(symbol.sidc_validity().is_valid());
 # Ok::<(), milsymbol::RenderError>(())
 ```
+
+# Where to start
+
+| You want to | Use |
+|---|---|
+| Configure standard, colour modes and extensions once | [`Renderer::builder`], or [`Renderer::default`] |
+| Render a symbol | [`Renderer::symbol`] → [`SymbolBuilder`] → [`render`](SymbolBuilder::render) |
+| Set options | builder setters, [`SymbolBuilder::with`], or a reusable [`options::SymbolOptions`] |
+| Get SVG or a data URL | [`Symbol::to_svg`], [`Symbol::to_data_url`], [`Symbol::write_svg_with`] |
+| Place the image on a map | [`Symbol::anchor`], [`Symbol::size`] (see [`Symbol`]) |
+| Draw through a GPU, canvas or scene backend | [`Symbol::drawing`] ([`drawing`]) |
+| Read what a symbol is | [`Symbol::metadata`] ([`Metadata`], [`domain`]) |
+| Parse, validate or edit a SIDC | [`sidc`] |
+| List codes for a picker | [`catalog`] |
+| Reuse rendered symbols | `cache::CachedRenderer` (`std` feature) |
+| Add icons or drawing stages | [`IconExtension`], [`SymbolPart`] |
+| Compare with milsymbol.js | [`compat`], [`ir`] |
 
 # Supported standards
 
@@ -59,20 +84,9 @@ and semantic output. Use [`Sidc::parse_with_mode`](sidc::Sidc::parse_with_mode)
 when parsing separately for that mode. Fonts, line widths and other details
 left open by the standards retain upstream behavior.
 
-# Layers
-
-- [`sidc`] and [`domain`]: parse and describe a SIDC with typed values.
-- [`options`], [`Renderer`] and [`SymbolBuilder`]: what to draw and how.
-- [`Symbol::drawing`] ([`drawing`]): the picture as flat typed items, the
-  input for any renderer other than SVG.
-- [`Symbol::to_svg`]: the SVG renderer; exact upstream bytes in compatibility mode.
-- [`ir`] and [`compat`]: milsymbol.js's own instruction tree and string
-  representations, for extensions and differential testing.
-
 # Rendering
 
-A [`Renderer`] holds all configuration and extensions; build one with
-[`Renderer::builder`], or use `Renderer::default()`. Start a symbol with
+A [`Renderer`] holds all configuration and extensions. Start a symbol with
 [`Renderer::symbol`], which takes the SIDC as text or as a parsed
 [`sidc::Sidc`], and set options on the [`SymbolBuilder`] it returns.
 Options are typed values: [`options::TextField`] names the text amplifiers,
@@ -97,8 +111,7 @@ assert!(size.width > 0.0 && anchor.y > 0.0);
 ```
 
 Complete [`options::SymbolOptions`] can be built ahead of time and passed to
-[`SymbolBuilder::options`] or [`Renderer::render`]. To reuse a symbol
-description across requests, [`options::SymbolOptions`] is `Clone`.
+[`SymbolBuilder::options`] or [`Renderer::render`].
 [`options::SymbolOptions::set`] accepts milsymbol.js option names and rejects
 unknown names or wrongly typed values, for configuration read from text.
 Numbers that cannot appear in an SVG (NaN, infinities) are rejected with
@@ -111,47 +124,22 @@ option's `font_family` alone only affects the information fields.
 A [`Symbol`] is immutable. [`Symbol::to_svg`] returns a document identical
 to milsymbol.js `asSVG()`, and [`Symbol::to_data_url`] returns a
 `data:image/svg+xml;utf8,…` URL identical to `toDataURL()`.
-[`Symbol::write_svg`] and [`Symbol::write_data_url`] append directly to a
-reused buffer without intermediate allocations, and [`Symbol::write_svg_with`]
-and [`Symbol::write_data_url_with`] take [`SvgOptions`] (an id prefix for
-inlining several symbols in one page).
+[`Symbol::write_svg`] and [`Symbol::write_data_url`] append to a reused
+buffer, and the `_with` variants take [`SvgOptions`] (an id prefix for
+inlining several symbols in one page). [`Symbol::drawing`] is the same
+picture as flat typed items for renderers other than SVG, and
+[`Symbol::instructions`] is the tree exactly as milsymbol.js builds it
+([`ir`]).
 
 Rendering is deterministic: the same renderer configuration, SIDC and
 options always give the same output, on every platform and thread.
-`Renderer` and `Symbol` are `Send + Sync`.
+`Symbol` is `Send + Sync`; so is `Renderer`, except on targets without
+atomic pointers (such as thumbv6m).
 
 # SIDCs and validity
 
 Like milsymbol.js, rendering accepts any string and draws unknown parts as a
-question mark. To validate input, parse it strictly, or ask the renderer
-whether it can draw every part (including icons added by extensions):
-
-```
-use milsymbol::Renderer;
-use milsymbol::domain::{Echelon, StandardIdentity};
-use milsymbol::sidc::{Sidc, SidcCheckError};
-
-let Sidc::Numeric(sidc) = Sidc::parse("10031000161211000000")? else {
-    return Ok(()); // a 20-digit code is always numeric
-};
-assert_eq!(sidc.standard_identity(), StandardIdentity::Friend);
-assert!(Sidc::parse("10091000001211000000").is_err()); // no identity 9
-
-let renderer = Renderer::default();
-assert!(renderer.check_sidc("10031000161211000000").is_ok());
-assert!(matches!(
-    renderer.check_sidc("10031000009999990000"), // no such entity
-    Err(SidcCheckError::Unsupported { .. })
-));
-
-// A rendered symbol describes itself with typed values.
-let symbol = renderer.symbol("10031000161211000000").render()?;
-assert_eq!(symbol.metadata().echelon, Some(Echelon::BattalionSquadron));
-assert!(symbol.sidc_validity().is_valid());
-# Ok::<(), Box<dyn std::error::Error>>(())
-```
-
-Which call to use:
+question mark. The [`sidc`] module parses, validates and edits codes.
 
 | You want to | Call |
 | --- | --- |
@@ -168,133 +156,6 @@ must be well formed and fully recognised, whether or not the icon is drawn.
 containing `null` makes a symbol invalid; it returns its own
 [`compat::UpstreamIssue`] list.
 
-# Editing SIDCs
-
-A parsed [`sidc::Sidc`] changes status, affiliation, identity and context
-without string surgery, handling the differences between numeric and letter
-codes. The result is always a valid SIDC whose identity, status and context
-getters return what was set:
-
-```
-use milsymbol::Renderer;
-use milsymbol::domain::{Affiliation, Context, Status};
-use milsymbol::sidc::Sidc;
-
-let friendly = Sidc::parse("10031000001211000000")?;
-let hostile_damaged = friendly
-    .with_affiliation(Affiliation::Hostile)
-    .with_status(Status::Damaged);
-assert_eq!(hostile_damaged.as_str(), "10061030001211000000");
-
-// In an exercise, Hostile is written as Faker; letter codes carry the
-// context in the identity letter.
-let exercise = friendly.with_context(Context::Exercise)?.with_affiliation(Affiliation::Hostile);
-assert_eq!(exercise.as_str(), "10161000001211000000");
-let letter = Sidc::parse("SFGPUCI----D")?.with_context(Context::Exercise)?;
-assert_eq!(letter.as_str(), "SDGPUCI----D");
-
-let symbol = Renderer::default().symbol(&hostile_damaged).render()?;
-assert_eq!(symbol.metadata().affiliation, Some(Affiliation::Hostile));
-# Ok::<(), Box<dyn std::error::Error>>(())
-```
-
-An exercise Joker or Faker stands for a friendly force playing the suspect or
-hostile role, so it is drawn with a friendly frame and a marker:
-`metadata().affiliation` is `Friend` and `base_affiliation` is the role played.
-[`sidc::Sidc::with_standard_identity`] sets the exact identity and fails with
-[`sidc::SidcModifyError`] where the scheme has no code for it (Joker outside an
-exercise, or Hostile inside one). Letter codes have no simulation context.
-
-# Drawing
-
-Two names occur twice: `ir::Paint` is a node's paint in the instruction tree
-(`Paint::Color`, a string passed through as given) and `drawing::Paint` is
-the resolved paint of a [`drawing::DrawItem`] (`Paint::Solid`); `ir::Style`
-holds a node's presentation attributes, while `options::Style` is the style
-you set on a symbol.
-
-[`Symbol::drawing`] is the picture as data for renderers other than SVG:
-a flat list of [`drawing::DrawItem`]s (paths, circles and text), each with
-its full transform, typed paint, dash lengths, clip regions and text
-attributes. A GPU, canvas or scene adapter reads it without parsing SVG or
-resolving inherited styles.
-
-```
-use milsymbol::Renderer;
-use milsymbol::drawing::Shape;
-use milsymbol::ir::Segment;
-
-let symbol = Renderer::default().symbol("10031000001211000000").render()?;
-let drawing = symbol.drawing();
-let lines: usize = drawing
-    .items
-    .iter()
-    .map(|item| match &item.shape {
-        Shape::Path(segments) => segments.iter().filter(|s| matches!(s, Segment::LineTo(_))).count(),
-        _ => 0,
-    })
-    .sum();
-assert!(lines > 0);
-# Ok::<(), milsymbol::RenderError>(())
-```
-
-Coordinates are symbol units: the frame's reference box spans 0–200 on both
-axes around (100, 100). [`drawing::Drawing::view_box`], [`Symbol::bounding_box`]
-and [`Symbol::size`] give the layout, and
-[`drawing::Drawing::viewport_transform`] maps symbol units to pixel
-coordinates (see `examples/png.rs` for PNG rasterization).
-
-[`Symbol::instructions`] is the tree exactly as milsymbol.js builds it
-([`ir::Node`]: nested transforms, cascading styles, values that may be
-numbers or strings), which the SVG writer and the differential tests use.
-
-# Placing symbols on a map
-
-Pixel values come from symbol units (the 0–200 reference box) scaled by
-`size / 100`, so at the default size one unit is one pixel and every pixel
-value scales linearly with [`SymbolBuilder::size`]. The image is larger than
-the frame: [`Symbol::size`] covers the bounding box (including padding, text
-fields, the direction arrow and a headquarters staff) plus the stroke and
-outline width on every side. Do not assume the frame fills the image.
-
-[`Symbol::anchor`] is the pixel offset, from the image's top-left, to put on
-the map position: the frame centre, or the foot of a headquarters staff.
-[`Symbol::octagon_anchor`] is always the frame centre, for attaching labels.
-`style.square` makes the image a square centred on the anchor.
-
-```
-use milsymbol::Renderer;
-
-let renderer = Renderer::default();
-let render = |sidc: &str, size: f64| renderer.symbol(sidc).size(size).render();
-
-// Image size: bounding box plus stroke and outline on both sides.
-let infantry = render("10031000001211000000", 100.0)?;
-let (stroke, outline) = (infantry.options().style.stroke_width, infantry.options().style.outline_width);
-let bbox = infantry.bounding_box();
-assert_eq!(infantry.size().width, bbox.width() + 2.0 * (stroke + outline));
-
-// High-density screens: render at size * pixel_ratio and divide by the
-// ratio when laying out; every pixel value scales exactly.
-let dense = render("10031000001211000000", 200.0)?;
-assert_eq!(dense.size().width, 2.0 * infantry.size().width);
-assert_eq!(dense.anchor().x, 2.0 * infantry.anchor().x);
-
-// Placing a headquarters symbol so its staff foot is on the map position.
-let hq = render("10031002001211000000", 100.0)?;
-let map = (400.0, 300.0);
-let (left, top) = (map.0 - hq.anchor().x, map.1 - hq.anchor().y);
-assert!(top < map.1 - hq.octagon_anchor().y); // the frame is above the staff foot
-assert!(left < map.0);
-# Ok::<(), milsymbol::RenderError>(())
-```
-
-[`Symbol::to_svg`] and [`Symbol::drawing`] describe the same region: the
-`viewBox` starts at the bounding box corner minus the stroke and outline
-width. When inlining several SVG symbols in one page, give each a distinct
-[`SvgOptions`] id prefix. Font loading, texture atlases and pixel-density
-caches belong in the adapter that draws the symbols.
-
 # Extensions
 
 What milsymbol.js configures globally (`ms.addSymbolPart`, `ms.addIcons`,
@@ -310,62 +171,27 @@ renderers coexist:
 
 A built renderer never changes, and cloning it shares its configuration.
 
-# Caching
+# Feature flags
 
-With the default `std` feature, `cache::CachedRenderer` memoizes rendered
-symbols by SIDC and options and shares them as `Arc<Symbol>`; a hit
-allocates nothing for requests whose key fits in 1 KiB. Its builder is the same type as [`Renderer::symbol`]'s,
-so it has every setter and `strict()`. A strict request is cached apart from
-a lenient one, and a strict failure is never cached. The capacity counts
-entries, not bytes, and there is no default; with untrusted options (large
-`stack`, long text) a big capacity can hold a lot of memory, so size it
-accordingly.
+| Feature | Default | Effect |
+|---|---|---|
+| `std` | on | Adds `cache::CachedRenderer`. Without it the crate is `no_std + alloc` and builds for `wasm32` and bare-metal targets. |
+| `serde` | off | Serialization for options, configuration, metadata and the [`drawing`] view. [`options::SymbolOptions`], [`options::Style`] and [`RendererConfig`] also deserialize, with missing fields taking their defaults; [`Metadata`] is `Serialize` only. |
+| `compact-paths` | off | Embeds built-in path data packed (about a third of the size) and decodes it while serializing; output is byte-identical, no public signature or auto-trait changes, and cloning a symbol allocates nothing for its paths. See [`ir::PathData::source`]. |
 
-# `no_std`
-
-The crate is `no_std + alloc` without the default `std` feature, which only
-adds the cache. It builds for `wasm32` and bare-metal targets; the only
-dependency is `libm`. No JavaScript runs at build or run time: the upstream
-icon tables are generated Rust data, and every composition rule is ported.
-
-# Serialization
-
-With the `serde` feature, [`options::SymbolOptions`], [`options::Style`]
-and [`RendererConfig`] implement `Serialize` and `Deserialize`. Their
-serialized shapes use named fields. Omitted fields are
-tolerated on input, because these three types deserialize missing fields to
-their defaults (`serde(default)`); output from this version keeps
-deserializing. The `text` field of `SymbolOptions` (a map from field name
-to string) is part of the wire format. [`Metadata`] is `Serialize` only.
-
-# Compact path data
-
-The icon tables embed their path strings as plain text. The `compact-paths`
-feature (off by default) embeds them packed, about a third of the size, and
-keeps them packed: a composed symbol holds a reference to the packed bytes,
-and the SVG and JSON writers and [`ir::PathData::segments`] decode them
-as they go. Output is byte-identical, the feature adds no heap, and cloning
-a symbol allocates nothing for its paths. Enabling the feature changes no
-public signature or auto-trait. Use it when flash or download size matters more than serialization
-speed.
-
-[`ir::PathData::source`] returns a [`Cow`](alloc::borrow::Cow): always
-borrowed in the default build, but with this feature a packed path builds a
-new `String` on every call. Writers should call
-[`ir::PathData::write_source`], which never allocates. `source().to_owned()`
-is a `Cow` again; use `.into_owned()` for a `String`.
-
-The feature trades static path storage for decoding work. Its effect depends on
-the linked target, compiler settings, output compression and workload. Compare
-both feature builds using the rendering benchmarks and measure the final linked
-artifact; compressed downloads can benefit less than uncompressed firmware.
+The only runtime dependency is `libm`. No JavaScript runs at build or run
+time: the upstream icon tables are generated Rust data, and every
+composition rule is ported. `compact-paths` trades static storage for
+decoding work; measure the final linked artifact with both builds before
+choosing it.
 
 # Compatibility
 
 The baseline is milsymbol.js 3.0.4 (commit `b05f2d7`), each symbol rendered as
-by a freshly initialised milsymbol. SVG output is byte-identical on a
-295,753-case differential corpus. Upstream's direction arrows depend on the
-last bit of V8's `Math.sin`/`Math.cos`, which differs between x64 and arm64;
+by a freshly initialised milsymbol. In [`RenderMode::Milsymbol304`], SVG
+output is byte-identical on a 295,753-case differential corpus. Upstream's
+direction arrows depend on the last bit of V8's `Math.sin`/`Math.cos`, which
+differs between x64 and arm64;
 [`RendererConfig::reference_platform`](config::RendererConfig::reference_platform)
 selects which one to reproduce. [`compat`] holds milsymbol.js's own
 representations (string metadata, the canonical JSON record).

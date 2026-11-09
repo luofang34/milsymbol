@@ -1,9 +1,9 @@
 [package]
 name = "milsymbol"
-version = "0.5.0"
+version = "0.5.1"
 authors = ["Fang Luo"]
 edition = "2024"
-rust-version = "1.85"
+rust-version = "1.88"
 description = "Native Rust port of milsymbol.js: MIL-STD-2525 / APP-6 military symbol generation"
 license = "AGPL-3.0-or-later"
 repository = "https://github.com/luofang34/milsymbol"
@@ -11,7 +11,7 @@ readme = "README.md"
 keywords = ["milsymbol", "mil-std-2525", "app-6", "symbology", "svg"]
 categories = ["graphics", "rendering", "no-std"]
 documentation = "https://docs.rs/milsymbol"
-homepage = "https://github.com/luofang34/milsymbol"
+homepage = "https://luofang34.github.io/milsymbol/"
 # Large differential fixtures and the test targets that read them stay in the
 # repository.
 # The package includes the other tests and their reference data, examples,
@@ -60,17 +60,17 @@ libm = "0.2.16"
 serde = { version = "1.0", default-features = false, features = ["alloc", "derive"], optional = true }
 
 [dev-dependencies]
-serde_json = { version = "1.0.151", features = ["float_roundtrip"] }
-flate2 = "1.1.10"
-proptest = "1.11.0"
+serde_json = { version = "1.0.154", features = ["float_roundtrip"] }
+flate2 = "1.1.11"
+proptest = "1.12.0"
 criterion = { version = "0.8.2", default-features = false }
 dhat = "0.3.3"
 kurbo = "0.13.1"
-resvg = { version = "0.48.1", default-features = false }
-roxmltree = "0.21.1"
-svgtypes = "0.16.1"
+resvg = { version = "0.49.0", default-features = false }
+roxmltree = "0.21.2"
+svgtypes = "0.16.2"
 tiny-skia = "0.12.0"
-usvg = { version = "0.48.1", default-features = false }
+usvg = { version = "0.49.0", default-features = false }
 
 [[bench]]
 name = "render"

@@ -20,7 +20,7 @@ jobs:
     name: fmt → clippy → test → doc → release build
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
       - uses: dtolnay/rust-toolchain@stable
         with:
           components: rustfmt, clippy
@@ -35,7 +35,7 @@ jobs:
       matrix:
         toolchain: [stable, beta]
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
       - uses: dtolnay/rust-toolchain@master
         with:
           toolchain: ${{ matrix.toolchain }}
@@ -47,7 +47,7 @@ jobs:
     name: wasm32 and no_std builds
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
       - uses: dtolnay/rust-toolchain@stable
         with:
           targets: wasm32-unknown-unknown, thumbv7em-none-eabihf, thumbv6m-none-eabi
@@ -66,11 +66,11 @@ jobs:
       - run: cargo build --lib --no-default-features --features compact-paths --target thumbv6m-none-eabi
 
   msrv:
-    name: library builds on rust-version (1.85)
+    name: library builds on rust-version
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
-      - uses: dtolnay/rust-toolchain@1.85
+      - uses: actions/checkout@v7
+      - uses: dtolnay/rust-toolchain@1.88
         with:
           components: clippy
       - run: cargo build --lib
@@ -83,7 +83,7 @@ jobs:
     name: every feature combination builds
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
       - uses: dtolnay/rust-toolchain@stable
       - uses: taiki-e/install-action@cargo-hack
       - uses: Swatinem/rust-cache@v2
@@ -95,7 +95,7 @@ jobs:
     # Breaking changes are allowed only with a version bump: cargo-semver-checks
     # compares against the newest published release and honours the bump.
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
       - uses: dtolnay/rust-toolchain@stable
       - uses: obi1kenobi/cargo-semver-checks-action@v2
         with:
@@ -109,7 +109,7 @@ jobs:
     name: fuzz targets build and run briefly
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
       - uses: dtolnay/rust-toolchain@nightly
       - uses: Swatinem/rust-cache@v2
       - run: cargo install cargo-fuzz --locked
@@ -125,7 +125,7 @@ jobs:
       contents: read
       actions: read # list this run's jobs for tools/ci/required-checks.sh
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
       - name: Required status checks are jobs of this workflow
         env:
           GH_TOKEN: ${{ github.token }}
@@ -163,7 +163,7 @@ jobs:
     name: no JavaScript runtime in dependency tree
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
       - uses: dtolnay/rust-toolchain@stable
       - run: tools/ci/js-guard.sh
 
@@ -175,8 +175,8 @@ jobs:
       matrix:
         os: [ubuntu-latest, ubuntu-24.04-arm]
     steps:
-      - uses: actions/checkout@v5
-      - uses: actions/setup-node@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: 26
       - run: node tools/oracle/vectors.mjs check
@@ -190,15 +190,15 @@ jobs:
     name: generated tables match pinned milsymbol.js
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
-      - uses: actions/setup-node@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: 26
       - uses: dtolnay/rust-toolchain@stable
       - name: Inputs
         id: inputs
         run: echo "key=codegen-$(node --version)-$(rustc --version | cut -d' ' -f2)-${{ hashFiles('tools/codegen/*', 'tools/fetch-upstream.sh', 'tools/oracle/pin.json', 'xtask/**', 'src/generated/**', 'src/ir/path/codec.rs', 'Cargo.lock', '.github/workflows/ci.yml') }}" >> "$GITHUB_OUTPUT"
-      - uses: actions/cache/restore@v4
+      - uses: actions/cache/restore@v6
         id: verified
         with:
           path: .verified
@@ -215,7 +215,7 @@ jobs:
       - name: Generated tables are up to date
         if: steps.verified.outputs.cache-hit != 'true'
         run: git diff --exit-code -- src/generated && mkdir -p .verified && touch .verified/ok
-      - uses: actions/cache/save@v4
+      - uses: actions/cache/save@v6
         if: steps.verified.outputs.cache-hit != 'true'
         with:
           path: .verified
@@ -231,15 +231,15 @@ jobs:
       matrix:
         job: [1, 2, 3]
     steps:
-      - uses: actions/checkout@v5
-      - uses: actions/setup-node@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: 26
       - uses: dtolnay/rust-toolchain@stable
       - name: Inputs
         id: inputs
         run: echo "key=oracle-${{ matrix.job }}of3-$(node --version)-$(rustc --version | cut -d' ' -f2)-${{ hashFiles('src/**', 'tests/support.rs', 'tests/corpus/**', 'examples/dump.rs', 'xtask/**', 'tools/oracle/*', 'tools/fetch-upstream.sh', 'Cargo.lock', 'Cargo.toml', '.github/workflows/ci.yml') }}" >> "$GITHUB_OUTPUT"
-      - uses: actions/cache/restore@v4
+      - uses: actions/cache/restore@v6
         id: verified
         with:
           path: .verified
@@ -255,7 +255,7 @@ jobs:
           tools/fetch-upstream.sh
           tools/oracle/check-all.sh ${{ matrix.job }}/3
           mkdir -p .verified && touch .verified/ok
-      - uses: actions/cache/save@v4
+      - uses: actions/cache/save@v6
         if: steps.verified.outputs.cache-hit != 'true'
         with:
           path: .verified

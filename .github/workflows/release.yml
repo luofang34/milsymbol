@@ -39,7 +39,7 @@ jobs:
       actions: read # look up the CI run of the tagged commit
       id-token: write # OIDC token for Trusted Publishing
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
       - name: Tagged commit is on main
@@ -81,7 +81,7 @@ jobs:
     permissions:
       contents: write # create the release
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
       - name: Release notes from the changelog entry
         run: tools/ci/changelog.sh --release --notes > "$RUNNER_TEMP/notes.md"
       - name: Create the GitHub release

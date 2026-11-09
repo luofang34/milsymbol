@@ -7,7 +7,7 @@ Add the crate to a Rust project:
 milsymbol = "0.5"
 ```
 
-The library requires Rust 1.85 or later. Development tools and dev-dependencies
+The library requires Rust 1.88 or later. Development tools and dev-dependencies
 can require a newer toolchain. To develop against a local checkout instead:
 
 ```toml

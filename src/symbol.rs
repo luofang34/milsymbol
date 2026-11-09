@@ -25,6 +25,58 @@ pub struct Size {
 }
 
 /// A composed symbol: draw instructions plus layout and metadata.
+///
+/// A symbol is immutable and `Send + Sync`. [`Symbol::to_svg`] and
+/// [`Symbol::to_data_url`] serialize it; [`Symbol::drawing`] gives the same
+/// picture as flat typed items for other renderers.
+///
+/// # Placement
+///
+/// Pixel values come from symbol units (the 0–200 reference box) scaled by
+/// `size / 100`, so at the default size one unit is one pixel and every pixel
+/// value scales linearly with
+/// [`SymbolBuilder::size`](crate::SymbolBuilder::size). The image is larger
+/// than the frame: [`Symbol::size`] covers the bounding box (including
+/// padding, text fields, the direction arrow and a headquarters staff) plus
+/// the stroke and outline width on every side.
+///
+/// [`Symbol::anchor`] is the pixel offset, from the image's top-left, to put
+/// on the map position: the frame centre, or the foot of a headquarters
+/// staff. [`Symbol::octagon_anchor`] is always the frame centre, for
+/// attaching labels. `style.square` makes the image a square centred on the
+/// anchor.
+///
+/// ```
+/// use milsymbol::Renderer;
+///
+/// let renderer = Renderer::default();
+/// let render = |sidc: &str, size: f64| renderer.symbol(sidc).size(size).render();
+///
+/// // Image size: bounding box plus stroke and outline on both sides.
+/// let infantry = render("10031000001211000000", 100.0)?;
+/// let (stroke, outline) = (infantry.options().style.stroke_width, infantry.options().style.outline_width);
+/// let bbox = infantry.bounding_box();
+/// assert_eq!(infantry.size().width, bbox.width() + 2.0 * (stroke + outline));
+///
+/// // High-density screens: render at size * pixel_ratio and divide by the
+/// // ratio when laying out; every pixel value scales exactly.
+/// let dense = render("10031000001211000000", 200.0)?;
+/// assert_eq!(dense.size().width, 2.0 * infantry.size().width);
+/// assert_eq!(dense.anchor().x, 2.0 * infantry.anchor().x);
+///
+/// // Placing a headquarters symbol so its staff foot is on the map position.
+/// let hq = render("10031002001211000000", 100.0)?;
+/// let map = (400.0, 300.0);
+/// let (left, top) = (map.0 - hq.anchor().x, map.1 - hq.anchor().y);
+/// assert!(top < map.1 - hq.octagon_anchor().y); // the frame is above the staff foot
+/// assert!(left < map.0);
+/// # Ok::<(), milsymbol::RenderError>(())
+/// ```
+///
+/// [`Symbol::to_svg`] and [`Symbol::drawing`] describe the same region: the
+/// `viewBox` starts at the bounding box corner minus the stroke and outline
+/// width. When inlining several SVG symbols in one page, give each a distinct
+/// [`SvgOptions`](crate::SvgOptions) id prefix.
 #[derive(Debug, Clone)]
 pub struct Symbol {
     pub(crate) rules: (crate::Standard, crate::RenderMode),

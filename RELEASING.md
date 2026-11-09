@@ -12,15 +12,15 @@ and never publish.
 1. Update `version` in `Cargo.toml` and the `CHANGELOG.md` entry, replacing
    `Unreleased` in its heading with the release date. The release job runs
    `tools/ci/changelog.sh --release` and refuses an undated entry.
-2. Run `tools/ci/lint.sh stable 1.85:lib` and
+2. Run `tools/ci/lint.sh stable 1.88:lib` and
    `cargo semver-checks --release-type minor` locally (the default run skips
    every check on a 0.x major bump, so it would verify nothing).
    A breaking change needs a new minor version while the crate is 0.x.
    `cargo semver-checks` does not see a changed return type or an auto-trait
    change, so also diff the public item signatures against the previous tag
    (rustdoc JSON) by hand.
-   Raising `rust-version` is allowed in a minor release (0.x) if the CHANGELOG
-   says so; the CI job "library builds on rust-version" tests it.
+   Before 1.0, raising `rust-version` is a patch-level change if the
+   CHANGELOG says so; the CI job "library builds on rust-version" tests it.
 3. Performance gate, against the previous release tag with default features:
    build both and a control (the tag plus one unused `#[inline(never)] pub
    fn`), run `cargo bench --bench render -- --warm-up-time 1

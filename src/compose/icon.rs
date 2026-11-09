@@ -349,36 +349,36 @@ fn number_icon_into(
         && hq_part.is_none()
         && m1_key.is_none()
         && m2_key.is_none();
-    if main_icon_only {
-        if let IconDest::Direct {
+    if main_icon_only
+        && let IconDest::Direct {
             acc,
             bbox,
             valid_icon,
         } = &mut dest
+    {
+        let find_entry = |code: &str| {
+            table
+                .and_then(|t| t.first())
+                .and_then(|t| template::find(t, code))
+        };
+        let mut wrote = match find_entry(&fid6) {
+            Some(e) => parts.resolver.value_unwrapped(e, true, acc)?,
+            None => false,
+        };
+        if !wrote
+            && js::string_to_number(&fid_hq) >= 95.0
+            && let Some(e) = find_entry(&(fid.substr(0, 4) + "00"))
         {
-            let find_entry = |code: &str| {
-                table
-                    .and_then(|t| t.first())
-                    .and_then(|t| template::find(t, code))
-            };
-            let mut wrote = match find_entry(&fid6) {
-                Some(e) => parts.resolver.value_unwrapped(e, true, acc)?,
-                None => false,
-            };
-            if !wrote && js::string_to_number(&fid_hq) >= 95.0 {
-                if let Some(e) = find_entry(&(fid.substr(0, 4) + "00")) {
-                    wrote = parts.resolver.value_unwrapped(e, true, acc)?;
-                }
-            }
-            if wrote {
-                bbox.merge((*gbbox).into());
-            } else if !(fid6 == "000000" || fid6.is_empty()) {
-                acc.push(undefined_icon_path(s));
-                **valid_icon = false;
-                bbox.merge((*gbbox).into());
-            }
-            return Ok(());
+            wrote = parts.resolver.value_unwrapped(e, true, acc)?;
         }
+        if wrote {
+            bbox.merge((*gbbox).into());
+        } else if !(fid6 == "000000" || fid6.is_empty()) {
+            acc.push(undefined_icon_path(s));
+            **valid_icon = false;
+            bbox.merge((*gbbox).into());
+        }
+        return Ok(());
     }
     let (post, invalid) = number_icon_slow(
         s,

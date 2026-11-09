@@ -13,8 +13,18 @@ runtime network access, or generated image catalogue.
 
 This manual describes the source checkout. The published crate may lag APIs on
 `main`; use the documentation shipped with your chosen release, or use a pinned
-Git revision when adopting unreleased functionality. The
-[API reference](https://docs.rs/milsymbol) documents individual types and methods.
+Git revision when adopting unreleased functionality.
+
+## Where things are documented
+
+| Document | Contents |
+|---|---|
+| This manual | Application workflows, how the APIs fit together, practical limits |
+| [API reference](https://docs.rs/milsymbol) (docs.rs) | Every type and method, supported standards, feature flags |
+| [README](https://github.com/luofang34/milsymbol#readme) | Overview, installation and a gallery of rendered symbols |
+| [UPSTREAM.md](https://github.com/luofang34/milsymbol/blob/main/UPSTREAM.md) | Compatibility baseline, generated-data provenance, known differences |
+| [BENCHMARKS.md](https://github.com/luofang34/milsymbol/blob/main/BENCHMARKS.md) | Rendering performance and memory measurements |
+| [CHANGELOG.md](https://github.com/luofang34/milsymbol/blob/main/CHANGELOG.md) | Release notes |
 
 ## The rendering flow
 

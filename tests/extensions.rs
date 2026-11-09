@@ -353,10 +353,10 @@ struct ModifierKeys(std::sync::Mutex<Vec<String>>);
 
 impl IconExtension for ModifierKeys {
     fn icon(&self, _: &IconPartContext<'_>, key: IconKey<'_>, _: &dyn PartLookup) -> Option<Node> {
-        if let IconKey::Modifier1 { code, .. } = key {
-            if let Ok(mut keys) = self.0.lock() {
-                keys.push(code.to_string());
-            }
+        if let IconKey::Modifier1 { code, .. } = key
+            && let Ok(mut keys) = self.0.lock()
+        {
+            keys.push(code.to_string());
         }
         None
     }

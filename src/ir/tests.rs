@@ -146,11 +146,11 @@ fn caching_continues_after_bad_paths_and_clip_geometry() -> Result<(), PathParse
     fn check(nodes: &[Node]) -> Result<usize, PathParseError> {
         let mut good = 0;
         for n in nodes {
-            if let Node::Path(p) = n {
-                if p.d.source() != "M0,0 Lx" {
-                    assert!(matches!(p.d.segments()?, Cow::Borrowed(_)));
-                    good += 1;
-                }
+            if let Node::Path(p) = n
+                && p.d.source() != "M0,0 Lx"
+            {
+                assert!(matches!(p.d.segments()?, Cow::Borrowed(_)));
+                good += 1;
             }
             good += check(n.children().unwrap_or(&[]))?;
         }

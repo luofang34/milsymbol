@@ -51,14 +51,11 @@ impl KeyHasher {
 
 impl Hasher for KeyHasher {
     fn write(&mut self, bytes: &[u8]) {
-        let mut words = bytes.chunks_exact(8);
-        for chunk in &mut words {
-            if let Ok(w) = <[u8; 8]>::try_from(chunk) {
-                self.absorb(u64::from_le_bytes(w));
-            }
+        let (words, remainder) = bytes.as_chunks::<8>();
+        for &w in words {
+            self.absorb(u64::from_le_bytes(w));
         }
-        let tail = words
-            .remainder()
+        let tail = remainder
             .iter()
             .enumerate()
             .fold(0u64, |acc, (i, &b)| acc | (u64::from(b) << (8 * i)));

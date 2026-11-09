@@ -3,7 +3,7 @@ use super::is_color;
 /// Strings milsymbol.js's colour modes produce, the corpus colours and a
 /// spread of malformed ones, judged by svgtypes (the parser usvg and resvg
 /// use) and by this module.
-const SAMPLES: [&str; 45] = [
+const SAMPLES: [&str; 46] = [
     "red",
     "RED",
     " red ",
@@ -49,6 +49,7 @@ const SAMPLES: [&str; 45] = [
     "redd",
     "currentColor",
     "rgb(1 2 3)",
+    "hsl(120deg 100% 50%)",
 ];
 
 #[test]
@@ -63,7 +64,7 @@ fn agrees_with_svgtypes() {
 /// know them. The drawing view follows CSS.
 #[test]
 fn accepts_css_color_4_forms_svgtypes_lacks() {
-    for s in ["rebeccapurple", "rgb(1 2 3 / 50%)", "hsl(120deg 100% 50%)"] {
+    for s in ["rebeccapurple", "rgb(1 2 3 / 50%)"] {
         assert!(is_color(s), "{s:?}");
         assert!(s.parse::<svgtypes::Color>().is_err(), "{s:?}");
     }

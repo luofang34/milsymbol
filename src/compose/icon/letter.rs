@@ -38,29 +38,29 @@ pub(super) fn letter_icon_into(
     }) {
         *gbbox = b;
     }
-    if parts.resolver.user.ctx.is_none() && !needs_outline {
-        if let IconDest::Direct {
+    if parts.resolver.user.ctx.is_none()
+        && !needs_outline
+        && let IconDest::Direct {
             acc,
             bbox,
             valid_icon,
         } = &mut dest
-        {
-            let wrote = match template::find(tables::LETTER_ICONS, &generic) {
-                Some(e) => parts.resolver.value_unwrapped(e, false, acc)?,
-                None => false,
-            };
-            if wrote {
+    {
+        let wrote = match template::find(tables::LETTER_ICONS, &generic) {
+            Some(e) => parts.resolver.value_unwrapped(e, false, acc)?,
+            None => false,
+        };
+        if wrote {
+            bbox.merge((*gbbox).into());
+        } else {
+            let f = sidc.substr(4, 6);
+            if !(f == "------" || f.is_empty()) {
+                acc.push(undefined_icon_path(s));
+                **valid_icon = false;
                 bbox.merge((*gbbox).into());
-            } else {
-                let f = sidc.substr(4, 6);
-                if !(f == "------" || f.is_empty()) {
-                    acc.push(undefined_icon_path(s));
-                    **valid_icon = false;
-                    bbox.merge((*gbbox).into());
-                }
             }
-            return Ok(());
         }
+        return Ok(());
     }
     let mut post = Vec::new();
     let mut invalid = false;
