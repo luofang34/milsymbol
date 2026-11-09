@@ -3,6 +3,7 @@
 [![CI](https://github.com/luofang34/milsymbol/actions/workflows/ci.yml/badge.svg)](https://github.com/luofang34/milsymbol/actions/workflows/ci.yml)
 [![crates.io](https://img.shields.io/crates/v/milsymbol.svg)](https://crates.io/crates/milsymbol)
 [![docs.rs](https://docs.rs/milsymbol/badge.svg)](https://docs.rs/milsymbol)
+[![manual](https://img.shields.io/badge/manual-mdBook-blue)](https://luofang34.github.io/milsymbol/)
 
 Military unit symbols per **MIL-STD-2525** and **STANAG APP-6**, in native Rust.
 
@@ -12,6 +13,22 @@ Version 2 standards. Code meanings follow the SIDC version; the renderer's
 [milsymbol.js 3.0.4](https://github.com/spatialillusions/milsymbol) by Måns
 Beckman, with exact SVG and semantic checks against its oracle corpus.
 Symbols are also exposed as typed drawing instructions for native renderers.
+
+## Documentation
+
+- **[Usage manual](https://luofang34.github.io/milsymbol/)**: installation,
+  SIDCs, styling, text, output formats, map placement, drawing adapters,
+  caching, extensions and WASM/embedded use, with an interactive symbol lab
+  running this library as WASM.
+- **[API reference](https://docs.rs/milsymbol)** on docs.rs: every type and
+  method, the supported standards and feature flags.
+- [UPSTREAM.md](UPSTREAM.md): compatibility baseline, generated-data
+  provenance and known differences from milsymbol.js.
+- [BENCHMARKS.md](BENCHMARKS.md): single-symbol, cached and bulk rendering
+  performance and memory use.
+- [CHANGELOG.md](CHANGELOG.md): release notes.
+
+## Example
 
 ![Figure 13](https://github.com/luofang34/milsymbol/raw/main/docs/images/figure13.svg)
 
@@ -36,7 +53,43 @@ let svg = Renderer::default()
 
 This is figure 13 of MIL-STD-2525C, rendered by this crate.
 
-## Summary
+## Installation
+
+```toml
+[dependencies]
+milsymbol = "0.5"
+```
+
+Requires Rust 1.88 or later. The minimum supported Rust version may be
+raised in a minor release while the crate is 0.x; such a change is announced
+in the CHANGELOG, and CI builds the library on it. Optional features (`serde`,
+`compact-paths`, and `std`, which is on by default) are listed in the
+[API reference](https://docs.rs/milsymbol#feature-flags).
+
+## Quick start
+
+```rust
+use milsymbol::Renderer;
+
+let renderer = Renderer::default();
+let symbol = renderer.symbol("130310001412110000000000000000").size(35.0).render()?;
+let svg: String = symbol.to_svg();
+let data_url: String = symbol.to_data_url(); // data:image/svg+xml;utf8,…
+
+let anchor = symbol.anchor();   // pixel offset of the map position (frame centre or HQ staff foot)
+let size = symbol.size();       // width and height in pixels
+let info = symbol.metadata();   // typed: affiliation, dimension, status, echelon, mobility, …
+let ok = symbol.sidc_validity().is_valid(); // false for unknown codes, which still render with a "?" icon
+# Ok::<(), milsymbol::RenderError>(())
+```
+
+![Infantry platoon](https://github.com/luofang34/milsymbol/raw/main/docs/images/infantry-platoon.svg)
+
+The manual's [first render](https://luofang34.github.io/milsymbol/manual/getting-started.html)
+and [worked examples](https://luofang34.github.io/milsymbol/manual/examples.html)
+continue from here.
+
+## Features
 
 - MIL-STD-2525B/C/D/E and STANAG APP-6 B/D/E, legacy letter SIDCs and
   numeric SIDCs; APP-6(E) Version 2 on request.
@@ -47,115 +100,15 @@ This is figure 13 of MIL-STD-2525C, rendered by this crate.
 - SVG output, plus a typed drawing IR (`Path`, `Circle`, `Text`,
   `Translate`, `Rotate`, `Scale`) with path segments for GPU, canvas and
   other renderers.
+- Strict SIDC parsing and validation, typed metadata, and SIDC editing
+  without string surgery.
 - No JavaScript at build or run time. `no_std + alloc` core; builds for
-  `wasm32` and bare-metal targets. The only dependency is `libm`. The
-  optional `compact-paths` feature embeds path data packed, trading some CPU
-  for flash and adding no heap (see "Compact path data" in the crate
-  documentation).
-- No global state: a `Renderer` holds configuration and extensions, is
-  `Send + Sync`, and renders deterministically.
-- Measured single-symbol, cached, and bulk rendering performance and memory
-  usage ([BENCHMARKS.md](BENCHMARKS.md)).
+  `wasm32` and bare-metal targets. The only dependency is `libm`.
+- No global state: a `Renderer` holds configuration and extensions
+  (custom icons, drawing stages, colour modes), is `Send + Sync`, and renders
+  deterministically.
 
-## Usage manual
-
-The [usage manual](https://luofang34.github.io/milsymbol/) covers installation, SIDCs, styling, text,
-output formats, map placement, drawing adapters, caching, extensions, and
-WASM/embedded use, and includes a symbol lab running this library as WASM.
-Run `tools/build-book.sh` for a local build, or `tools/check-book.sh` to build
-it and test its Rust examples; `docs/manual/maintenance.md` lists the tools.
-
-## Getting started
-
-```toml
-[dependencies]
-milsymbol = "0.5"
-```
-
-Requires Rust 1.88 or later. The minimum supported Rust version may be
-raised in a minor release while the crate is 0.x; such a change is announced
-in the CHANGELOG, and CI builds the library on it.
-
-To make a symbol for an infantry platoon:
-
-```rust
-use milsymbol::Renderer;
-
-let renderer = Renderer::default();
-let symbol = renderer.symbol("130310001412110000000000000000").size(35.0).render()?;
-let svg: String = symbol.to_svg();
-let data_url: String = symbol.to_data_url(); // data:image/svg+xml;utf8,…
-# Ok::<(), milsymbol::RenderError>(())
-```
-
-![Infantry platoon](https://github.com/luofang34/milsymbol/raw/main/docs/images/infantry-platoon.svg)
-
-`symbol` also tells you where to place it and how big it is:
-
-```rust
-# let symbol = milsymbol::Renderer::default().symbol("130310001412110000000000000000").render()?;
-let anchor = symbol.anchor();   // pixel offset of the map position (frame centre or HQ staff foot)
-let size = symbol.size();       // width and height in pixels
-let info = symbol.metadata();   // typed: affiliation, dimension, status, echelon, mobility, …
-let ok = symbol.sidc_validity().is_valid(); // false for unknown codes, which still render with a "?" icon
-# Ok::<(), milsymbol::RenderError>(())
-```
-
-`symbol.sidc_validity().issues` lists why a symbol is not valid (malformed SIDC,
-unknown affiliation, dimension, icon or amplifier code, …); it judges the
-code alone. `compat::validity` is milsymbol.js's `isValid()`, which also
-rejects any text containing `null`.
-
-To check a SIDC without rendering it, parse it strictly. `Sidc::parse`
-checks the code against the standards' tables; `Renderer::check_sidc` also
-checks that the renderer, with its extensions, has everything the code
-names (such as the icon):
-
-```rust
-use milsymbol::sidc::Sidc;
-use milsymbol::domain::StandardIdentity;
-
-let Sidc::Numeric(sidc) = Sidc::parse("10031000161211000000")? else { return Ok(()) };
-assert_eq!(sidc.standard_identity(), StandardIdentity::Friend);
-assert_eq!(sidc.amplifier(), "16"); // battalion
-assert!(Sidc::parse("10091000001211000000").is_err()); // identity 9 does not exist
-# Ok::<(), milsymbol::sidc::SidcError>(())
-```
-
-## Options
-
-Options are typed values. The builder has setters for the common ones
-(`size`, `direction`, `speed_leader`, `stack`, `font`, `text`, `standard`,
-`color_mode`, `mono_color`, `fill`, `frame`, `icon`, `outline_width`,
-`outline_color`) and `with` edits any other in place; a colour is an
-`options::Color` (`Color::BLACK`, `Color::WHITE`, `Color::rgb`, `Color::new`)
-and `None` means "not set":
-
-```rust
-use milsymbol::{Renderer, options::{Color, ColorChoice, TextField}};
-
-let symbol = Renderer::default()
-    .symbol("10031000001211000000")
-    .size(40.0)
-    .direction(60.0)
-    .outline_width(5.0)
-    .outline_color(Color::WHITE)
-    .mono_color(Color::rgb(20, 60, 160))
-    .text(TextField::HigherFormation, "2 BDE")
-    .text(TextField::UniqueDesignation, "A/1-66")
-    .with(|o| {
-        o.style.info_color = Color::new("red").ok().map(ColorChoice::from);
-    })
-    .render()?;
-# Ok::<(), milsymbol::RenderError>(())
-```
-
-Options read from text (a config file, a request) can be applied by their
-milsymbol.js names with `SymbolOptions::set`, which rejects unknown names and
-wrongly typed values. Complete `SymbolOptions` can be built once and passed
-to `SymbolBuilder::options`. NaN and infinite numbers are rejected with
-`RenderError::InvalidOption`. To fail on a malformed or unrecognised SIDC
-instead of drawing a `?` icon, add `.strict()` to the builder.
+## Gallery
 
 ### Standard identities and dimensions
 
@@ -168,7 +121,8 @@ instead of drawing a `?` icon, add `.strict()` to the builder.
 
 The fourth digit of a numeric SIDC is the standard identity (`3` friend,
 `6` hostile, `4` neutral, `1` unknown); digits 5–6 are the symbol set (`01`
-air, `10` land unit, `30` sea surface, `35` subsurface).
+air, `10` land unit, `30` sea surface, `35` subsurface). See
+[SIDCs and validation](https://luofang34.github.io/milsymbol/manual/sidcs.html).
 
 ### Amplifiers and modifiers
 
@@ -179,6 +133,8 @@ air, `10` land unit, `30` sea surface, `35` subsurface).
 | ![](https://github.com/luofang34/milsymbol/raw/main/docs/images/exercise-joker.svg)<br>`10151000001211000000`<br>exercise joker | ![](https://github.com/luofang34/milsymbol/raw/main/docs/images/installation.svg)<br>`10032000001101000000`<br>installation | ![](https://github.com/luofang34/milsymbol/raw/main/docs/images/speed-leader.svg)<br>`direction: 60, speedLeader: 60`<br>speed leader |
 | ![](https://github.com/luofang34/milsymbol/raw/main/docs/images/engagement-bar.svg)<br>`engagementBar: "2:10"`<br>engagement bar | | |
 
+See [frames, modifiers, and movement](https://luofang34.github.io/milsymbol/manual/modifiers.html).
+
 ### Styles
 
 | | | |
@@ -186,18 +142,25 @@ air, `10` land unit, `30` sea surface, `35` subsurface).
 | ![](https://github.com/luofang34/milsymbol/raw/main/docs/images/style-unfilled.svg)<br>`fill: false` | ![](https://github.com/luofang34/milsymbol/raw/main/docs/images/style-dark.svg)<br>`colorMode: "Dark"` | ![](https://github.com/luofang34/milsymbol/raw/main/docs/images/style-mono.svg)<br>`monoColor: "rgb(20,60,160)"` |
 | ![](https://github.com/luofang34/milsymbol/raw/main/docs/images/style-outline.svg)<br>`outlineWidth: 5` | ![](https://github.com/luofang34/milsymbol/raw/main/docs/images/style-unframed.svg)<br>`frame: false` | ![](https://github.com/luofang34/milsymbol/raw/main/docs/images/style-info-background.svg)<br>`infoBackground` |
 
-Supported style options: fill/frame/icon visibility, colour modes and per-affiliation overrides, civilian colouring,
-fill opacity, monochrome, outline colour and width, stroke width, padding,
-size, square, information-field size/colour/background/outline, font, HQ
-staff length, alternate MEDAL icons and the standard override.
+Options are typed values with builder setters; milsymbol.js option names
+also work through `SymbolOptions::set`:
 
-`fontfamily` sets the font of generated labels and other non-icon text.
-Built-in icon text keeps its milsymbol.js template font (usually Arial) unless
-`iconTextUsesFontFamily: true` is set. The switch is `false` by default, so
-existing SVG output remains byte-identical to milsymbol.js. Set
-`o.style.icon_text_uses_font_family = true` in the typed API. The switch
-does not override custom text nodes supplied by icon extensions or load fonts
-for an SVG consumer.
+```rust
+use milsymbol::{Renderer, options::{Color, TextField}};
+
+let symbol = Renderer::default()
+    .symbol("10031000001211000000")
+    .size(40.0)
+    .outline_width(5.0)
+    .outline_color(Color::WHITE)
+    .mono_color(Color::rgb(20, 60, 160))
+    .text(TextField::UniqueDesignation, "A/1-66")
+    .render()?;
+# Ok::<(), milsymbol::RenderError>(())
+```
+
+See [colours and styling](https://luofang34.github.io/milsymbol/manual/styling.html)
+and [text and fonts](https://luofang34.github.io/milsymbol/manual/text.html).
 
 ### APP-6
 
@@ -207,8 +170,7 @@ for an SVG consumer.
 
 These are APP-6(E) Version 2 SIDCs (version `16`). `Standard::App6` and
 `Standard::App6EVersion2` select its display rules; the SIDC version selects
-the code table independently. `catalog::standards` provides names and source
-citations for the pinned editions' entities and modifiers.
+the code table independently.
 
 ```rust
 use milsymbol::{Renderer, Standard};
@@ -223,97 +185,25 @@ let svg = app6.symbol("16031000161211020000").render()?.to_svg();
 |:-:|:-:|
 | ![](https://github.com/luofang34/milsymbol/raw/main/docs/images/letter-2525c.svg) | ![](https://github.com/luofang34/milsymbol/raw/main/docs/images/letter-sea-mine.svg) |
 
-`Standard::App6` draws letter SIDCs as APP-6B.
-
 | SIDC form | Standards |
 |---|---|
 | Numeric (20 or 30 digits) | MIL-STD-2525D/E, 2525E Change 1 (`15`); APP-6D/E, APP-6(E) Version 2 (`16`) |
 | Letter (10–15 characters) | MIL-STD-2525B (incl. change 2), 2525C; APP-6B |
 
-Edition E accepts restricted/no-strike contexts, hexadecimal codes and
-cyberspace non-unit symbols. Single-point graphics are supported; geographic
-lines and areas requiring multiple control points are excluded explicitly.
-See [UPSTREAM.md](UPSTREAM.md) for source pins and reproducible conversion.
-
-## Drawing
-
-`to_svg()` is one renderer. `Symbol::drawing()` gives the same picture as
-data, flattened for other backends: each item carries its full transform,
-typed paint, dash lengths, clip regions and text attributes, so a GPU or
-canvas adapter parses no SVG and resolves no inherited styles.
-
-```rust
-use milsymbol::{Renderer, drawing::Shape, ir::Segment};
-
-let symbol = Renderer::default().symbol("10031000001211000000").render()?;
-let drawing = symbol.drawing();
-for item in &drawing.items {
-    let _ = (&item.appearance, item.transform, &item.clips);
-    if let Shape::Path(segments) = &item.shape {
-        for seg in segments {
-            if let Segment::MoveTo(p) | Segment::LineTo(p) = *seg {
-                let _ = (p.x, p.y);
-            }
-        }
-    }
-}
-# Ok::<(), milsymbol::RenderError>(())
-```
-
-Coordinates are in symbol units (the frame's reference box is 0–200, centred
-on 100,100); `drawing.view_box`, `bounding_box()`, `size()`, `anchor()` and
-`octagon_anchor()` give the layout. `Symbol::instructions()` is the tree
-exactly as milsymbol.js builds it (nested groups, cascading styles), which
-the SVG writer and the differential tests use.
-
-## Extending
-
-Configuration and extensions belong to a `Renderer`, built once through
-`Renderer::builder()`; a built renderer never changes and clones cheaply, so
-differently configured renderers can coexist:
-
-| To add | Use |
-|---|---|
-| a drawing stage (e.g. a custom amplifier) | `RendererBuilder::symbol_part(impl SymbolPart)` |
-| icons, icon parts or label placements for new SIDCs | `RendererBuilder::icons(impl IconExtension)` |
-| a colour mode | `RendererBuilder::color_mode` |
-| a default standard, dash arrays, HQ staff length | `standard`, `dash_arrays`, `hq_staff_length` |
-| the icon octagon (debugging) | `RendererBuilder::octagon()` |
-| a different set of built-in stages | `RendererBuilder::pipeline(&[..])` |
-
-Builder calls apply in order: `pipeline` replaces the stages chosen so far,
-while `symbol_part` and `octagon` append.
-
-An `IconExtension` can replace or add named icon parts (`icon_part`) and
-icons for entities, modifiers or letter SIDCs (`icon`), composing them from
-the built-in parts by name (`PartLookup::part("GR.IC.FF.INFANTRY")`, listed
-by `catalog::icon_parts()`). `tests/extensions.rs` has complete examples of
-a custom symbol part, a new SIDC icon and a label override.
+`Standard::App6` draws letter SIDCs as APP-6B. Single-point graphics are
+supported; geographic lines and areas requiring multiple control points are
+excluded explicitly.
 
 ## Compatibility
 
-The baseline is milsymbol.js 3.0.4 (commit `b05f2d7`), with each symbol
-rendered as by a freshly initialised milsymbol. [UPSTREAM.md](UPSTREAM.md)
-describes how the icon tables were extracted from upstream, the differential
-corpus, and every deliberate difference. None occurs in the corpus: they
-cover upstream's cross-render cache pollution, inputs on which it throws or
-never finishes, loosely typed options, extension edge cases (clip ids,
-colour objects, JavaScript object keys) and SIDCs with non-BMP characters.
-
-Upstream's own output depends on the platform in one place. Direction
-arrows and speed leaders use `Math.sin`/`Math.cos`, whose last bit differs
-between V8's x64 and arm64 builds. `RendererConfig::reference_platform`
-selects which one to reproduce exactly (default x64, which also matches
-WebAssembly).
-
-Coming from milsymbol.js: option names are the same (`size`,
-`uniqueDesignation`, `colorMode`, …, via `SymbolOptions::set`), and the
-global calls map to builder methods — `ms.addSymbolPart` →
-`symbol_part`, `ms.addIcons` → `icons`, `ms.setColorMode` → `color_mode`,
-`ms.setStandard`/`setDashArrays`/`setHqStaffLength` →
-`standard`/`dash_arrays`/`hq_staff_length`, `ms.showOctagon` → `octagon`.
-`compat::is_valid` is `isValid()` (the quirks `Symbol::sidc_validity` leaves out) and `compat::js_metadata` is
-`symbol.metadata`.
+The baseline is milsymbol.js 3.0.4 (commit `b05f2d7`). In
+`RenderMode::Milsymbol304` the SVG output is byte-identical to upstream on
+the checked-in differential corpus. Option names are the same as
+milsymbol.js, and its global calls (`ms.addSymbolPart`, `ms.addIcons`,
+`ms.setColorMode`, …) map to `Renderer::builder()` methods. The manual's
+[compatibility chapter](https://luofang34.github.io/milsymbol/manual/compatibility.html)
+has the full mapping; [UPSTREAM.md](UPSTREAM.md) lists every deliberate
+difference.
 
 ## Development
 
@@ -322,11 +212,16 @@ cargo test                           # unit, API, property and oracle-corpus tes
 tools/ci/check.sh                    # the CI native job; tools/ci/check-linux.sh runs it on Linux
 tools/ci/lint.sh stable 1.88:lib     # clippy with warnings denied on each toolchain
 tools/ci/lint-config.sh              # every crate carries the workspace lint table
+tools/check-book.sh                  # build the manual and test its examples
 cargo run --example readme_images    # regenerates docs/images (or pass an output dir)
 tools/oracle/diff.sh options         # live diff against milsymbol.js (needs Node)
 tools/oracle/check-all.sh            # every suite, in parallel (x64 Node also checks fixtures)
 tools/codegen/regenerate.sh          # regenerate src/generated from upstream (needs Node)
 ```
+
+The manual's [maintenance chapter](https://luofang34.github.io/milsymbol/manual/maintenance.html)
+describes the book tooling; [UPSTREAM.md](UPSTREAM.md) describes the oracle
+and regeneration tooling.
 
 ## License
 

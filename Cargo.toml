@@ -11,7 +11,7 @@ readme = "README.md"
 keywords = ["milsymbol", "mil-std-2525", "app-6", "symbology", "svg"]
 categories = ["graphics", "rendering", "no-std"]
 documentation = "https://docs.rs/milsymbol"
-homepage = "https://github.com/luofang34/milsymbol"
+homepage = "https://luofang34.github.io/milsymbol/"
 # Large differential fixtures and the test targets that read them stay in the
 # repository.
 # The package includes the other tests and their reference data, examples,
