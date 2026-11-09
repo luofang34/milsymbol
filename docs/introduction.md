@@ -4,7 +4,16 @@
 Code (SIDC), choose presentation options, and receive an immutable `Symbol` with
 SVG output, drawing primitives, metadata, bounds, and placement anchors.
 
-![Infantry platoon](images/infantry-platoon.svg)
+<div class="lab-callout">
+
+**Try it in the [symbol lab](manual/explorer.md).** Type any SIDC, browse the
+standards' entities, or press *Random symbol*, and see the rendered symbol,
+what each code means, whether it is valid, and the Rust call that draws it.
+It runs this library in your browser; nothing to install.
+
+</div>
+
+[![Infantry platoon](images/infantry-platoon.svg)](manual/explorer.md#sidc=15031000141211000000)
 
 The library ports [milsymbol.js](https://github.com/spatialillusions/milsymbol)
 3.0.4. Its built-in geometry is native data; composition, layout, and serialization
@@ -19,12 +28,10 @@ Git revision when adopting unreleased functionality.
 
 | Document | Contents |
 |---|---|
+| [Symbol lab](manual/explorer.md) | Any SIDC rendered live, with its meaning, validity and Rust call |
 | This manual | Application workflows, how the APIs fit together, practical limits |
 | [API reference](https://docs.rs/milsymbol) (docs.rs) | Every type and method, supported standards, feature flags |
 | [README](https://github.com/luofang34/milsymbol#readme) | Overview, installation and a gallery of rendered symbols |
-| [UPSTREAM.md](https://github.com/luofang34/milsymbol/blob/main/UPSTREAM.md) | Compatibility baseline, generated-data provenance, known differences |
-| [BENCHMARKS.md](https://github.com/luofang34/milsymbol/blob/main/BENCHMARKS.md) | Rendering performance and memory measurements |
-| [CHANGELOG.md](https://github.com/luofang34/milsymbol/blob/main/CHANGELOG.md) | Release notes |
 
 ## The rendering flow
 
@@ -46,6 +53,7 @@ adapter, use the [drawing view](manual/drawing.md).
 
 | Task | Entry point |
 |---|---|
+| Try a SIDC without installing anything | The [symbol lab](manual/explorer.md) |
 | Render a symbol | `Renderer::symbol(...).render()` |
 | Reject malformed or unsupported symbols | Add `.strict()` |
 | Check syntax without rendering | `Sidc::parse` or `Sidc::parse_for` |

@@ -1,12 +1,12 @@
 # Summary
 
 [Introduction](introduction.md)
+[Symbol lab](manual/explorer.md)
 
 # Getting started
 
 - [Installation and first render](manual/getting-started.md)
 - [Worked examples](manual/examples.md)
-- [Symbol lab](manual/explorer.md)
 
 # Symbols
 

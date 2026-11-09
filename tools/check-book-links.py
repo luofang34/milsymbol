@@ -54,6 +54,9 @@ def main():
             if not target.exists():
                 errors.append(f"{path.relative_to(root)}: missing {link}")
             elif url.fragment and target in pages:
+                # The symbol lab reads `#sidc=…&standard=…` as its input.
+                if url.fragment.startswith("sidc=") and "symbol-lab-app" in pages[target].ids:
+                    continue
                 if unquote(url.fragment) not in pages[target].ids:
                     errors.append(f"{path.relative_to(root)}: missing fragment {link}")
     if errors:

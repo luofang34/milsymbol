@@ -1,15 +1,20 @@
 # Symbol lab
 
-Choose a category and an entity, or enter a SIDC. The preview, code meanings,
+Enter a SIDC, pick a category and an entity, or press **Random symbol** for
+a valid symbol of the selected code edition. The preview, code meanings,
 validation, and SVG come from this checkout's Rust library compiled to WASM.
 The page runs locally in your browser; no input is sent to a server.
+
+The address bar always links to the symbol on screen, so a link such as
+[`explorer.html#sidc=15031000141211000000`](explorer.html#sidc=15031000141211000000)
+opens the lab on that symbol; add `&standard=App6` for APP-6 display.
 
 <div id="symbol-lab-app" class="symbol-lab" aria-busy="true">
   <p id="lab-status" role="status" aria-live="polite">Loading the Rust renderer…</p>
   <div id="lab-presets" class="lab-presets" aria-label="Examples"></div>
   <div class="lab-sidc-row">
     <label for="lab-sidc">SIDC <span>20 or 30 numeric characters, or a legacy letter code</span></label>
-    <div><input id="lab-sidc" type="text" spellcheck="false" autocomplete="off"><button id="lab-apply" type="button">Interpret SIDC</button></div>
+    <div><input id="lab-sidc" type="text" spellcheck="false" autocomplete="off"><button id="lab-apply" type="button">Interpret SIDC</button><button id="lab-random" type="button" class="lab-primary" title="A random symbol that this code edition, display standard and rendering mode draw as valid">Random symbol</button></div>
   </div>
   <div class="lab-layout">
     <form id="lab-controls" class="lab-controls">
@@ -45,7 +50,7 @@ The page runs locally in your browser; no input is sent to a server.
       <p id="lab-explanation"></p>
       <p id="lab-citation" class="lab-citation"></p>
       <dl id="lab-metrics" class="lab-metrics"></dl>
-      <div class="lab-actions"><button type="button" data-copy="sidc">Copy SIDC</button><button type="button" data-copy="svg">Copy SVG</button><button type="button" data-copy="config">Copy configuration</button><button type="button" data-copy="rust">Copy Rust</button></div>
+      <div class="lab-actions"><button type="button" data-copy="sidc">Copy SIDC</button><button type="button" data-copy="link">Copy link</button><button type="button" data-copy="svg">Copy SVG</button><button type="button" data-copy="config">Copy configuration</button><button type="button" data-copy="rust">Copy Rust</button></div>
       <details><summary>Native Rust call</summary><p id="lab-rust-note" class="lab-code-note" hidden>These options have no builder setter, so this call requires <code>milsymbol</code> with its <code>serde</code> feature and <code>serde_json</code>.</p><pre><code id="lab-rust" class="language-rust"></code></pre></details>
       <details><summary>Interpreted metadata</summary><pre><code id="lab-metadata"></code></pre></details>
     </div>
@@ -58,6 +63,13 @@ The code edition controls what an entity or modifier means. Changing the display
 standard changes frames and presentation; it does not reinterpret the entity
 as a different edition. The selector excludes geographic lines and areas that
 require multiple control points. Hierarchy entries deliberately have no icon.
+
+**Random symbol** draws from the same selectors: a drawable entity of the
+selected code edition with listed context, identity, status, headquarters,
+amplifier and modifier codes. It keeps only codes that the selected display
+standard and rendering rules accept with no validity issue (the check
+`Symbol::sidc_validity` performs; see [SIDCs and validation](sidcs.md)). For a letter SIDC, it uses the
+last numeric code edition shown.
 
 For weather graphics, the input is the standard's numeric height, depth, or
 pressure field, drawn as supplied with no unit conversion. Tropopause height is

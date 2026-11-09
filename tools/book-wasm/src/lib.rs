@@ -3,6 +3,7 @@
 mod api;
 mod catalog;
 mod protocol;
+mod random;
 mod snippet;
 
-pub use api::{catalog, render};
+pub use api::{catalog, random_sidc, render};

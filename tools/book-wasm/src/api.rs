@@ -21,6 +21,18 @@ pub fn catalog(version: u8) -> String {
     crate::catalog::build(version).to_string()
 }
 
+/// A random SIDC of `version` that the given standard and mode draw as fully
+/// valid. `standard` and `mode` are the JSON names used in render requests.
+#[wasm_bindgen]
+pub fn random_sidc(version: u8, standard: &str, mode: &str, seed: u32) -> Result<String, JsValue> {
+    let pick = || -> Result<String, Error> {
+        let standard = serde_json::from_value(Value::from(standard))?;
+        let mode = serde_json::from_value(Value::from(mode))?;
+        crate::random::sidc(version, standard, mode, u64::from(seed))
+    };
+    pick().map_err(|e| JsValue::from_str(&e.to_string()))
+}
+
 pub(crate) fn response(request: &str) -> Result<String, Error> {
     let request: Request = serde_json::from_str(request)?;
     let parsed = request.parse()?;

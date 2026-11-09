@@ -15,6 +15,12 @@
 .lab-sidc-row > div { display: flex; gap: .55rem; }
 #lab-sidc { font-family: var(--mono-font); letter-spacing: .025em; }
 .lab-sidc-row button { white-space: nowrap; }
+.symbol-lab button.lab-primary { background: var(--links); border-color: var(--links); color: var(--bg); font-weight: 600; }
+.symbol-lab button.lab-primary:hover { filter: brightness(1.1); color: var(--bg); }
+.chapter a[href$="manual/explorer.html"] { font-weight: 700; color: var(--links); }
+.chapter a[href$="manual/explorer.html"]::before { content: "▶ "; font-size: .8em; }
+.lab-callout { border: 1px solid var(--links); border-left-width: 4px; border-radius: 6px; padding: .8rem 1rem; margin: 1.2rem 0; }
+.lab-callout p { margin: .3rem 0; }
 .lab-layout { display: grid; grid-template-columns: minmax(220px, .95fr) minmax(260px, 1.25fr); gap: 1.4rem; align-items: start; }
 .lab-controls { min-width: 0; }
 .lab-controls fieldset { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: .9rem .7rem; border: 1px solid var(--lab-border); border-radius: 8px; padding: 1rem; margin: 0 0 1rem; }
