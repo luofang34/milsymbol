@@ -16,10 +16,12 @@ if [ -z "$required" ]; then
   echo "$repo $branch requires no status checks"
   exit 0
 fi
-missing=$(comm -23 <(sort -u <<<"$required") <(sort -u <<<"$jobs"))
-extra=$(comm -13 <(sort -u <<<"$required") <(sort -u <<<"$jobs"))
+# Exact whole-line matching: no dependency on sort order or collation.
+only() { grep -Fxv -f <(printf '%s\n' "$2") <<<"$1" | LC_ALL=C sort -u || true; }
+missing=$(only "$required" "$jobs")
+extra=$(only "$jobs" "$required")
 echo "required by $branch and run by this workflow:"
-comm -12 <(sort -u <<<"$required") <(sort -u <<<"$jobs") | sed 's/^/  /'
+{ grep -Fx -f <(printf '%s\n' "$jobs") <<<"$required" || true; } | LC_ALL=C sort -u | sed 's/^/  /'
 if [ -n "$extra" ]; then
   echo "run but not required:"
   sed 's/^/  /' <<<"$extra"
