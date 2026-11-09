@@ -105,8 +105,8 @@ continue from here.
 - No JavaScript at build or run time. `no_std + alloc` core; builds for
   `wasm32` and bare-metal targets. The only dependency is `libm`.
 - No global state: a `Renderer` holds configuration and extensions
-  (custom icons, drawing stages, colour modes), is `Send + Sync`, and renders
-  deterministically.
+  (custom icons, drawing stages, colour modes), is shareable across threads
+  on targets with atomics, and renders deterministically.
 
 ## Gallery
 

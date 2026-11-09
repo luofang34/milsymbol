@@ -133,7 +133,8 @@ picture as flat typed items for renderers other than SVG, and
 
 Rendering is deterministic: the same renderer configuration, SIDC and
 options always give the same output, on every platform and thread.
-`Renderer` and `Symbol` are `Send + Sync`.
+`Symbol` is `Send + Sync`; so is `Renderer`, except on targets without
+atomic pointers (such as thumbv6m).
 
 # SIDCs and validity
 
