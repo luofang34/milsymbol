@@ -130,4 +130,6 @@ pub(crate) enum Error {
         "Each SIDC field must have its specified width and use uppercase hexadecimal characters"
     )]
     Fields,
+    #[error("No valid symbol of SIDC version {version} was found for these rendering rules")]
+    NoRandom { version: u8 },
 }

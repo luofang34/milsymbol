@@ -16,17 +16,15 @@ Symbols are also exposed as typed drawing instructions for native renderers.
 
 ## Documentation
 
+- **[Symbol lab](https://luofang34.github.io/milsymbol/manual/explorer.html)**:
+  type any SIDC, browse the standards' entities or roll a random valid symbol,
+  and see it drawn, explained and validated by this library running in your
+  browser, with the Rust call that draws it.
 - **[Usage manual](https://luofang34.github.io/milsymbol/)**: installation,
   SIDCs, styling, text, output formats, map placement, drawing adapters,
-  caching, extensions and WASM/embedded use, with an interactive symbol lab
-  running this library as WASM.
+  caching, extensions and WASM/embedded use.
 - **[API reference](https://docs.rs/milsymbol)** on docs.rs: every type and
   method, the supported standards and feature flags.
-- [UPSTREAM.md](UPSTREAM.md): compatibility baseline, generated-data
-  provenance and known differences from milsymbol.js.
-- [BENCHMARKS.md](BENCHMARKS.md): single-symbol, cached and bulk rendering
-  performance and memory use.
-- [CHANGELOG.md](CHANGELOG.md): release notes.
 
 ## Example
 

@@ -1,4 +1,4 @@
-import init, { render, catalog } from '../wasm/milsymbol_book.js';
+import init, { render, catalog, random_sidc } from '../wasm/milsymbol_book.js';
 
 const root = document.getElementById('symbol-lab-app');
 const byId = name => document.getElementById(`lab-${name}`);
@@ -152,6 +152,7 @@ function present(result) {
   byId('rust-note').hidden = !state.rust_needs_serde;
   byId('metadata').textContent = JSON.stringify(state.metadata, null, 2);
   showPreview();
+  history.replaceState(null, '', link());
   setStatus('Rendered locally with the Rust library.');
 }
 function run(payload) {
@@ -174,6 +175,23 @@ function updateField(event) {
   if (field === 'version' || field === 'symbol_set') populate(f);
   run(request({ fields: f }));
 }
+function randomSymbol() {
+  const [seed] = crypto.getRandomValues(new Uint32Array(1));
+  try {
+    const sidc = random_sidc(Number(byId('version').value), byId('standard').value, byId('mode').value, seed);
+    run(request({ sidc, fields: null }));
+  } catch (error) { setStatus(String(error), true); }
+}
+function linked() {
+  const params = new URLSearchParams(location.hash.slice(1));
+  const payload = {};
+  if (params.get('sidc')) payload.sidc = params.get('sidc');
+  if (['Mil2525', 'App6'].includes(params.get('standard'))) payload.standard = params.get('standard');
+  return payload;
+}
+function link() {
+  return `${location.origin}${location.pathname}#${new URLSearchParams({ sidc: state.sidc, standard: state.standard })}`;
+}
 function applySidc() { run(request({ sidc: byId('sidc').value.trim(), fields: null })); }
 function addPresets() {
   byId('presets').replaceChildren(...currentCatalog.presets.map(preset => {
@@ -184,19 +202,21 @@ function addPresets() {
 }
 async function copy(kind) {
   if (!state) return;
-  const value = kind === 'config' ? JSON.stringify(state.config, null, 2) : state[kind];
-  try { await navigator.clipboard.writeText(value); setStatus(`Copied ${kind === 'rust' ? 'Rust call' : kind}.`); }
+  const value = kind === 'link' ? link() : kind === 'config' ? JSON.stringify(state.config, null, 2) : state[kind];
+  try { await navigator.clipboard.writeText(value); setStatus(`Copied ${{ rust: 'Rust call', link: 'link to this symbol' }[kind] || kind}.`); }
   catch { setStatus('Clipboard access is unavailable. Select and copy the displayed value.', true); }
 }
 
 try {
   await init();
-  run({});
+  run(linked());
   addPresets();
   root.setAttribute('aria-busy', 'false');
   byId('controls').addEventListener('submit', event => event.preventDefault());
   byId('controls').addEventListener('change', updateField);
   byId('apply').addEventListener('click', applySidc);
+  byId('random').addEventListener('click', randomSymbol);
+  addEventListener('hashchange', () => { if (linked().sidc && linked().sidc !== state?.sidc) { populated = ''; run(linked()); } });
   byId('sidc').addEventListener('keydown', event => { if (event.key === 'Enter') { event.preventDefault(); applySidc(); } });
   byId('search').addEventListener('input', () => populateEntity(byId('entity').value));
   for (const field of ['standard', 'mode']) byId(field).addEventListener('change', () => run(request()));
