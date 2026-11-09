@@ -66,7 +66,7 @@ jobs:
       - run: cargo build --lib --no-default-features --features compact-paths --target thumbv6m-none-eabi
 
   msrv:
-    name: library builds on rust-version (1.88)
+    name: library builds on rust-version
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7

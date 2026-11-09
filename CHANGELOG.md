@@ -1,11 +1,17 @@
 # Changelog
 
-## 0.6.0 — Unreleased
+## 0.5.1 — 2026-11-09
 
 - The minimum supported Rust version is 1.88 (was 1.85), the oldest
-  toolchain that builds the current releases of every dependency.
+  toolchain that builds the current releases of every dependency. Before
+  1.0, raising it is a patch-level change announced here.
 - Dependencies are updated to their latest releases, including `resvg` and
   `usvg` 0.49 for the PNG example and the drawing tests.
+- Documentation is organized by audience: the README is an overview with
+  links to the usage manual and the API reference; the crate root on docs.rs
+  is an API map with a feature-flag table, SIDC editing and validation are
+  documented on the `sidc` module and map placement on `Symbol`; the manual
+  groups its chapters into parts. The crate's homepage is the manual.
 
 ## 0.5.0 — 2026-11-07
 

@@ -60,9 +60,9 @@ This is figure 13 of MIL-STD-2525C, rendered by this crate.
 milsymbol = "0.5"
 ```
 
-Requires Rust 1.88 or later. The minimum supported Rust version may be
-raised in a minor release while the crate is 0.x; such a change is announced
-in the CHANGELOG, and CI builds the library on it. Optional features (`serde`,
+Requires Rust 1.88 or later. Before 1.0, the minimum supported Rust
+version may be raised in a patch release; such a change is announced in the
+CHANGELOG, and CI builds the library on it. Optional features (`serde`,
 `compact-paths`, and `std`, which is on by default) are listed in the
 [API reference](https://docs.rs/milsymbol#feature-flags).
 
