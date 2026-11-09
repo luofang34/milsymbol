@@ -82,14 +82,12 @@ pub(crate) fn colors(
         && md.flags.suspect != Some(true)
         && md.frame
         && md.fill;
-    if unmodified {
-        if let ColorModeChoice::Named(name) = &st.color_mode {
-            if let Some(preset) =
-                prepared.framed_filled(name, standards_colors(md, config) && md.std2525)
-            {
-                return Ok(preset);
-            }
-        }
+    if unmodified
+        && let ColorModeChoice::Named(name) = &st.color_mode
+        && let Some(preset) =
+            prepared.framed_filled(name, standards_colors(md, config) && md.std2525)
+    {
+        return Ok(preset);
     }
     let mut fill_mode = match &st.color_mode {
         ColorModeChoice::Custom(m) => m.clone(),

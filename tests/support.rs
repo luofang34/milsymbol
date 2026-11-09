@@ -87,10 +87,10 @@ pub(crate) fn renderer_mode(
     config.mode = mode;
     config.reference_platform = platform;
     if let Some(cfg) = case.get("cfg") {
-        if let Some(s) = cfg.get("standard").and_then(Value::as_str) {
-            if s == "APP6" {
-                config.standard = Standard::App6;
-            }
+        if let Some(s) = cfg.get("standard").and_then(Value::as_str)
+            && s == "APP6"
+        {
+            config.standard = Standard::App6;
         }
         if let Some(Value::Array(d)) = cfg.get("dashArrays") {
             let g = |i: usize| {

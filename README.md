@@ -72,7 +72,7 @@ it and test its Rust examples; `docs/manual/maintenance.md` lists the tools.
 milsymbol = "0.5"
 ```
 
-Requires Rust 1.85 or later. The minimum supported Rust version may be
+Requires Rust 1.88 or later. The minimum supported Rust version may be
 raised in a minor release while the crate is 0.x; such a change is announced
 in the CHANGELOG, and CI builds the library on it.
 
@@ -320,7 +320,7 @@ global calls map to builder methods — `ms.addSymbolPart` →
 ```sh
 cargo test                           # unit, API, property and oracle-corpus tests (no Node)
 tools/ci/check.sh                    # the CI native job; tools/ci/check-linux.sh runs it on Linux
-tools/ci/lint.sh stable 1.85:lib     # clippy with warnings denied on each toolchain
+tools/ci/lint.sh stable 1.88:lib     # clippy with warnings denied on each toolchain
 tools/ci/lint-config.sh              # every crate carries the workspace lint table
 cargo run --example readme_images    # regenerates docs/images (or pass an output dir)
 tools/oracle/diff.sh options         # live diff against milsymbol.js (needs Node)

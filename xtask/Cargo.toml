@@ -7,12 +7,12 @@ description = "Development tasks for milsymbol: table emission and oracle compar
 license = "AGPL-3.0-or-later"
 
 [dependencies]
-serde_json = { version = "1.0.151", features = ["preserve_order", "float_roundtrip"] }
+serde_json = { version = "1.0.154", features = ["preserve_order", "float_roundtrip"] }
 tracing = "0.1.44"
 tracing-subscriber = { version = "0.3.23", default-features = false, features = ["fmt", "ansi"] }
 
 [dev-dependencies]
-proptest = "1.11.0"
+proptest = "1.12.0"
 
 [lints]
 workspace = true

@@ -187,7 +187,7 @@ fn corpus(suite: &str, totals: &mut Totals) -> TestResult {
         let sidc = case.get("sidc").and_then(Value::as_str).unwrap_or_default();
         let renderer = support::renderer(&case, milsymbol::ReferencePlatform::X64);
         if let Ok(symbol) = renderer.render(sidc, options) {
-            let paint = (index / STRIDE) % RASTER_STRIDE == 0;
+            let paint = (index / STRIDE).is_multiple_of(RASTER_STRIDE);
             totals.check(&format!("{suite}: {line}"), &symbol, paint);
         }
     }

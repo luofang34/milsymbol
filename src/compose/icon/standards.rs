@@ -176,13 +176,12 @@ pub(super) fn draw(
         (CodeKind::Modifier1, m1),
         (CodeKind::Modifier2, m2),
     ] {
-        if kind != CodeKind::Entity {
-            if let Some(graphic) = entry(version, ss, kind, code)
+        if kind != CodeKind::Entity
+            && let Some(graphic) = entry(version, ss, kind, code)
                 .and_then(|e| e.graphic)
                 .and_then(|i| GRAPHICS.get(i))
-            {
-                bbox.merge(graphic_bounds(graphic).into());
-            }
+        {
+            bbox.merge(graphic_bounds(graphic).into());
         }
         match lookup(s, parts, version, ss, kind, code) {
             Some((node, Some(index))) if kind == CodeKind::Entity => {

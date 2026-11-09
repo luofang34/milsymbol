@@ -122,7 +122,13 @@ pub(crate) fn difference(a: &Pixmap, b: &Pixmap) -> Result<Difference, String> {
         return Err("renderings differ in size".into());
     }
     let mut diff = Difference::default();
-    for (p, q) in a.data().chunks_exact(4).zip(b.data().chunks_exact(4)) {
+    for (p, q) in a
+        .data()
+        .as_chunks::<4>()
+        .0
+        .iter()
+        .zip(b.data().as_chunks::<4>().0)
+    {
         let channel = p
             .iter()
             .zip(q)

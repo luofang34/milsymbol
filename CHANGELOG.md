@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.6.0 — Unreleased
+
+- The minimum supported Rust version is 1.88 (was 1.85), the oldest
+  toolchain that builds the current releases of every dependency.
+- Dependencies are updated to their latest releases, including `resvg` and
+  `usvg` 0.49 for the PNG example and the drawing tests.
+
 ## 0.5.0 — 2026-11-07
 
 - `RenderMode::Standards` is the default. Numeric display uses the pinned

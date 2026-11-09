@@ -64,10 +64,10 @@ fn values(
     bbox: &mut BBox,
 ) {
     let mut node = style.text(value, input.x, input.y, "middle");
-    if input.bold {
-        if let Node::Text(t) = &mut node {
-            t.font_weight = Some("bold".into());
-        }
+    if input.bold
+        && let Node::Text(t) = &mut node
+    {
+        t.font_weight = Some("bold".into());
     }
     let mut width = crate::labels::str_width(value, style.size, 0.0);
     let mut bottom = input.y;

@@ -66,10 +66,10 @@ impl<'a> ClipIds<'a> {
 
 fn collect_requested(nodes: &[Node], ids: &mut BTreeSet<String>) {
     for n in nodes {
-        if let Node::Clip(c) = n {
-            if let Some(id) = c.clip_id.as_deref().and_then(sanitize_id) {
-                ids.insert(id);
-            }
+        if let Node::Clip(c) = n
+            && let Some(id) = c.clip_id.as_deref().and_then(sanitize_id)
+        {
+            ids.insert(id);
         }
         collect_requested(n.children().unwrap_or(&[]), ids);
     }

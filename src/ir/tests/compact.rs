@@ -320,13 +320,13 @@ fn check(bytes: &'static [u8]) -> Result<(), proptest::test_runner::TestCaseErro
         format!("{:?}", text_path.segments())
     );
     prop_assert_eq!(packed_path.contains_null(), text_path.contains_null());
-    if codec::raw_text(bytes).is_none() {
-        if let Some(direct) = packed::segments(bytes) {
-            let expected = text_path
-                .segments()
-                .map(|s| format!("{:?}", s.into_owned()));
-            prop_assert_eq!(Ok(format!("{direct:?}")), expected.map_err(|_| ()));
-        }
+    if codec::raw_text(bytes).is_none()
+        && let Some(direct) = packed::segments(bytes)
+    {
+        let expected = text_path
+            .segments()
+            .map(|s| format!("{:?}", s.into_owned()));
+        prop_assert_eq!(Ok(format!("{direct:?}")), expected.map_err(|_| ()));
     }
     Ok(())
 }
